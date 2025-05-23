@@ -19,6 +19,7 @@ func init() {
 	logrus.SetFormatter(&logrus.TextFormatter{
 		ForceColors: true,
 	})
+	// logrus.SetReportCaller(true)
 
 	RootCmd.AddCommand(client.UploadCmd)
 	RootCmd.AddCommand(server.ServerCmd)

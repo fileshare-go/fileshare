@@ -1,7 +1,7 @@
 package client
 
 import (
-	"fmt"
+	"context"
 
 	"github.com/chanmaoganda/fileshare/pkg/fileshare/upload"
 	"github.com/sirupsen/logrus"
@@ -31,12 +31,9 @@ var UploadCmd = &cobra.Command{
 
 		client := upload.NewUploadClient(conn)
 
-		summary, err := client.UploadFile(args[0])
-
-		if err != nil {
-			logrus.Fatalln(err)
+		
+		if err := client.UploadFile(context.Background(), args[0]); err != nil {
+			logrus.Error(err)
 		}
-
-		fmt.Printf("summary: %v\n", summary)
 	},
 }
