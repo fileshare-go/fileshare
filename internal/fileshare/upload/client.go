@@ -13,13 +13,33 @@ import (
 
 type UploadClient struct {
 	Client pb.UploadServiceClient
+	Stream pb.UploadService_UploadClient
 }
 
-func NewUploadClient(conn *grpc.ClientConn) *UploadClient {
+func NewUploadClient(ctx context.Context, conn *grpc.ClientConn) *UploadClient {
 	client := pb.NewUploadServiceClient(conn)
+	stream, err := client.Upload(ctx)
+	if err != nil {
+		logrus.Panic(err)
+	}
+
 	return &UploadClient{
 		Client: client,
+		Stream: stream,
 	}
+}
+
+func (c *UploadClient) getSummary(ctx context.Context, filePath string) (*pb.UploadSummary, error) {
+	task, err := CreateTask(filePath)
+	if err != nil {
+		return nil, err
+	}
+	logrus.Debugf("task [filename: %s, sha256: %s, file size: %d]", task.Meta.Filename, task.Meta.Sha256, task.FileSize)
+	summary, err := c.Client.PreUpload(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	return summary, nil
 }
 
 func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
@@ -28,50 +48,49 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 		return err
 	}
 
-	task, err := CreateTask(filePath)
+	summary, err := c.getSummary(ctx, filePath)
 	if err != nil {
 		return err
 	}
 
-	summary, err := c.Client.PreUpload(ctx, task)
-	if err != nil {
-		return err
-	}
-
-	stream, err := c.Client.Upload(ctx)
-	if err != nil {
-		return err
-	}
-
-	logrus.Debugf("File summary: [filename: %s, sha256: %s, chunk number: %d, chunk size: %d, uploadList: %v]", summary.GetFilename(), summary.GetSha256(), summary.GetChunkNumber(), summary.GetChunkSize(), summary.GetChunkList())
+	logrus.Debugf("File summary: [filename: %s, sha256: %s, chunk number: %d, chunk size: %d, uploadList: %v]", summary.Meta.Filename, summary.Meta.Sha256, summary.GetChunkNumber(), summary.GetChunkSize(), summary.GetChunkList())
 
 	for _, chunkIndex := range summary.ChunkList {
-		data := make([]byte, summary.ChunkSize)
-		file.Seek(summary.ChunkSize * int64(chunkIndex), 0)
-		n, err := file.Read(data)
-		if err != nil {
-			break
-		}
+		chunk := MakeChunk(file, summary.Meta.Sha256, summary.ChunkSize, chunkIndex)
 
-		logrus.Debugf("File Chunk:[filename: %s, chunk index: %d, chunk size: %d]", summary.GetFilename(), chunkIndex, n)
-		err = stream.Send(&pb.FileChunk{
-			Filename: filePath,
-			Index:    chunkIndex,
-			Data:     data,
-		})
+		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", summary.Meta.Filename, summary.Meta.Sha256, chunk.GetIndex(), len(chunk.Data))
+		err = c.Stream.Send(chunk)
 
 		if err != nil {
 			break
 		}
 	}
 
-	status, err := stream.CloseAndRecv()
+	status, err := c.Stream.CloseAndRecv()
 	if err != nil && err != io.EOF {
 		return err
 	}
 
 	logrus.Debugf("Status Info [status: %d]", status.Status)
 	return nil
+}
+
+func MakeChunk(file *os.File, sha256 string, chunkSize int64, chunkIndex int32) *pb.FileChunk {
+	data := make([]byte, chunkSize)
+	file.Seek(chunkSize * int64(chunkIndex), 0)
+	n, err := file.Read(data)
+	if err != nil {
+		logrus.Error(err)
+	}
+
+	return &pb.FileChunk{
+		Meta: &pb.FileMeta{
+			Filename: file.Name(),
+			Sha256: sha256,
+		},
+		Index: chunkIndex,
+		Data: data[:n],
+	}
 }
 
 func CreateTask(filePath string) (*pb.UploadTask, error) {
@@ -86,9 +105,11 @@ func CreateTask(filePath string) (*pb.UploadTask, error) {
 	}
 
 	task := &pb.UploadTask{
-		Filename: filePath,
+		Meta: &pb.FileMeta{
+			Filename: filePath,
+			Sha256: sha256,
+		},
 		FileSize: stat.Size(),
-		Sha256: sha256,
 	}
 	return task, nil
 }

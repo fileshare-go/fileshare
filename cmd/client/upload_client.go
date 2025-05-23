@@ -35,7 +35,7 @@ var UploadCmd = &cobra.Command{
 
 		defer conn.Close()
 
-		client := upload.NewUploadClient(conn)
+		client := upload.NewUploadClient(context.Background(), conn)
 
 		if err := client.UploadFile(context.Background(), args[0]); err != nil {
 			logrus.Error(err)

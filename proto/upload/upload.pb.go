@@ -70,18 +70,69 @@ func (Status) EnumDescriptor() ([]byte, []int) {
 	return file_upload_proto_rawDescGZIP(), []int{0}
 }
 
-type UploadTask struct {
+type FileMeta struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
 	Sha256        string                 `protobuf:"bytes,2,opt,name=sha256,proto3" json:"sha256,omitempty"`
-	FileSize      int64                  `protobuf:"varint,3,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FileMeta) Reset() {
+	*x = FileMeta{}
+	mi := &file_upload_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileMeta) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileMeta) ProtoMessage() {}
+
+func (x *FileMeta) ProtoReflect() protoreflect.Message {
+	mi := &file_upload_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileMeta.ProtoReflect.Descriptor instead.
+func (*FileMeta) Descriptor() ([]byte, []int) {
+	return file_upload_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *FileMeta) GetFilename() string {
+	if x != nil {
+		return x.Filename
+	}
+	return ""
+}
+
+func (x *FileMeta) GetSha256() string {
+	if x != nil {
+		return x.Sha256
+	}
+	return ""
+}
+
+type UploadTask struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	FileSize      int64                  `protobuf:"varint,2,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UploadTask) Reset() {
 	*x = UploadTask{}
-	mi := &file_upload_proto_msgTypes[0]
+	mi := &file_upload_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -93,7 +144,7 @@ func (x *UploadTask) String() string {
 func (*UploadTask) ProtoMessage() {}
 
 func (x *UploadTask) ProtoReflect() protoreflect.Message {
-	mi := &file_upload_proto_msgTypes[0]
+	mi := &file_upload_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -106,21 +157,14 @@ func (x *UploadTask) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadTask.ProtoReflect.Descriptor instead.
 func (*UploadTask) Descriptor() ([]byte, []int) {
-	return file_upload_proto_rawDescGZIP(), []int{0}
+	return file_upload_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *UploadTask) GetFilename() string {
+func (x *UploadTask) GetMeta() *FileMeta {
 	if x != nil {
-		return x.Filename
+		return x.Meta
 	}
-	return ""
-}
-
-func (x *UploadTask) GetSha256() string {
-	if x != nil {
-		return x.Sha256
-	}
-	return ""
+	return nil
 }
 
 func (x *UploadTask) GetFileSize() int64 {
@@ -132,18 +176,17 @@ func (x *UploadTask) GetFileSize() int64 {
 
 type UploadSummary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	Sha256        string                 `protobuf:"bytes,2,opt,name=sha256,proto3" json:"sha256,omitempty"`
-	ChunkNumber   int32                  `protobuf:"varint,3,opt,name=chunkNumber,proto3" json:"chunkNumber,omitempty"`
-	ChunkSize     int64                  `protobuf:"varint,4,opt,name=chunkSize,proto3" json:"chunkSize,omitempty"`
-	ChunkList     []int32                `protobuf:"varint,5,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	ChunkNumber   int32                  `protobuf:"varint,2,opt,name=chunkNumber,proto3" json:"chunkNumber,omitempty"`
+	ChunkSize     int64                  `protobuf:"varint,3,opt,name=chunkSize,proto3" json:"chunkSize,omitempty"`
+	ChunkList     []int32                `protobuf:"varint,4,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UploadSummary) Reset() {
 	*x = UploadSummary{}
-	mi := &file_upload_proto_msgTypes[1]
+	mi := &file_upload_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -155,7 +198,7 @@ func (x *UploadSummary) String() string {
 func (*UploadSummary) ProtoMessage() {}
 
 func (x *UploadSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_upload_proto_msgTypes[1]
+	mi := &file_upload_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -168,21 +211,14 @@ func (x *UploadSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadSummary.ProtoReflect.Descriptor instead.
 func (*UploadSummary) Descriptor() ([]byte, []int) {
-	return file_upload_proto_rawDescGZIP(), []int{1}
+	return file_upload_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *UploadSummary) GetFilename() string {
+func (x *UploadSummary) GetMeta() *FileMeta {
 	if x != nil {
-		return x.Filename
+		return x.Meta
 	}
-	return ""
-}
-
-func (x *UploadSummary) GetSha256() string {
-	if x != nil {
-		return x.Sha256
-	}
-	return ""
+	return nil
 }
 
 func (x *UploadSummary) GetChunkNumber() int32 {
@@ -208,7 +244,7 @@ func (x *UploadSummary) GetChunkList() []int32 {
 
 type FileChunk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
 	Index         int32                  `protobuf:"varint,2,opt,name=index,proto3" json:"index,omitempty"`
 	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -217,7 +253,7 @@ type FileChunk struct {
 
 func (x *FileChunk) Reset() {
 	*x = FileChunk{}
-	mi := &file_upload_proto_msgTypes[2]
+	mi := &file_upload_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -229,7 +265,7 @@ func (x *FileChunk) String() string {
 func (*FileChunk) ProtoMessage() {}
 
 func (x *FileChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_upload_proto_msgTypes[2]
+	mi := &file_upload_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -242,14 +278,14 @@ func (x *FileChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileChunk.ProtoReflect.Descriptor instead.
 func (*FileChunk) Descriptor() ([]byte, []int) {
-	return file_upload_proto_rawDescGZIP(), []int{2}
+	return file_upload_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *FileChunk) GetFilename() string {
+func (x *FileChunk) GetMeta() *FileMeta {
 	if x != nil {
-		return x.Filename
+		return x.Meta
 	}
-	return ""
+	return nil
 }
 
 func (x *FileChunk) GetIndex() int32 {
@@ -268,17 +304,16 @@ func (x *FileChunk) GetData() []byte {
 
 type UploadStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	Sha256        string                 `protobuf:"bytes,2,opt,name=sha256,proto3" json:"sha256,omitempty"`
-	Status        Status                 `protobuf:"varint,3,opt,name=status,proto3,enum=Status" json:"status,omitempty"`
-	ChunkList     []int32                `protobuf:"varint,5,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	Status        Status                 `protobuf:"varint,2,opt,name=status,proto3,enum=Status" json:"status,omitempty"`
+	ChunkList     []int32                `protobuf:"varint,3,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UploadStatus) Reset() {
 	*x = UploadStatus{}
-	mi := &file_upload_proto_msgTypes[3]
+	mi := &file_upload_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -290,7 +325,7 @@ func (x *UploadStatus) String() string {
 func (*UploadStatus) ProtoMessage() {}
 
 func (x *UploadStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_upload_proto_msgTypes[3]
+	mi := &file_upload_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -303,21 +338,14 @@ func (x *UploadStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadStatus.ProtoReflect.Descriptor instead.
 func (*UploadStatus) Descriptor() ([]byte, []int) {
-	return file_upload_proto_rawDescGZIP(), []int{3}
+	return file_upload_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *UploadStatus) GetFilename() string {
+func (x *UploadStatus) GetMeta() *FileMeta {
 	if x != nil {
-		return x.Filename
+		return x.Meta
 	}
-	return ""
-}
-
-func (x *UploadStatus) GetSha256() string {
-	if x != nil {
-		return x.Sha256
-	}
-	return ""
+	return nil
 }
 
 func (x *UploadStatus) GetStatus() Status {
@@ -338,27 +366,27 @@ var File_upload_proto protoreflect.FileDescriptor
 
 const file_upload_proto_rawDesc = "" +
 	"\n" +
-	"\fupload.proto\"\\\n" +
+	"\fupload.proto\">\n" +
+	"\bFileMeta\x12\x1a\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
+	"\x06sha256\x18\x02 \x01(\tR\x06sha256\"G\n" +
 	"\n" +
-	"UploadTask\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
-	"\x06sha256\x18\x02 \x01(\tR\x06sha256\x12\x1a\n" +
-	"\bfileSize\x18\x03 \x01(\x03R\bfileSize\"\xa1\x01\n" +
-	"\rUploadSummary\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
-	"\x06sha256\x18\x02 \x01(\tR\x06sha256\x12 \n" +
-	"\vchunkNumber\x18\x03 \x01(\x05R\vchunkNumber\x12\x1c\n" +
-	"\tchunkSize\x18\x04 \x01(\x03R\tchunkSize\x12\x1c\n" +
-	"\tchunkList\x18\x05 \x03(\x05R\tchunkList\"Q\n" +
-	"\tFileChunk\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x14\n" +
+	"UploadTask\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x1a\n" +
+	"\bfileSize\x18\x02 \x01(\x03R\bfileSize\"\x8c\x01\n" +
+	"\rUploadSummary\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12 \n" +
+	"\vchunkNumber\x18\x02 \x01(\x05R\vchunkNumber\x12\x1c\n" +
+	"\tchunkSize\x18\x03 \x01(\x03R\tchunkSize\x12\x1c\n" +
+	"\tchunkList\x18\x04 \x03(\x05R\tchunkList\"T\n" +
+	"\tFileChunk\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x14\n" +
 	"\x05index\x18\x02 \x01(\x05R\x05index\x12\x12\n" +
-	"\x04data\x18\x03 \x01(\fR\x04data\"\x81\x01\n" +
-	"\fUploadStatus\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
-	"\x06sha256\x18\x02 \x01(\tR\x06sha256\x12\x1f\n" +
-	"\x06status\x18\x03 \x01(\x0e2\a.StatusR\x06status\x12\x1c\n" +
-	"\tchunkList\x18\x05 \x03(\x05R\tchunkList*&\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\"l\n" +
+	"\fUploadStatus\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x1f\n" +
+	"\x06status\x18\x02 \x01(\x0e2\a.StatusR\x06status\x12\x1c\n" +
+	"\tchunkList\x18\x03 \x03(\x05R\tchunkList*&\n" +
 	"\x06Status\x12\x06\n" +
 	"\x02OK\x10\x00\x12\t\n" +
 	"\x05ERROR\x10\x01\x12\t\n" +
@@ -382,25 +410,30 @@ func file_upload_proto_rawDescGZIP() []byte {
 }
 
 var file_upload_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_upload_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_upload_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_upload_proto_goTypes = []any{
 	(Status)(0),           // 0: Status
-	(*UploadTask)(nil),    // 1: UploadTask
-	(*UploadSummary)(nil), // 2: UploadSummary
-	(*FileChunk)(nil),     // 3: FileChunk
-	(*UploadStatus)(nil),  // 4: UploadStatus
+	(*FileMeta)(nil),      // 1: FileMeta
+	(*UploadTask)(nil),    // 2: UploadTask
+	(*UploadSummary)(nil), // 3: UploadSummary
+	(*FileChunk)(nil),     // 4: FileChunk
+	(*UploadStatus)(nil),  // 5: UploadStatus
 }
 var file_upload_proto_depIdxs = []int32{
-	0, // 0: UploadStatus.status:type_name -> Status
-	1, // 1: UploadService.PreUpload:input_type -> UploadTask
-	3, // 2: UploadService.Upload:input_type -> FileChunk
-	2, // 3: UploadService.PreUpload:output_type -> UploadSummary
-	4, // 4: UploadService.Upload:output_type -> UploadStatus
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	1, // 0: UploadTask.meta:type_name -> FileMeta
+	1, // 1: UploadSummary.meta:type_name -> FileMeta
+	1, // 2: FileChunk.meta:type_name -> FileMeta
+	1, // 3: UploadStatus.meta:type_name -> FileMeta
+	0, // 4: UploadStatus.status:type_name -> Status
+	2, // 5: UploadService.PreUpload:input_type -> UploadTask
+	4, // 6: UploadService.Upload:input_type -> FileChunk
+	3, // 7: UploadService.PreUpload:output_type -> UploadSummary
+	5, // 8: UploadService.Upload:output_type -> UploadStatus
+	7, // [7:9] is the sub-list for method output_type
+	5, // [5:7] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_upload_proto_init() }
@@ -414,7 +447,7 @@ func file_upload_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_upload_proto_rawDesc), len(file_upload_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

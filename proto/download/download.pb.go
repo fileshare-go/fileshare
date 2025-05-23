@@ -70,6 +70,58 @@ func (Status) EnumDescriptor() ([]byte, []int) {
 	return file_download_proto_rawDescGZIP(), []int{0}
 }
 
+type FileMeta struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
+	Sha256        string                 `protobuf:"bytes,2,opt,name=sha256,proto3" json:"sha256,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FileMeta) Reset() {
+	*x = FileMeta{}
+	mi := &file_download_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FileMeta) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FileMeta) ProtoMessage() {}
+
+func (x *FileMeta) ProtoReflect() protoreflect.Message {
+	mi := &file_download_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FileMeta.ProtoReflect.Descriptor instead.
+func (*FileMeta) Descriptor() ([]byte, []int) {
+	return file_download_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *FileMeta) GetFilename() string {
+	if x != nil {
+		return x.Filename
+	}
+	return ""
+}
+
+func (x *FileMeta) GetSha256() string {
+	if x != nil {
+		return x.Sha256
+	}
+	return ""
+}
+
 type DownloadTask struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
@@ -79,7 +131,7 @@ type DownloadTask struct {
 
 func (x *DownloadTask) Reset() {
 	*x = DownloadTask{}
-	mi := &file_download_proto_msgTypes[0]
+	mi := &file_download_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -91,7 +143,7 @@ func (x *DownloadTask) String() string {
 func (*DownloadTask) ProtoMessage() {}
 
 func (x *DownloadTask) ProtoReflect() protoreflect.Message {
-	mi := &file_download_proto_msgTypes[0]
+	mi := &file_download_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -104,7 +156,7 @@ func (x *DownloadTask) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadTask.ProtoReflect.Descriptor instead.
 func (*DownloadTask) Descriptor() ([]byte, []int) {
-	return file_download_proto_rawDescGZIP(), []int{0}
+	return file_download_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *DownloadTask) GetFilename() string {
@@ -116,18 +168,17 @@ func (x *DownloadTask) GetFilename() string {
 
 type DownloadSummary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	Sha256        string                 `protobuf:"bytes,2,opt,name=sha256,proto3" json:"sha256,omitempty"`
-	ChunkNumber   int32                  `protobuf:"varint,3,opt,name=chunkNumber,proto3" json:"chunkNumber,omitempty"`
-	ChunkSize     int64                  `protobuf:"varint,4,opt,name=chunkSize,proto3" json:"chunkSize,omitempty"`
-	ChunkList     []int32                `protobuf:"varint,5,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	ChunkNumber   int32                  `protobuf:"varint,2,opt,name=chunkNumber,proto3" json:"chunkNumber,omitempty"`
+	ChunkSize     int64                  `protobuf:"varint,3,opt,name=chunkSize,proto3" json:"chunkSize,omitempty"`
+	ChunkList     []int32                `protobuf:"varint,4,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DownloadSummary) Reset() {
 	*x = DownloadSummary{}
-	mi := &file_download_proto_msgTypes[1]
+	mi := &file_download_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -139,7 +190,7 @@ func (x *DownloadSummary) String() string {
 func (*DownloadSummary) ProtoMessage() {}
 
 func (x *DownloadSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_download_proto_msgTypes[1]
+	mi := &file_download_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -152,21 +203,14 @@ func (x *DownloadSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadSummary.ProtoReflect.Descriptor instead.
 func (*DownloadSummary) Descriptor() ([]byte, []int) {
-	return file_download_proto_rawDescGZIP(), []int{1}
+	return file_download_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *DownloadSummary) GetFilename() string {
+func (x *DownloadSummary) GetMeta() *FileMeta {
 	if x != nil {
-		return x.Filename
+		return x.Meta
 	}
-	return ""
-}
-
-func (x *DownloadSummary) GetSha256() string {
-	if x != nil {
-		return x.Sha256
-	}
-	return ""
+	return nil
 }
 
 func (x *DownloadSummary) GetChunkNumber() int32 {
@@ -192,7 +236,7 @@ func (x *DownloadSummary) GetChunkList() []int32 {
 
 type FileChunk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
 	Index         int32                  `protobuf:"varint,2,opt,name=index,proto3" json:"index,omitempty"`
 	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -201,7 +245,7 @@ type FileChunk struct {
 
 func (x *FileChunk) Reset() {
 	*x = FileChunk{}
-	mi := &file_download_proto_msgTypes[2]
+	mi := &file_download_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -213,7 +257,7 @@ func (x *FileChunk) String() string {
 func (*FileChunk) ProtoMessage() {}
 
 func (x *FileChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_download_proto_msgTypes[2]
+	mi := &file_download_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -226,14 +270,14 @@ func (x *FileChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FileChunk.ProtoReflect.Descriptor instead.
 func (*FileChunk) Descriptor() ([]byte, []int) {
-	return file_download_proto_rawDescGZIP(), []int{2}
+	return file_download_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *FileChunk) GetFilename() string {
+func (x *FileChunk) GetMeta() *FileMeta {
 	if x != nil {
-		return x.Filename
+		return x.Meta
 	}
-	return ""
+	return nil
 }
 
 func (x *FileChunk) GetIndex() int32 {
@@ -252,17 +296,16 @@ func (x *FileChunk) GetData() []byte {
 
 type DownloadStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	Sha256        string                 `protobuf:"bytes,2,opt,name=sha256,proto3" json:"sha256,omitempty"`
-	Status        int32                  `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"`
-	ChunkList     []int32                `protobuf:"varint,5,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	Status        int32                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
+	ChunkList     []int32                `protobuf:"varint,3,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *DownloadStatus) Reset() {
 	*x = DownloadStatus{}
-	mi := &file_download_proto_msgTypes[3]
+	mi := &file_download_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -274,7 +317,7 @@ func (x *DownloadStatus) String() string {
 func (*DownloadStatus) ProtoMessage() {}
 
 func (x *DownloadStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_download_proto_msgTypes[3]
+	mi := &file_download_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -287,21 +330,14 @@ func (x *DownloadStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadStatus.ProtoReflect.Descriptor instead.
 func (*DownloadStatus) Descriptor() ([]byte, []int) {
-	return file_download_proto_rawDescGZIP(), []int{3}
+	return file_download_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *DownloadStatus) GetFilename() string {
+func (x *DownloadStatus) GetMeta() *FileMeta {
 	if x != nil {
-		return x.Filename
+		return x.Meta
 	}
-	return ""
-}
-
-func (x *DownloadStatus) GetSha256() string {
-	if x != nil {
-		return x.Sha256
-	}
-	return ""
+	return nil
 }
 
 func (x *DownloadStatus) GetStatus() int32 {
@@ -322,24 +358,25 @@ var File_download_proto protoreflect.FileDescriptor
 
 const file_download_proto_rawDesc = "" +
 	"\n" +
-	"\x0edownload.proto\"*\n" +
+	"\x0edownload.proto\">\n" +
+	"\bFileMeta\x12\x1a\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
+	"\x06sha256\x18\x02 \x01(\tR\x06sha256\"*\n" +
 	"\fDownloadTask\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\"\xa3\x01\n" +
-	"\x0fDownloadSummary\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
-	"\x06sha256\x18\x02 \x01(\tR\x06sha256\x12 \n" +
-	"\vchunkNumber\x18\x03 \x01(\x05R\vchunkNumber\x12\x1c\n" +
-	"\tchunkSize\x18\x04 \x01(\x03R\tchunkSize\x12\x1c\n" +
-	"\tchunkList\x18\x05 \x03(\x05R\tchunkList\"Q\n" +
-	"\tFileChunk\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x14\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\"\x8e\x01\n" +
+	"\x0fDownloadSummary\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12 \n" +
+	"\vchunkNumber\x18\x02 \x01(\x05R\vchunkNumber\x12\x1c\n" +
+	"\tchunkSize\x18\x03 \x01(\x03R\tchunkSize\x12\x1c\n" +
+	"\tchunkList\x18\x04 \x03(\x05R\tchunkList\"T\n" +
+	"\tFileChunk\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x14\n" +
 	"\x05index\x18\x02 \x01(\x05R\x05index\x12\x12\n" +
-	"\x04data\x18\x03 \x01(\fR\x04data\"z\n" +
-	"\x0eDownloadStatus\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
-	"\x06sha256\x18\x02 \x01(\tR\x06sha256\x12\x16\n" +
-	"\x06status\x18\x03 \x01(\x05R\x06status\x12\x1c\n" +
-	"\tchunkList\x18\x05 \x03(\x05R\tchunkList*&\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\"e\n" +
+	"\x0eDownloadStatus\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\x05R\x06status\x12\x1c\n" +
+	"\tchunkList\x18\x03 \x03(\x05R\tchunkList*&\n" +
 	"\x06Status\x12\x06\n" +
 	"\x02OK\x10\x00\x12\t\n" +
 	"\x05ERROR\x10\x01\x12\t\n" +
@@ -363,24 +400,28 @@ func file_download_proto_rawDescGZIP() []byte {
 }
 
 var file_download_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_download_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_download_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_download_proto_goTypes = []any{
 	(Status)(0),             // 0: Status
-	(*DownloadTask)(nil),    // 1: DownloadTask
-	(*DownloadSummary)(nil), // 2: DownloadSummary
-	(*FileChunk)(nil),       // 3: FileChunk
-	(*DownloadStatus)(nil),  // 4: DownloadStatus
+	(*FileMeta)(nil),        // 1: FileMeta
+	(*DownloadTask)(nil),    // 2: DownloadTask
+	(*DownloadSummary)(nil), // 3: DownloadSummary
+	(*FileChunk)(nil),       // 4: FileChunk
+	(*DownloadStatus)(nil),  // 5: DownloadStatus
 }
 var file_download_proto_depIdxs = []int32{
-	1, // 0: DownloadService.PreDownload:input_type -> DownloadTask
-	3, // 1: DownloadService.Download:input_type -> FileChunk
-	2, // 2: DownloadService.PreDownload:output_type -> DownloadSummary
-	4, // 3: DownloadService.Download:output_type -> DownloadStatus
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	1, // 0: DownloadSummary.meta:type_name -> FileMeta
+	1, // 1: FileChunk.meta:type_name -> FileMeta
+	1, // 2: DownloadStatus.meta:type_name -> FileMeta
+	2, // 3: DownloadService.PreDownload:input_type -> DownloadTask
+	4, // 4: DownloadService.Download:input_type -> FileChunk
+	3, // 5: DownloadService.PreDownload:output_type -> DownloadSummary
+	5, // 6: DownloadService.Download:output_type -> DownloadStatus
+	5, // [5:7] is the sub-list for method output_type
+	3, // [3:5] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_download_proto_init() }
@@ -394,7 +435,7 @@ func file_download_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_download_proto_rawDesc), len(file_download_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
