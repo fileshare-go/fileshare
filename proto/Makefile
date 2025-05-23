@@ -1,3 +1,3 @@
 protos:
-	protoc --go_out=../pkg --go-grpc_out=../pkg upload.proto
-	protoc --go_out=../pkg --go-grpc_out=../pkg download.proto
+	protoc --go_out=. --go-grpc_out=. upload.proto
+	protoc --go_out=. --go-grpc_out=. download.proto

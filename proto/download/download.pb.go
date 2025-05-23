@@ -21,6 +21,55 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Status int32
+
+const (
+	Status_OK    Status = 0
+	Status_ERROR Status = 1
+	Status_RETRY Status = 2
+)
+
+// Enum value maps for Status.
+var (
+	Status_name = map[int32]string{
+		0: "OK",
+		1: "ERROR",
+		2: "RETRY",
+	}
+	Status_value = map[string]int32{
+		"OK":    0,
+		"ERROR": 1,
+		"RETRY": 2,
+	}
+)
+
+func (x Status) Enum() *Status {
+	p := new(Status)
+	*p = x
+	return p
+}
+
+func (x Status) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Status) Descriptor() protoreflect.EnumDescriptor {
+	return file_download_proto_enumTypes[0].Descriptor()
+}
+
+func (Status) Type() protoreflect.EnumType {
+	return &file_download_proto_enumTypes[0]
+}
+
+func (x Status) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Status.Descriptor instead.
+func (Status) EnumDescriptor() ([]byte, []int) {
+	return file_download_proto_rawDescGZIP(), []int{0}
+}
+
 type DownloadTask struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
@@ -68,8 +117,10 @@ func (x *DownloadTask) GetFilename() string {
 type DownloadSummary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	ChunkNumber   int32                  `protobuf:"varint,2,opt,name=chunkNumber,proto3" json:"chunkNumber,omitempty"`
-	ChunkSize     int64                  `protobuf:"varint,3,opt,name=chunkSize,proto3" json:"chunkSize,omitempty"`
+	Sha256        string                 `protobuf:"bytes,2,opt,name=sha256,proto3" json:"sha256,omitempty"`
+	ChunkNumber   int32                  `protobuf:"varint,3,opt,name=chunkNumber,proto3" json:"chunkNumber,omitempty"`
+	ChunkSize     int64                  `protobuf:"varint,4,opt,name=chunkSize,proto3" json:"chunkSize,omitempty"`
+	ChunkList     []int32                `protobuf:"varint,5,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -111,6 +162,13 @@ func (x *DownloadSummary) GetFilename() string {
 	return ""
 }
 
+func (x *DownloadSummary) GetSha256() string {
+	if x != nil {
+		return x.Sha256
+	}
+	return ""
+}
+
 func (x *DownloadSummary) GetChunkNumber() int32 {
 	if x != nil {
 		return x.ChunkNumber
@@ -125,10 +183,18 @@ func (x *DownloadSummary) GetChunkSize() int64 {
 	return 0
 }
 
+func (x *DownloadSummary) GetChunkList() []int32 {
+	if x != nil {
+		return x.ChunkList
+	}
+	return nil
+}
+
 type FileChunk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	Data          []byte                 `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Index         int32                  `protobuf:"varint,2,opt,name=index,proto3" json:"index,omitempty"`
+	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -170,6 +236,13 @@ func (x *FileChunk) GetFilename() string {
 	return ""
 }
 
+func (x *FileChunk) GetIndex() int32 {
+	if x != nil {
+		return x.Index
+	}
+	return 0
+}
+
 func (x *FileChunk) GetData() []byte {
 	if x != nil {
 		return x.Data
@@ -180,7 +253,9 @@ func (x *FileChunk) GetData() []byte {
 type DownloadStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
-	Status        int32                  `protobuf:"varint,2,opt,name=status,proto3" json:"status,omitempty"`
+	Sha256        string                 `protobuf:"bytes,2,opt,name=sha256,proto3" json:"sha256,omitempty"`
+	Status        int32                  `protobuf:"varint,3,opt,name=status,proto3" json:"status,omitempty"`
+	ChunkList     []int32                `protobuf:"varint,5,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -222,11 +297,25 @@ func (x *DownloadStatus) GetFilename() string {
 	return ""
 }
 
+func (x *DownloadStatus) GetSha256() string {
+	if x != nil {
+		return x.Sha256
+	}
+	return ""
+}
+
 func (x *DownloadStatus) GetStatus() int32 {
 	if x != nil {
 		return x.Status
 	}
 	return 0
+}
+
+func (x *DownloadStatus) GetChunkList() []int32 {
+	if x != nil {
+		return x.ChunkList
+	}
+	return nil
 }
 
 var File_download_proto protoreflect.FileDescriptor
@@ -235,21 +324,31 @@ const file_download_proto_rawDesc = "" +
 	"\n" +
 	"\x0edownload.proto\"*\n" +
 	"\fDownloadTask\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\"m\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\"\xa3\x01\n" +
 	"\x0fDownloadSummary\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12 \n" +
-	"\vchunkNumber\x18\x02 \x01(\x05R\vchunkNumber\x12\x1c\n" +
-	"\tchunkSize\x18\x03 \x01(\x03R\tchunkSize\";\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
+	"\x06sha256\x18\x02 \x01(\tR\x06sha256\x12 \n" +
+	"\vchunkNumber\x18\x03 \x01(\x05R\vchunkNumber\x12\x1c\n" +
+	"\tchunkSize\x18\x04 \x01(\x03R\tchunkSize\x12\x1c\n" +
+	"\tchunkList\x18\x05 \x03(\x05R\tchunkList\"Q\n" +
 	"\tFileChunk\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x12\n" +
-	"\x04data\x18\x02 \x01(\fR\x04data\"D\n" +
+	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x14\n" +
+	"\x05index\x18\x02 \x01(\x05R\x05index\x12\x12\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\"z\n" +
 	"\x0eDownloadStatus\x12\x1a\n" +
 	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\x05R\x06status2l\n" +
+	"\x06sha256\x18\x02 \x01(\tR\x06sha256\x12\x16\n" +
+	"\x06status\x18\x03 \x01(\x05R\x06status\x12\x1c\n" +
+	"\tchunkList\x18\x05 \x03(\x05R\tchunkList*&\n" +
+	"\x06Status\x12\x06\n" +
+	"\x02OK\x10\x00\x12\t\n" +
+	"\x05ERROR\x10\x01\x12\t\n" +
+	"\x05RETRY\x10\x022l\n" +
 	"\x0fDownloadService\x12.\n" +
 	"\vPreDownload\x12\r.DownloadTask\x1a\x10.DownloadSummary\x12)\n" +
 	"\bDownload\x12\n" +
-	".FileChunk\x1a\x0f.DownloadStatus(\x01B\x10Z\x0eproto/downloadb\x06proto3"
+	".FileChunk\x1a\x0f.DownloadStatus(\x01B\fZ\n" +
+	"./downloadb\x06proto3"
 
 var (
 	file_download_proto_rawDescOnce sync.Once
@@ -263,18 +362,20 @@ func file_download_proto_rawDescGZIP() []byte {
 	return file_download_proto_rawDescData
 }
 
+var file_download_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_download_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_download_proto_goTypes = []any{
-	(*DownloadTask)(nil),    // 0: DownloadTask
-	(*DownloadSummary)(nil), // 1: DownloadSummary
-	(*FileChunk)(nil),       // 2: FileChunk
-	(*DownloadStatus)(nil),  // 3: DownloadStatus
+	(Status)(0),             // 0: Status
+	(*DownloadTask)(nil),    // 1: DownloadTask
+	(*DownloadSummary)(nil), // 2: DownloadSummary
+	(*FileChunk)(nil),       // 3: FileChunk
+	(*DownloadStatus)(nil),  // 4: DownloadStatus
 }
 var file_download_proto_depIdxs = []int32{
-	0, // 0: DownloadService.PreDownload:input_type -> DownloadTask
-	2, // 1: DownloadService.Download:input_type -> FileChunk
-	1, // 2: DownloadService.PreDownload:output_type -> DownloadSummary
-	3, // 3: DownloadService.Download:output_type -> DownloadStatus
+	1, // 0: DownloadService.PreDownload:input_type -> DownloadTask
+	3, // 1: DownloadService.Download:input_type -> FileChunk
+	2, // 2: DownloadService.PreDownload:output_type -> DownloadSummary
+	4, // 3: DownloadService.Download:output_type -> DownloadStatus
 	2, // [2:4] is the sub-list for method output_type
 	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
@@ -292,13 +393,14 @@ func file_download_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_download_proto_rawDesc), len(file_download_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_download_proto_goTypes,
 		DependencyIndexes: file_download_proto_depIdxs,
+		EnumInfos:         file_download_proto_enumTypes,
 		MessageInfos:      file_download_proto_msgTypes,
 	}.Build()
 	File_download_proto = out.File

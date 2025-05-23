@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "proto/download";
+option go_package = "./download";
 
 service DownloadService {
     rpc PreDownload(DownloadTask) returns (DownloadSummary);
@@ -14,16 +14,27 @@ message DownloadTask {
 
 message DownloadSummary {
     string filename = 1;
-    int32 chunkNumber = 2;
-    int64 chunkSize = 3;
+    string sha256 = 2;
+    int32 chunkNumber = 3;
+    int64 chunkSize = 4;
+    repeated int32 chunkList = 5;
 }
 
 message FileChunk {
     string filename = 1;
-    bytes data = 2;
+    int32 index = 2;
+    bytes data = 3;
 }
 
 message DownloadStatus {
     string filename = 1;
-    int32 status = 2;
+    string sha256 = 2;
+    int32 status = 3;
+    repeated int32 chunkList = 5;
+}
+
+enum Status {
+    OK = 0;
+    ERROR = 1;
+    RETRY = 2;
 }
