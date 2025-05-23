@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 
+	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -18,10 +19,15 @@ var UploadCmd = &cobra.Command{
 			return
 		}
 
-		address := "127.0.0.1:60011"
-		logrus.Debug("Uploading file to ", address)
+		settings, err := config.ReadSettings("settings.yml")
+		if err != nil {
+			logrus.Error(err)
+			return
+		}
 
-		conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		logrus.Debug("Uploading file to ", settings.Address)
+
+		conn, err := grpc.NewClient(settings.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 		if err != nil {
 			logrus.Error(err)

@@ -1,10 +1,9 @@
 package chunk
 
 const (
-	SMALL       = 1
-	MEDIUM      = 2
-	LARGE       = 3
-	EXTRA_LARGE = 4
+	SMALL  = 1024 * 1024 // 1MB
+	MEDIUM = 2 * SMALL   // 2MB
+	LARGE  = 4 * SMALL   // 4MB
 )
 
 type ChunkSummary struct {
@@ -13,7 +12,7 @@ type ChunkSummary struct {
 }
 
 func DealChunkSize(fileSize int64) ChunkSummary {
-	chunkSize := 1024 * 1024
+	chunkSize := SMALL
 	chunkNumber := fileSize / int64(chunkSize)
 
 	if fileSize%int64(chunkSize) != 0 {

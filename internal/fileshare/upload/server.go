@@ -18,13 +18,19 @@ func (s *UploadServer) PreUpload(_ context.Context, task *pb.UploadTask) (*pb.Up
 
 	chunkSummary := chunk.DealChunkSize(task.FileSize)
 
-	logrus.Debugf("Chunk Summary [chunk size: %d, chunk number: %d]", chunkSummary.Size, chunkSummary.Number)
+	chunkList := make([]int32, 0)
+	for index := range chunkSummary.Number {
+		chunkList = append(chunkList, index)
+	}
+
+	logrus.Debugf("Chunk Summary [chunk number: %d, chunk size: %d]", chunkSummary.Number, chunkSummary.Size)
 
 	return &pb.UploadSummary{
 		Filename:    task.Filename,
 		Sha256:      task.Sha256,
 		ChunkNumber: chunkSummary.Number,
 		ChunkSize:   chunkSummary.Size,
+		ChunkList: chunkList,
 	}, nil
 }
 
@@ -48,7 +54,7 @@ func (UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 
 		chunkList = append(chunkList, chunk.Index)
 
-		logrus.Debug("chunk: ", chunk)
+		logrus.Debugf("filename: %s, chunk index: %d, chunk size: %d", chunk.GetFilename(), chunk.GetIndex(), len(chunk.GetData()))
 	}
 
 	stream.SendAndClose(&pb.UploadStatus{
