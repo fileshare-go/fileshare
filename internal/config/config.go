@@ -8,6 +8,7 @@ import (
 
 type Settings struct {
 	Address string `yaml:"address"`
+	LockDirectory string `yaml:"lock_directory"`
 }
 
 func ReadSettings(filename string) (*Settings, error) {

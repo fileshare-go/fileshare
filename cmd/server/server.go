@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	pb "github.com/chanmaoganda/fileshare/proto/upload"
 	"github.com/sirupsen/logrus"
@@ -20,6 +21,8 @@ var ServerCmd = &cobra.Command{
 			return
 		}
 
+		fileutil.CreateLockDir(settings.LockDirectory)
+
 		listen, err := net.Listen("tcp", settings.Address)
 
 		logrus.Debug("Server listening on ", settings.Address)
@@ -30,7 +33,7 @@ var ServerCmd = &cobra.Command{
 
 		grpcServer := grpc.NewServer()
 
-		pb.RegisterUploadServiceServer(grpcServer, &upload.UploadServer{})
+		pb.RegisterUploadServiceServer(grpcServer, &upload.UploadServer{Settings: settings})
 
 		err = grpcServer.Serve(listen)
 	},

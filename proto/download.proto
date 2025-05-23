@@ -14,7 +14,7 @@ message FileMeta {
 }
 
 message DownloadTask {
-    string filename = 1;
+    FileMeta meta = 1;
 }
 
 message DownloadSummary {

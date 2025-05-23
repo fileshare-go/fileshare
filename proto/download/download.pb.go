@@ -124,7 +124,7 @@ func (x *FileMeta) GetSha256() string {
 
 type DownloadTask struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filename      string                 `protobuf:"bytes,1,opt,name=filename,proto3" json:"filename,omitempty"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -159,11 +159,11 @@ func (*DownloadTask) Descriptor() ([]byte, []int) {
 	return file_download_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *DownloadTask) GetFilename() string {
+func (x *DownloadTask) GetMeta() *FileMeta {
 	if x != nil {
-		return x.Filename
+		return x.Meta
 	}
-	return ""
+	return nil
 }
 
 type DownloadSummary struct {
@@ -361,9 +361,9 @@ const file_download_proto_rawDesc = "" +
 	"\x0edownload.proto\">\n" +
 	"\bFileMeta\x12\x1a\n" +
 	"\bfilename\x18\x01 \x01(\tR\bfilename\x12\x16\n" +
-	"\x06sha256\x18\x02 \x01(\tR\x06sha256\"*\n" +
-	"\fDownloadTask\x12\x1a\n" +
-	"\bfilename\x18\x01 \x01(\tR\bfilename\"\x8e\x01\n" +
+	"\x06sha256\x18\x02 \x01(\tR\x06sha256\"-\n" +
+	"\fDownloadTask\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\"\x8e\x01\n" +
 	"\x0fDownloadSummary\x12\x1d\n" +
 	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12 \n" +
 	"\vchunkNumber\x18\x02 \x01(\x05R\vchunkNumber\x12\x1c\n" +
@@ -410,18 +410,19 @@ var file_download_proto_goTypes = []any{
 	(*DownloadStatus)(nil),  // 5: DownloadStatus
 }
 var file_download_proto_depIdxs = []int32{
-	1, // 0: DownloadSummary.meta:type_name -> FileMeta
-	1, // 1: FileChunk.meta:type_name -> FileMeta
-	1, // 2: DownloadStatus.meta:type_name -> FileMeta
-	2, // 3: DownloadService.PreDownload:input_type -> DownloadTask
-	4, // 4: DownloadService.Download:input_type -> FileChunk
-	3, // 5: DownloadService.PreDownload:output_type -> DownloadSummary
-	5, // 6: DownloadService.Download:output_type -> DownloadStatus
-	5, // [5:7] is the sub-list for method output_type
-	3, // [3:5] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	1, // 0: DownloadTask.meta:type_name -> FileMeta
+	1, // 1: DownloadSummary.meta:type_name -> FileMeta
+	1, // 2: FileChunk.meta:type_name -> FileMeta
+	1, // 3: DownloadStatus.meta:type_name -> FileMeta
+	2, // 4: DownloadService.PreDownload:input_type -> DownloadTask
+	4, // 5: DownloadService.Download:input_type -> FileChunk
+	3, // 6: DownloadService.PreDownload:output_type -> DownloadSummary
+	5, // 7: DownloadService.Download:output_type -> DownloadStatus
+	6, // [6:8] is the sub-list for method output_type
+	4, // [4:6] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_download_proto_init() }

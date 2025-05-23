@@ -18,6 +18,7 @@ var UploadCmd = &cobra.Command{
 			logrus.Error("Too few arguments, size is", len(args))
 			return
 		}
+		transferFile := args[0]
 
 		settings, err := config.ReadSettings("settings.yml")
 		if err != nil {
@@ -37,7 +38,7 @@ var UploadCmd = &cobra.Command{
 
 		client := upload.NewUploadClient(context.Background(), conn)
 
-		if err := client.UploadFile(context.Background(), args[0]); err != nil {
+		if err := client.UploadFile(context.Background(), transferFile); err != nil {
 			logrus.Error(err)
 		}
 	},
