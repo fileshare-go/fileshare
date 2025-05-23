@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "proto/download";
+
+service DownloadService {
+    rpc PreDownload(DownloadTask) returns (DownloadSummary);
+    
+    rpc Download(stream FileChunk) returns (DownloadStatus);
+}
+
+message DownloadTask {
+    string filename = 1;
+}
+
+message DownloadSummary {
+    string filename = 1;
+    int32 chunkNumber = 2;
+    int64 chunkSize = 3;
+}
+
+message FileChunk {
+    string filename = 1;
+    bytes data = 2;
+}
+
+message DownloadStatus {
+    string filename = 1;
+    int32 status = 2;
+}

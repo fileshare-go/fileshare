@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "proto/upload";
+
+service UploadService {
+    rpc PreUpload(UploadTask) returns (UploadSummary);
+    
+    rpc Upload(stream FileChunk) returns (UploadStatus);
+}
+
+message UploadTask {
+    string filename = 1;
+    int64 fileSize = 2;
+}
+
+message UploadSummary {
+    string filename = 1;
+    int32 chunkNumber = 2;
+    int64 chunkSize = 3;
+}
+
+message FileChunk {
+    string filename = 1;
+    bytes data = 2;
+}
+
+message UploadStatus {
+    string filename = 1;
+    int32 status = 2;
+}
