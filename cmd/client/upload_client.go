@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	"github.com/chanmaoganda/fileshare/pkg/fileshare/upload"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
@@ -31,7 +31,6 @@ var UploadCmd = &cobra.Command{
 
 		client := upload.NewUploadClient(conn)
 
-		
 		if err := client.UploadFile(context.Background(), args[0]); err != nil {
 			logrus.Error(err)
 		}

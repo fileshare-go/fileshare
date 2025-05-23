@@ -3,7 +3,7 @@ package server
 import (
 	"net"
 
-	"github.com/chanmaoganda/fileshare/pkg/fileshare/upload"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	pb "github.com/chanmaoganda/fileshare/proto/upload"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/chanmaoganda/fileshare/pkg/fileshare/chunk"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunk"
 	pb "github.com/chanmaoganda/fileshare/proto/upload"
 	"github.com/sirupsen/logrus"
 )
@@ -42,7 +42,7 @@ func (UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 		if err != nil {
 			logrus.Error(err)
 			return stream.SendAndClose(&pb.UploadStatus{
-				Status:    pb.Status_ERROR,
+				Status: pb.Status_ERROR,
 			})
 		}
 
@@ -52,7 +52,7 @@ func (UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	}
 
 	stream.SendAndClose(&pb.UploadStatus{
-		Status:    pb.Status_OK,
+		Status: pb.Status_OK,
 	})
 
 	logrus.Debug("Ending Upload Process!")
