@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Handler struct {
+type StreamHandler struct {
 	stream    pb.UploadService_UploadServer
 	once      sync.Once
 	DB        *gorm.DB
@@ -19,15 +19,15 @@ type Handler struct {
 	chunkList []int32
 }
 
-func NewHandler(stream pb.UploadService_UploadServer, db *gorm.DB) *Handler {
-	return &Handler{
+func NewHandler(stream pb.UploadService_UploadServer, db *gorm.DB) *StreamHandler {
+	return &StreamHandler{
 		stream:    stream,
 		DB:        db,
 		chunkList: []int32{},
 	}
 }
 
-func (h *Handler) Recv() error {
+func (h *StreamHandler) Recv() error {
 	for {
 		chunk, err := h.stream.Recv()
 		if err == io.EOF {
@@ -44,7 +44,7 @@ func (h *Handler) Recv() error {
 	return nil
 }
 
-func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
+func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) {
 	logrus.Debugf("file sha256: %s, chunk index: %d, chunk size: %d", chunk.Sha256, chunk.ChunkIndex, len(chunk.GetData()))
 
 	h.once.Do(func() {
@@ -59,7 +59,7 @@ func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
 	}
 }
 
-func (h *Handler) closeStreamAndSaveInfo(status pb.Status) error {
+func (h *StreamHandler) closeStreamAndSaveInfo(status pb.Status) error {
 	uploadStatus := &pb.UploadStatus{
 		Status: status,
 		Meta: &pb.FileMeta{
@@ -76,7 +76,7 @@ func (h *Handler) closeStreamAndSaveInfo(status pb.Status) error {
 }
 
 // close the stream, saving current status to lockfile
-func (h *Handler) CloseWithErr(err error) error {
+func (h *StreamHandler) CloseWithErr(err error) error {
 	logrus.Error("[handler] close with err: ", err)
 
 	if err := h.DB.Save(h.fileInfo); err != nil {
@@ -86,7 +86,7 @@ func (h *Handler) CloseWithErr(err error) error {
 	return h.closeStreamAndSaveInfo(pb.Status_ERROR)
 }
 
-func (h *Handler) ValidateAndClose() {
+func (h *StreamHandler) ValidateAndClose() {
 	status := pb.Status_OK
 	if h.fileInfo.ValidateChunks() {
 		logrus.Debugf("[validate] %s validated! sha256 is %s", h.fileInfo.Filename, h.fileInfo.Sha256)

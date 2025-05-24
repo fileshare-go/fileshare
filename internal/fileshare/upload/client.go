@@ -32,7 +32,7 @@ func NewUploadClient(ctx context.Context, conn *grpc.ClientConn) *UploadClient {
 }
 
 func (c *UploadClient) getTask(ctx context.Context, filePath string) (*pb.UploadTask, error) {
-	request, err := CreateRequest(filePath)
+	request, err := c.createRequest(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,6 @@ func (c *UploadClient) getTask(ctx context.Context, filePath string) (*pb.Upload
 	return task, nil
 }
 
-// TODO: refactor
 func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -56,8 +55,21 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 		return err
 	}
 
+	c.uploadWithTask(task, file)
+
+	status, err := c.Stream.CloseAndRecv()
+	if err != nil && err != io.EOF {
+		return err
+	}
+
+	logrus.Debugf("[Upload] Status Info [status: %d]", status.Status)
+	return nil
+}
+
+// use task to upload chunks to server
+func (c *UploadClient) uploadWithTask(task *pb.UploadTask, file *os.File) {
 	// fileName := fileutil.GetFileName(filePath)
-	logrus.Debugf("File task: [filename: %s, sha256: %s, chunk number: %d, chunk size: %d, uploadList: %v]", task.Meta.Filename, task.Meta.Sha256, task.GetChunkNumber(), task.GetChunkSize(), task.GetChunkList())
+	logrus.Debugf("[Upload] File task: [filename: %s, sha256: %s, chunk number: %d, chunk size: %d, uploadList: %v]", task.Meta.Filename, task.Meta.Sha256, task.GetChunkNumber(), task.GetChunkSize(), task.GetChunkList())
 
 	if len(task.ChunkList) == 0 {
 		// if no chunk is needed, just send the first chunk for messaging
@@ -75,17 +87,11 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 			break
 		}
 	}
-
-	status, err := c.Stream.CloseAndRecv()
-	if err != nil && err != io.EOF {
-		return err
-	}
-
-	logrus.Debugf("Status Info [status: %d]", status.Status)
-	return nil
+	logrus.Debug("[Upload] Upload done")
 }
 
-func CreateRequest(filePath string) (*pb.UploadRequest, error) {
+// create upload request
+func (c *UploadClient) createRequest(filePath string) (*pb.UploadRequest, error) {
 	stat, err := os.Stat(filePath)
 	if err != nil {
 		return nil, err
