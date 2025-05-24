@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunker"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -64,7 +65,7 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	}
 
 	for _, chunkIndex := range summary.ChunkList {
-		chunk := MakeChunk(file, fileName, summary.Meta.Sha256, summary.ChunkSize, summary.ChunkNumber, chunkIndex)
+		chunk := chunker.MakeChunk(file, fileName, summary.Meta.Sha256, summary.ChunkSize, summary.ChunkNumber, chunkIndex)
 
 		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", summary.Meta.Filename, summary.Meta.Sha256, chunk.GetIndex(), len(chunk.Data))
 		err = c.Stream.Send(chunk)
@@ -81,25 +82,6 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 
 	logrus.Debugf("Status Info [status: %d]", status.Status)
 	return nil
-}
-
-func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, totalChunkNumber, chunkIndex int32) *pb.FileChunk {
-	data := make([]byte, chunkSize)
-	file.Seek(chunkSize*int64(chunkIndex), 0)
-	n, err := file.Read(data)
-	if err != nil {
-		logrus.Error(err)
-	}
-
-	return &pb.FileChunk{
-		Meta: &pb.FileMeta{
-			Filename: fileName,
-			Sha256:   sha256,
-		},
-		Total: totalChunkNumber,
-		Index: chunkIndex,
-		Data:  data[:n],
-	}
 }
 
 func CreateTask(filePath string) (*pb.UploadTask, error) {

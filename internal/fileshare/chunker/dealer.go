@@ -1,4 +1,4 @@
-package chunk
+package chunker
 
 const (
 	SMALL  = 1024 * 1024 // 1MB

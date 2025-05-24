@@ -2,13 +2,12 @@ package upload
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"os"
 	"sync"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunk"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunker"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/lockfile"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -23,7 +22,7 @@ type UploadServer struct {
 func (s *UploadServer) PreUpload(_ context.Context, task *pb.UploadTask) (*pb.UploadSummary, error) {
 	logrus.Debugf("Upload task [filename: %s, file size: %d, sha256: %s]", task.Meta.Filename, task.FileSize, task.Meta.Sha256)
 
-	chunkSummary := chunk.DealChunkSize(task.FileSize)
+	chunkSummary := chunker.DealChunkSize(task.FileSize)
 
 	chunkList := make([]int32, 0)
 	for index := range chunkSummary.Number {
@@ -68,7 +67,7 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 
 		chunkList = append(chunkList, chunk.Index)
 
-		if err := SaveChunk(chunk); err != nil {
+		if err := chunker.SaveChunk(chunk); err != nil {
 			return CloseWithErr(stream, &meta, totalChunkNumber, chunkList, err)
 		}
 	}
@@ -91,14 +90,14 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 
 func CloseWithErr(stream pb.UploadService_UploadServer, meta *pb.FileMeta, totalChunkNumber int32, chunkList []int32, err error) error {
 	logrus.Error(err)
-	
+
 	if err := saveLockFile(meta.Sha256, meta, chunkList, totalChunkNumber); err != nil {
 		logrus.Error(err)
 	}
 
 	return stream.SendAndClose(&pb.UploadStatus{
-		Status: pb.Status_ERROR,
-		Meta: meta,
+		Status:    pb.Status_ERROR,
+		Meta:      meta,
 		ChunkList: chunkList,
 	})
 }
@@ -140,28 +139,9 @@ func initUpload(chunk *pb.FileChunk, meta *pb.FileMeta, totalChunkNumber *int32)
 	}
 }
 
-func SaveChunk(chunk *pb.FileChunk) error {
-	// Create or truncate the file
-	chunkFileName := fmt.Sprintf("%s/%d", chunk.Meta.Sha256, chunk.Index)
-	file, err := os.Create(chunkFileName)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Write bytes to the file
-	_, err = file.Write(chunk.Data)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func saveLockFile(lockDirectory string, meta *pb.FileMeta, chunkList []int32, totalChunkNumber int32) error {
 	lockPath := lockfile.GetLockPath(lockDirectory)
 	lock := lockfile.LockFile{
-		LockPath:         lockPath,
 		FileName:         meta.Filename,
 		Sha256:           meta.Sha256,
 		ChunkList:        chunkList,

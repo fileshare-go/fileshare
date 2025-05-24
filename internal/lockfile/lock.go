@@ -13,7 +13,6 @@ func GetLockPath(lockDirectory string) string {
 }
 
 type LockFile struct {
-	LockPath         string  `json:"lockPath"`
 	FileName         string  `json:"filename"`
 	Sha256           string  `json:"sha256"`
 	TotalChunkNumber int32   `json:"totalChunkNumber"`
@@ -21,7 +20,7 @@ type LockFile struct {
 }
 
 func ReadLockFile(lockDirectory string) (*LockFile, error) {
-	lockPath := fmt.Sprintf("%s/%s", lockDirectory, LOCK_FILE_NAME)
+	lockPath := GetLockPath(lockDirectory)
 	bytes, err := os.ReadFile(lockPath)
 	if err != nil {
 		return nil, err
@@ -32,7 +31,6 @@ func ReadLockFile(lockDirectory string) (*LockFile, error) {
 		return nil, err
 	}
 
-	lock.LockPath = lockPath
 	return &lock, nil
 }
 
@@ -41,7 +39,7 @@ func (l *LockFile) SaveLock(lockDirectory string) error {
 	if err != nil {
 		return err
 	}
-	file, err := os.Create(l.LockPath)
+	file, err := os.Create(GetLockPath(lockDirectory))
 	if err != nil {
 		return err
 	}
