@@ -37,6 +37,8 @@ var ServerCmd = &cobra.Command{
 		pb.RegisterUploadServiceServer(grpcServer, &upload.UploadServer{Settings: settings, DB: DB})
 		pb.RegisterDownloadServiceServer(grpcServer, &download.DownloadServer{Settings: settings, DB: DB})
 
-		err = grpcServer.Serve(listen)
+		if err := grpcServer.Serve(listen); err != nil {
+			logrus.Error(err)
+		}
 	},
 }

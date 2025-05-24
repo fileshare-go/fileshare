@@ -40,3 +40,5 @@ fileshare.tar.gz
 fileshare.zip
 fileshare.docker.tar.gz
 fileshare.docker.zip
+client.db
+server.db
