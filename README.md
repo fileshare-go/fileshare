@@ -1,6 +1,10 @@
 # Fileshare is a lightweight, grpc based centralized file server
 Fileshare is designed for lightweight file server. Grpc is used for fast transfer.
 
+Fileshare auto check the validity of the file transferred.
+
+On both server and client side, both download and upload, **fileshare** will check the `sha256sum` value automatically
+
 # How to use?
 Each fileshare needs a `settings.yml` file, which should contains below parts
 
@@ -43,10 +47,17 @@ database: server.db
 ```
 
 ## Example cmd usages:
-### Client
+### Client Upload
 ``` sh
 cd client
 ./fileshare upload llvm-2.2.tar.gz
+```
+
+### Client Download
+Notice that `following hash` is the `checksum` of the file using **sha256sum**
+``` sh
+cd client
+./fileshare download 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 ```
 
 ### Server
@@ -56,7 +67,9 @@ cd server
 ```
 
 ## Using Docker?
-First download fileshare.docker.zip from releases and import this zip file to your docker
+First download `fileshare.docker.zip` from releases and import this zip file to your docker
+
+And download binary from `fileshare.tar.gz`, extract to fileshare
 
 Then run following commands:
 ``` sh
