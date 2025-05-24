@@ -13,6 +13,5 @@ package download
 
 // func (s *DownloadServer) PreDownload(ctx context.Context, task *pb.DownloadTask) (*pb.DownloadSummary, error) {
 // 	logrus.Debugf("Download task [filename: %s, sha256: %s]", task.Meta.Filename, task.Meta.Sha256)
-	
-	
+
 // }

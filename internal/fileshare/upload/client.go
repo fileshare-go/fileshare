@@ -79,7 +79,7 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 
 func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, chunkIndex int32) *pb.FileChunk {
 	data := make([]byte, chunkSize)
-	file.Seek(chunkSize * int64(chunkIndex), 0)
+	file.Seek(chunkSize*int64(chunkIndex), 0)
 	n, err := file.Read(data)
 	if err != nil {
 		logrus.Error(err)
@@ -88,10 +88,10 @@ func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, chunkInd
 	return &pb.FileChunk{
 		Meta: &pb.FileMeta{
 			Filename: fileName,
-			Sha256: sha256,
+			Sha256:   sha256,
 		},
 		Index: chunkIndex,
-		Data: data[:n],
+		Data:  data[:n],
 	}
 }
 
@@ -109,7 +109,7 @@ func CreateTask(filePath string) (*pb.UploadTask, error) {
 	task := &pb.UploadTask{
 		Meta: &pb.FileMeta{
 			Filename: fileutil.GetFileName(filePath),
-			Sha256: sha256,
+			Sha256:   sha256,
 		},
 		FileSize: stat.Size(),
 	}

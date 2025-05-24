@@ -4,7 +4,6 @@ import (
 	"net"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	pb "github.com/chanmaoganda/fileshare/proto/upload"
 	"github.com/sirupsen/logrus"
@@ -20,8 +19,6 @@ var ServerCmd = &cobra.Command{
 			logrus.Error(err)
 			return
 		}
-
-		fileutil.CreateLockDir(settings.LockDirectory)
 
 		listen, err := net.Listen("tcp", settings.Address)
 
