@@ -15,6 +15,7 @@ func GetLockPath(lockDirectory string) string {
 type LockFile struct {
 	FileName         string  `json:"filename"`
 	Sha256           string  `json:"sha256"`
+	ChunkSize        int64   `json:"chunkSize"`
 	TotalChunkNumber int32   `json:"totalChunkNumber"`
 	ChunkList        []int32 `json:"chunks"`
 }

@@ -67,7 +67,7 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	for _, chunkIndex := range task.ChunkList {
 		chunk := chunker.MakeChunk(file, fileName, task.Meta.Sha256, task.ChunkSize, task.ChunkNumber, chunkIndex)
 
-		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", task.Meta.Filename, task.Meta.Sha256, chunk.GetIndex(), len(chunk.Data))
+		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", task.Meta.Filename, task.Meta.Sha256, chunk.ChunkMeta.Index, len(chunk.Data))
 		err = c.Stream.Send(chunk)
 
 		if err != nil {

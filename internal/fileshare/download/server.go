@@ -1,17 +1,37 @@
 package download
 
-// import (
-// 	"context"
+import (
+	"context"
 
-// 	pb "github.com/chanmaoganda/fileshare/proto/download"
-// 	"github.com/sirupsen/logrus"
-// )
+	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/lockfile"
+	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	"github.com/sirupsen/logrus"
+)
 
-// type DownloadServer struct {
+type DownloadServer struct {
+	pb.UnimplementedDownloadServiceServer
+	Settings *config.Settings
+}
 
-// }
+func (s *DownloadServer) PreDownload(_ context.Context, meta *pb.FileMeta) (*pb.DownloadSummary, error) {
+	logrus.Debugf("File meta [filename: %s, sha256: %s]", meta.Filename, meta.Sha256)
 
-// func (s *DownloadServer) PreDownload(ctx context.Context, task *pb.DownloadTask) (*pb.DownloadSummary, error) {
-// 	logrus.Debugf("Download task [filename: %s, sha256: %s]", task.Meta.Filename, task.Meta.Sha256)
+	summary := pb.DownloadSummary{
+		Meta: &pb.FileMeta{
+			Filename: meta.Filename,
+			Sha256:   meta.Sha256,
+		},
+	}
 
-// }
+	lockfile, err := lockfile.ReadLockFile(meta.Sha256)
+	if err != nil {
+		return &summary, nil
+	}
+
+	summary.ChunkList = lockfile.ChunkList
+	summary.ChunkSize = lockfile.ChunkSize
+	summary.ChunkNumber = lockfile.TotalChunkNumber
+	// summary.FileSize = lockfile.FileSize
+	return &summary, nil
+}

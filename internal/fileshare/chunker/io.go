@@ -20,19 +20,22 @@ func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, totalChu
 	}
 
 	return &pb.FileChunk{
-		Meta: &pb.FileMeta{
+		FileMeta: &pb.FileMeta{
 			Filename: fileName,
 			Sha256:   sha256,
 		},
-		Total: totalChunkNumber,
-		Index: chunkIndex,
-		Data:  data[:n],
+		ChunkMeta: &pb.ChunkMeta{
+			Index:     chunkIndex,
+			ChunkSize: chunkSize,
+			Total:     totalChunkNumber,
+		},
+		Data: data[:n],
 	}
 }
 
 func SaveChunk(chunk *pb.FileChunk) error {
 	// Create or truncate the file
-	chunkFileName := fmt.Sprintf("%s/%d", chunk.Meta.Sha256, chunk.Index)
+	chunkFileName := fmt.Sprintf("%s/%d", chunk.FileMeta.Sha256, chunk.ChunkMeta.Index)
 	file, err := os.Create(chunkFileName)
 	if err != nil {
 		return err
