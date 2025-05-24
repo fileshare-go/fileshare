@@ -30,13 +30,15 @@ func (s *UploadServer) PreUpload(_ context.Context, task *pb.UploadTask) (*pb.Up
 		chunkList = append(chunkList, index)
 	}
 
+	required := getMissingChunks(task.Meta.Sha256, chunkSummary.Number)
+
 	logrus.Debugf("Chunk Summary [chunk number: %d, chunk size: %d]", chunkSummary.Number, chunkSummary.Size)
 
 	return &pb.UploadSummary{
 		Meta:        task.Meta,
 		ChunkNumber: chunkSummary.Number,
 		ChunkSize:   chunkSummary.Size,
-		ChunkList:   chunkList,
+		ChunkList:   required,
 	}, nil
 }
 
@@ -46,6 +48,7 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	chunkList := make([]int32, 0)
 	once := sync.Once{}
 	var meta pb.FileMeta
+	var totalChunkNumber int32
 
 	for {
 		chunk, err := stream.Recv()
@@ -59,11 +62,11 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 			})
 		}
 
-		logrus.Debugf("filename: %s, chunk index: %d, chunk size: %d", chunk.Meta.Filename, chunk.GetIndex(), len(chunk.GetData()))
+		logrus.Debugf("filename: %s, total chunk: %d, chunk index: %d, chunk size: %d", chunk.Meta.Filename, chunk.GetTotal(), chunk.GetIndex(), len(chunk.GetData()))
 
 		once.Do(func() {
-			// create folder and record meta info
-			initUpload(chunk, &meta)
+			// create folder, record total chunk number and meta info
+			initUpload(chunk, &meta, &totalChunkNumber)
 		})
 
 		chunkList = append(chunkList, chunk.Index)
@@ -82,7 +85,7 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 		ChunkList: chunkList,
 	}
 
-	if err := saveLockFile(meta.Sha256, &uploadStatus); err != nil {
+	if err := saveLockFile(meta.Sha256, &meta, chunkList, totalChunkNumber); err != nil {
 		logrus.Error(err)
 	}
 
@@ -92,11 +95,31 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	return nil
 }
 
-func initUpload(chunk *pb.FileChunk, meta *pb.FileMeta) {
-	dirName := chunk.Meta.Sha256
+func getMissingChunks(lockFolder string, total int32) []int32 {
+	lockPath := lockfile.GetLockPath(lockFolder)
+	if fileutil.FileExists(lockPath) {
+		lock, err := lockfile.ReadLockFile(lockFolder)
+		if err != nil {
+			logrus.Error(err)
+			return []int32{}
+		}
 
+		return lock.RemainingChunks()
+	}
+	result := []int32{}
+	for i := range total {
+		result = append(result, i)
+	}
+	return result
+}
+
+func initUpload(chunk *pb.FileChunk, meta *pb.FileMeta, totalChunkNumber *int32) {
 	meta.Filename = chunk.Meta.Filename
 	meta.Sha256 = chunk.Meta.Sha256
+
+	*totalChunkNumber = chunk.Total
+
+	dirName := chunk.Meta.Sha256
 
 	logrus.Debug("Creating directory for ", dirName)
 
@@ -127,14 +150,16 @@ func SaveChunk(chunk *pb.FileChunk) error {
 	return nil
 }
 
-func saveLockFile(lockDirectory string, status *pb.UploadStatus) error {
+func saveLockFile(lockDirectory string, meta *pb.FileMeta, chunkList []int32, totalChunkNumber int32) error {
 	lockPath := lockfile.GetLockPath(lockDirectory)
 	lock := lockfile.LockFile{
-		LockPath:  lockPath,
-		FileName:  status.Meta.Filename,
-		Sha256:    status.Meta.Sha256,
-		ChunkList: status.ChunkList,
+		LockPath:         lockPath,
+		FileName:         meta.Filename,
+		Sha256:           meta.Sha256,
+		ChunkList:        chunkList,
+		TotalChunkNumber: totalChunkNumber,
 	}
+
 	if !fileutil.FileExists(lockPath) {
 		return lock.SaveLock(lockDirectory)
 	}

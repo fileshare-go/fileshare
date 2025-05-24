@@ -238,7 +238,8 @@ type FileChunk struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
 	Index         int32                  `protobuf:"varint,2,opt,name=index,proto3" json:"index,omitempty"`
-	Data          []byte                 `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Total         int32                  `protobuf:"varint,3,opt,name=total,proto3" json:"total,omitempty"`
+	Data          []byte                 `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -283,6 +284,13 @@ func (x *FileChunk) GetMeta() *FileMeta {
 func (x *FileChunk) GetIndex() int32 {
 	if x != nil {
 		return x.Index
+	}
+	return 0
+}
+
+func (x *FileChunk) GetTotal() int32 {
+	if x != nil {
+		return x.Total
 	}
 	return 0
 }
@@ -368,11 +376,12 @@ const file_download_proto_rawDesc = "" +
 	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12 \n" +
 	"\vchunkNumber\x18\x02 \x01(\x05R\vchunkNumber\x12\x1c\n" +
 	"\tchunkSize\x18\x03 \x01(\x03R\tchunkSize\x12\x1c\n" +
-	"\tchunkList\x18\x04 \x03(\x05R\tchunkList\"T\n" +
+	"\tchunkList\x18\x04 \x03(\x05R\tchunkList\"j\n" +
 	"\tFileChunk\x12\x1d\n" +
 	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x14\n" +
-	"\x05index\x18\x02 \x01(\x05R\x05index\x12\x12\n" +
-	"\x04data\x18\x03 \x01(\fR\x04data\"e\n" +
+	"\x05index\x18\x02 \x01(\x05R\x05index\x12\x14\n" +
+	"\x05total\x18\x03 \x01(\x05R\x05total\x12\x12\n" +
+	"\x04data\x18\x04 \x01(\fR\x04data\"e\n" +
 	"\x0eDownloadStatus\x12\x1d\n" +
 	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x16\n" +
 	"\x06status\x18\x02 \x01(\x05R\x06status\x12\x1c\n" +

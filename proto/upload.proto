@@ -28,7 +28,8 @@ message UploadSummary {
 message FileChunk {
     FileMeta meta = 1;
     int32 index = 2;
-    bytes data = 3;
+    int32 total = 3;
+    bytes data = 4;
 }
 
 message UploadStatus {

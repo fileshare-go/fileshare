@@ -58,7 +58,7 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	logrus.Debugf("File summary: [filename: %s, sha256: %s, chunk number: %d, chunk size: %d, uploadList: %v]", summary.Meta.Filename, summary.Meta.Sha256, summary.GetChunkNumber(), summary.GetChunkSize(), summary.GetChunkList())
 
 	for _, chunkIndex := range summary.ChunkList {
-		chunk := MakeChunk(file, fileName, summary.Meta.Sha256, summary.ChunkSize, chunkIndex)
+		chunk := MakeChunk(file, fileName, summary.Meta.Sha256, summary.ChunkSize, summary.ChunkNumber, chunkIndex)
 
 		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", summary.Meta.Filename, summary.Meta.Sha256, chunk.GetIndex(), len(chunk.Data))
 		err = c.Stream.Send(chunk)
@@ -77,7 +77,7 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	return nil
 }
 
-func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, chunkIndex int32) *pb.FileChunk {
+func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, totalChunkNumber, chunkIndex int32) *pb.FileChunk {
 	data := make([]byte, chunkSize)
 	file.Seek(chunkSize*int64(chunkIndex), 0)
 	n, err := file.Read(data)
@@ -90,6 +90,7 @@ func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, chunkInd
 			Filename: fileName,
 			Sha256:   sha256,
 		},
+		Total: totalChunkNumber,
 		Index: chunkIndex,
 		Data:  data[:n],
 	}

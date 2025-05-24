@@ -13,11 +13,11 @@ func GetLockPath(lockDirectory string) string {
 }
 
 type LockFile struct {
-	LockPath    string  `json:"lockPath"`
-	FileName    string  `json:"filename"`
-	Sha256      string  `json:"sha256"`
-	ChunkNumber int     `json:"chunkNumber"`
-	ChunkList   []int32 `json:"chunks"`
+	LockPath         string  `json:"lockPath"`
+	FileName         string  `json:"filename"`
+	Sha256           string  `json:"sha256"`
+	TotalChunkNumber int32   `json:"totalChunkNumber"`
+	ChunkList        []int32 `json:"chunks"`
 }
 
 func ReadLockFile(lockDirectory string) (*LockFile, error) {
@@ -52,7 +52,14 @@ func (l *LockFile) SaveLock(lockDirectory string) error {
 
 func (l *LockFile) UpdateLock(other *LockFile) {
 	l.ChunkList = mergeList(l.ChunkList, other.ChunkList)
-	l.ChunkNumber = len(l.ChunkList)
+}
+
+func (l *LockFile) RemainingChunks() []int32 {
+	if l.TotalChunkNumber == 0 {
+		return []int32{}
+	}
+
+	return missingElementsInSortedList(l.TotalChunkNumber, l.ChunkList)
 }
 
 func mergeList(list1, list2 []int32) []int32 {
@@ -89,6 +96,35 @@ func mergeList(list1, list2 []int32) []int32 {
 			result = append(result, list2[j])
 		}
 		j++
+	}
+
+	return result
+}
+
+func missingElementsInSortedList(total int32, subList []int32) []int32 {
+	if len(subList) == int(total) {
+		return []int32{}
+	}
+
+	i := int32(0)
+	j := 0
+	result := []int32{}
+
+	for i < total && j < len(subList) {
+		if i == subList[j] {
+			i++
+			j++
+		} else if i < subList[j] {
+			result = append(result, i)
+			i++
+		} else {
+			return []int32{}
+		}
+	}
+
+	for i < total {
+		result = append(result, i)
+		i++
 	}
 
 	return result
