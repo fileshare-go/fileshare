@@ -36,3 +36,5 @@ go.work.sum
 build/
 bin/
 fileshare
+fileshare.tar.gz
+fileshare.zip
