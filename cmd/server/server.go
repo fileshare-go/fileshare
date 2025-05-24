@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/db"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -30,7 +31,7 @@ var ServerCmd = &cobra.Command{
 
 		grpcServer := grpc.NewServer()
 
-		pb.RegisterUploadServiceServer(grpcServer, &upload.UploadServer{Settings: settings})
+		pb.RegisterUploadServiceServer(grpcServer, &upload.UploadServer{Settings: settings, DB: db.SetupDB(settings.Database)})
 
 		err = grpcServer.Serve(listen)
 	},

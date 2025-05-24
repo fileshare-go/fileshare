@@ -5,34 +5,27 @@ import (
 	"sync"
 
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunker"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/lockfile"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type Handler struct {
-	stream           pb.UploadService_UploadServer
-	once             sync.Once
-	meta             *pb.FileMeta
-	chunkList        []int32
-	totalChunkNumber int32
-	chunkSize        int64
+	stream    pb.UploadService_UploadServer
+	once      sync.Once
+	db        *gorm.DB
+	fileInfo  *model.File
+	chunkList []int32
 }
 
 func NewHandler(stream pb.UploadService_UploadServer) *Handler {
 	return &Handler{
-		stream: stream,
-		meta:   &pb.FileMeta{},
+		stream:    stream,
+		chunkList: []int32{},
 	}
-}
-
-func (h *Handler) recordInformation(chunk *pb.FileChunk) {
-	h.meta.Filename = chunk.FileMeta.Filename
-	h.meta.Sha256 = chunk.FileMeta.Sha256
-
-	h.totalChunkNumber = chunk.ChunkMeta.Total
-	h.chunkSize = chunk.ChunkMeta.ChunkSize
 }
 
 func (h *Handler) RecvAndSaveLock() error {
@@ -45,20 +38,23 @@ func (h *Handler) RecvAndSaveLock() error {
 			return err
 		}
 
-		logrus.Debugf("filename: %s, total chunk: %d, chunk index: %d, chunk size: %d", chunk.FileMeta.Filename, chunk.ChunkMeta.Total, chunk.ChunkMeta.Index, len(chunk.GetData()))
-
-		// create folder, record total chunk number and meta info
-		h.once.Do(func() {
-			h.recordInformation(chunk)
-		})
-
-		h.chunkList = append(h.chunkList, chunk.ChunkMeta.Index)
-
-		if err := chunker.SaveChunk(chunk); err != nil {
-			return err
-		}
+		h.saveChunk(chunk)
 	}
 	return h.SaveLockFile()
+}
+
+func (h *Handler) saveChunk(chunk *pb.FileChunk) {
+	logrus.Debugf("file sha256: %s, chunk index: %d, chunk size: %d", chunk.Sha256, chunk.ChunkIndex, len(chunk.GetData()))
+
+	h.once.Do(func() {
+		h.db.First(&h.fileInfo, chunk.Sha256)	
+	})
+
+	h.chunkList = append(h.chunkList, chunk.ChunkIndex)
+
+	if err := chunker.SaveChunk(chunk); err != nil {
+		logrus.Error(err)
+	}
 }
 
 // close the stream, saving current status to lockfile
@@ -70,23 +66,27 @@ func (h *Handler) CloseWithErr(err error) error {
 	}
 
 	return h.stream.SendAndClose(&pb.UploadStatus{
-		Status:    pb.Status_ERROR,
-		Meta:      h.meta,
+		Status: pb.Status_ERROR,
+		Meta: &pb.FileMeta{
+			Filename: h.fileInfo.Filename,
+			Sha256: h.fileInfo.Sha256,
+			FileSize: h.fileInfo.FileSize,
+		},
 		ChunkList: h.chunkList,
 	})
 }
 
 // update lockfile if exists, else saves the lockfile
 func (h *Handler) SaveLockFile() error {
-	lockDirectory := h.meta.Sha256
+	lockDirectory := h.fileInfo.Sha256
 
 	lockPath := lockfile.GetLockPath(lockDirectory)
 	lock := lockfile.LockFile{
-		FileName:         h.meta.Filename,
+		FileName:         h.fileInfo.Filename,
 		Sha256:           lockDirectory,
-		ChunkSize:        h.chunkSize,
+		ChunkSize:        h.fileInfo.ChunkSize,
 		ChunkList:        h.chunkList,
-		TotalChunkNumber: h.totalChunkNumber,
+		TotalChunkNumber: h.fileInfo.ChunkNumber,
 	}
 
 	if !fileutil.FileExists(lockPath) {
@@ -104,15 +104,19 @@ func (h *Handler) SaveLockFile() error {
 
 func (h *Handler) ValidateAndClose() {
 	status := pb.Status_OK
-	if chunker.ValidateChunks(h.meta.Filename, h.meta.Sha256) {
-		logrus.Debugf("[validate] %s validated! sha256 is %s", h.meta.Filename, h.meta.Sha256)
+	if chunker.ValidateChunks(h.fileInfo.Filename, h.fileInfo.Sha256) {
+		logrus.Debugf("[validate] %s validated! sha256 is %s", h.fileInfo.Filename, h.fileInfo.Sha256)
 	} else {
 		status = pb.Status_ERROR
-		logrus.Warnf("[validate] %s not validated!", h.meta.Filename)
+		logrus.Warnf("[validate] %s not validated!", h.fileInfo.Filename)
 	}
 
 	uploadStatus := pb.UploadStatus{
-		Meta:      h.meta,
+		Meta: &pb.FileMeta{
+			Filename: h.fileInfo.Filename,
+			Sha256:   h.fileInfo.Sha256,
+			FileSize: h.fileInfo.FileSize,
+		},
 		Status:    status,
 		ChunkList: h.chunkList,
 	}

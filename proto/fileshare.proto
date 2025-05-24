@@ -8,15 +8,9 @@ message FileMeta {
     int64 fileSize = 3;
 }
 
-message ChunkMeta {
-    int32 index = 1;
-    int64 chunkSize = 2;
-    int32 total = 3;
-}
-
 message FileChunk {
-    FileMeta fileMeta = 1;
-    ChunkMeta chunkMeta = 2;
+    string sha256 = 1;
+    int32 chunkIndex = 2;
     bytes data = 3;
 }
 
@@ -46,6 +40,7 @@ message DownloadTask {
     repeated int32 chunkList = 3;
 }
 
+// Upload Service defined here
 service UploadService {
     rpc PreUpload(UploadRequest) returns (UploadTask);
     

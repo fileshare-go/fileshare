@@ -1,12 +1,9 @@
 package download
 
 import (
-	"io"
 	"sync"
 
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunker"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
-	"github.com/sirupsen/logrus"
 )
 
 type Handler struct {
@@ -25,39 +22,39 @@ func NewHandler(stream pb.DownloadService_DownloadClient) *Handler {
 	}
 }
 
-func (h *Handler) recordInformation(chunk *pb.FileChunk) {
-	h.meta.Filename = chunk.FileMeta.Filename
-	h.meta.Sha256 = chunk.FileMeta.Sha256
+// func (h *Handler) recordInformation(chunk *pb.FileChunk) {
+// 	h.meta.Filename = chunk.FileMeta.Filename
+// 	h.meta.Sha256 = chunk.FileMeta.Sha256
 
-	h.totalChunkNumber = chunk.ChunkMeta.Total
-}
+// 	h.totalChunkNumber = chunk.ChunkMeta.Total
+// }
 
-func (h *Handler) RecvAndSaveLock() error {
-	for {
-		chunk, err := h.stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
+// func (h *Handler) RecvAndSaveLock() error {
+// 	for {
+// 		chunk, err := h.stream.Recv()
+// 		if err == io.EOF {
+// 			break
+// 		}
+// 		if err != nil {
+// 			return err
+// 		}
 
-		logrus.Debugf("filename: %s, total chunk: %d, chunk index: %d, chunk size: %d", chunk.FileMeta.Filename, chunk.ChunkMeta.Total, chunk.ChunkMeta.Index, len(chunk.GetData()))
+// 		logrus.Debugf("filename: %s, total chunk: %d, chunk index: %d, chunk size: %d", chunk.FileMeta.Filename, chunk.ChunkMeta.Total, chunk.ChunkMeta.Index, len(chunk.GetData()))
 
-		// create folder, record total chunk number and meta info
-		h.once.Do(func() {
-			h.recordInformation(chunk)
-		})
+// 		// create folder, record total chunk number and meta info
+// 		h.once.Do(func() {
+// 			h.recordInformation(chunk)
+// 		})
 
-		h.chunkList = append(h.chunkList, chunk.ChunkMeta.Index)
+// 		h.chunkList = append(h.chunkList, chunk.ChunkMeta.Index)
 
-		if err := chunker.SaveChunk(chunk); err != nil {
-			return err
-		}
-	}
-	// return h.SaveLockFile()
-	return nil
-}
+// 		if err := chunker.SaveChunk(chunk); err != nil {
+// 			return err
+// 		}
+// 	}
+// 	// return h.SaveLockFile()
+// 	return nil
+// }
 
 // func (h *Handler) ValidateAndClose() {
 // 	status := pb.Status_OK

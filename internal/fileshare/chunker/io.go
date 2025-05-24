@@ -11,7 +11,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, totalChunkNumber, chunkIndex int32) *pb.FileChunk {
+func MakeChunk(file *os.File, sha256 string, chunkSize int64, chunkIndex int32) *pb.FileChunk {
 	data := make([]byte, chunkSize)
 	file.Seek(chunkSize*int64(chunkIndex), 0)
 	n, err := file.Read(data)
@@ -20,22 +20,15 @@ func MakeChunk(file *os.File, fileName, sha256 string, chunkSize int64, totalChu
 	}
 
 	return &pb.FileChunk{
-		FileMeta: &pb.FileMeta{
-			Filename: fileName,
-			Sha256:   sha256,
-		},
-		ChunkMeta: &pb.ChunkMeta{
-			Index:     chunkIndex,
-			ChunkSize: chunkSize,
-			Total:     totalChunkNumber,
-		},
-		Data: data[:n],
+		Sha256:     sha256,
+		ChunkIndex: chunkIndex,
+		Data:       data[:n],
 	}
 }
 
 func SaveChunk(chunk *pb.FileChunk) error {
 	// Create or truncate the file
-	chunkFileName := fmt.Sprintf("%s/%d", chunk.FileMeta.Sha256, chunk.ChunkMeta.Index)
+	chunkFileName := fmt.Sprintf("%s/%d", chunk.Sha256, chunk.ChunkIndex)
 	file, err := os.Create(chunkFileName)
 	if err != nil {
 		return err

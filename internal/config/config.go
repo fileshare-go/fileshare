@@ -7,7 +7,8 @@ import (
 )
 
 type Settings struct {
-	Address string `yaml:"address"`
+	Address  string `yaml:"address"`
+	Database string `yaml:"database"`
 }
 
 func ReadSettings(filename string) (*Settings, error) {
