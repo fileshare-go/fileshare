@@ -2,9 +2,6 @@ package upload
 
 import (
 	"context"
-	"io"
-	"os"
-	"sync"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunker"
@@ -42,77 +39,6 @@ func (s *UploadServer) PreUpload(_ context.Context, task *pb.UploadTask) (*pb.Up
 	}, nil
 }
 
-// upload receives chunks from client, save lockfile
-func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
-	logrus.Debug("Starting Upload Process!")
-
-	chunkList := make([]int32, 0)
-	once := sync.Once{}
-	var meta pb.FileMeta
-	var totalChunkNumber int32
-
-	for {
-		chunk, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return CloseWithErr(stream, &meta, totalChunkNumber, chunkList, err)
-		}
-
-		logrus.Debugf("filename: %s, total chunk: %d, chunk index: %d, chunk size: %d", chunk.Meta.Filename, chunk.GetTotal(), chunk.GetIndex(), len(chunk.GetData()))
-
-		once.Do(func() {
-			// create folder, record total chunk number and meta info
-			initUpload(chunk, &meta, &totalChunkNumber)
-		})
-
-		chunkList = append(chunkList, chunk.Index)
-
-		if err := chunker.SaveChunk(chunk); err != nil {
-			return CloseWithErr(stream, &meta, totalChunkNumber, chunkList, err)
-		}
-	}
-
-	if err := saveLockFile(meta.Sha256, &meta, chunkList, totalChunkNumber); err != nil {
-		logrus.Error(err)
-	}
-
-	validity := chunker.ValidateChunks(meta.Filename, meta.Sha256)
-	status := pb.Status_OK
-	if validity {
-		logrus.Debugf("[validate] %s validated! sha256 is %s", meta.Filename, meta.Sha256)
-	} else {
-		status = pb.Status_ERROR
-		logrus.Warnf("[validate] %s not validated!", meta.Filename)
-	}
-
-	uploadStatus := pb.UploadStatus{
-		Meta:      &meta,
-		Status:    status,
-		ChunkList: chunkList,
-	}
-	stream.SendAndClose(&uploadStatus)
-
-	logrus.Debug("Ending Upload Process!")
-	return nil
-}
-
-// close the stream, saving current status to lockfile
-func CloseWithErr(stream pb.UploadService_UploadServer, meta *pb.FileMeta, totalChunkNumber int32, chunkList []int32, err error) error {
-	logrus.Error(err)
-
-	if err := saveLockFile(meta.Sha256, meta, chunkList, totalChunkNumber); err != nil {
-		logrus.Error(err)
-	}
-
-	return stream.SendAndClose(&pb.UploadStatus{
-		Status:    pb.Status_ERROR,
-		Meta:      meta,
-		ChunkList: chunkList,
-	})
-}
-
 // get missing chunks from lockfile if exists, either return the enum of `total`
 func getMissingChunks(lockFolder string, total int32) []int32 {
 	lockPath := lockfile.GetLockPath(lockFolder)
@@ -132,45 +58,20 @@ func getMissingChunks(lockFolder string, total int32) []int32 {
 	return result
 }
 
-// store meta and totalChunkNumber
-func initUpload(chunk *pb.FileChunk, meta *pb.FileMeta, totalChunkNumber *int32) {
-	meta.Filename = chunk.Meta.Filename
-	meta.Sha256 = chunk.Meta.Sha256
+// upload receives chunks from client, save lockfile
+func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
+	logrus.Debug("Starting Upload Process!")
 
-	*totalChunkNumber = chunk.Total
+	handler := NewHandler(stream)
 
-	dirName := chunk.Meta.Sha256
-
-	logrus.Debug("Creating directory for ", dirName)
-
-	if fileutil.FileExists(dirName) {
-		return
+	// if recv or saving has any err, just close and return err
+	if err := handler.RecvAndSaveLock(); err != nil {
+		return handler.CloseWithErr(err)
 	}
 
-	if err := os.Mkdir(dirName, 0755); err != nil {
-		logrus.Errorf("While creating %s, %s", dirName, err.Error())
-	}
-}
+	// if recv and saving do not has any error, validate and close
+	handler.ValidateAndClose()
 
-// update lockfile if exists, else saves the lockfile
-func saveLockFile(lockDirectory string, meta *pb.FileMeta, chunkList []int32, totalChunkNumber int32) error {
-	lockPath := lockfile.GetLockPath(lockDirectory)
-	lock := lockfile.LockFile{
-		FileName:         meta.Filename,
-		Sha256:           meta.Sha256,
-		ChunkList:        chunkList,
-		TotalChunkNumber: totalChunkNumber,
-	}
-
-	if !fileutil.FileExists(lockPath) {
-		return lock.SaveLock(lockDirectory)
-	}
-
-	oldLock, err := lockfile.ReadLockFile(lockDirectory)
-	if err != nil {
-		return err
-	}
-
-	lock.UpdateLock(oldLock)
-	return lock.SaveLock(lockDirectory)
+	logrus.Debug("Ending Upload Process!")
+	return nil
 }
