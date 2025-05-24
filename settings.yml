@@ -1,2 +1,2 @@
-address: 127.0.0.1:60011
-database: bin/client/client.db
+address: 0.0.0.0:60011
+database: server.db

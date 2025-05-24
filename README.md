@@ -6,12 +6,12 @@ Each fileshare needs a `settings.yml` file, which should contains below parts
 
 ``` yaml
 address: 127.0.0.1:60011
-database: bin/client/client.db
+database: client/client.db
 ```
 
 - for address, make sure that client and server has same ip address that can be accessed
 - for database, just make sure the parent directory of xxx.db exists
-    - for example, `bin/client/client.db` just need to make sure `bin/client` exists
+    - for example, `client/client.db` just need to make sure `client` exists
 
 ## Example Structures
 below is a example structure of client and server structure
@@ -53,6 +53,14 @@ cd client
 ``` sh
 cd server
 ./fileshare server
+```
+
+## Using Docker?
+First download fileshare.docker.zip from releases and import this zip file to your docker
+
+Then run following commands:
+``` sh
+docker run -d --name fileshare -p 60011:60011 fileshare:0.1.1
 ```
 
 # Pictures
