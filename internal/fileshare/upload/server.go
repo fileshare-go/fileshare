@@ -34,9 +34,9 @@ func (s *UploadServer) PreUpload(_ context.Context, request *pb.UploadRequest) (
 
 // upload receives chunks from client, save lockfile
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
-	logrus.Debug("Starting Upload Process!")
+	logrus.Debug("[Upload] Starting Upload Process!")
 
-	handler := NewHandler(stream)
+	handler := NewHandler(stream, s.DB)
 
 	// if recv or saving has any err, just close and return err
 	if err := handler.Recv(); err != nil {
@@ -46,14 +46,14 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	// if recv and saving do not has any error, validate and close
 	handler.ValidateAndClose()
 
-	logrus.Debug("Ending Upload Process!")
+	logrus.Debug("[Upload] Ending Upload Process!")
 	return nil
 }
 
 func (s *UploadServer) getFileInfo(sha256 string) (*model.FileInfo, bool) {
 	var fileInfo model.FileInfo
 
-	if s.DB.First(&fileInfo, sha256).RowsAffected != 0 {
+	if s.DB.First(&fileInfo, "sha256 = ?", sha256).RowsAffected != 0 {
 		return &fileInfo, true
 	}
 

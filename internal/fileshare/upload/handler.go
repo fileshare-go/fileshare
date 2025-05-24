@@ -14,14 +14,15 @@ import (
 type Handler struct {
 	stream    pb.UploadService_UploadServer
 	once      sync.Once
-	db        *gorm.DB
-	fileInfo  *model.FileInfo
+	DB        *gorm.DB
+	fileInfo  model.FileInfo
 	chunkList []int32
 }
 
-func NewHandler(stream pb.UploadService_UploadServer) *Handler {
+func NewHandler(stream pb.UploadService_UploadServer, db *gorm.DB) *Handler {
 	return &Handler{
 		stream:    stream,
+		DB: db,
 		chunkList: []int32{},
 	}
 }
@@ -38,7 +39,8 @@ func (h *Handler) Recv() error {
 
 		h.saveChunkToDisk(chunk)
 	}
-
+	
+	h.fileInfo.UpdateChunks(h.chunkList)
 	return nil
 }
 
@@ -47,7 +49,7 @@ func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
 
 	h.once.Do(func() {
 		// select from database
-		h.db.First(&h.fileInfo, chunk.Sha256)
+		h.DB.Where("sha256 = ?", chunk.Sha256).First(&h.fileInfo)
 	})
 
 	h.chunkList = append(h.chunkList, chunk.ChunkIndex)
@@ -57,23 +59,31 @@ func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
 	}
 }
 
-// close the stream, saving current status to lockfile
-func (h *Handler) CloseWithErr(err error) error {
-	logrus.Error("[handler] close with err: ", err)
-
-	if err := h.db.Model(&h.fileInfo).Updates(&h.fileInfo); err != nil {
-		logrus.Error(err)
-	}
-
-	return h.stream.SendAndClose(&pb.UploadStatus{
-		Status: pb.Status_ERROR,
+func (h *Handler) closeStreamAndSaveInfo(status pb.Status) error {
+	uploadStatus := &pb.UploadStatus{
+		Status: status,
 		Meta: &pb.FileMeta{
 			Filename: h.fileInfo.Filename,
 			Sha256:   h.fileInfo.Sha256,
 			FileSize: h.fileInfo.FileSize,
 		},
 		ChunkList: h.chunkList,
-	})
+	}
+
+	h.DB.Save(h.fileInfo)
+
+	return h.stream.SendAndClose(uploadStatus)
+}
+
+// close the stream, saving current status to lockfile
+func (h *Handler) CloseWithErr(err error) error {
+	logrus.Error("[handler] close with err: ", err)
+
+	if err := h.DB.Save(h.fileInfo); err != nil {
+		logrus.Error(err)
+	}
+
+	return h.closeStreamAndSaveInfo(pb.Status_ERROR)
 }
 
 func (h *Handler) ValidateAndClose() {
@@ -85,18 +95,7 @@ func (h *Handler) ValidateAndClose() {
 		logrus.Warnf("[validate] %s not validated!", h.fileInfo.Filename)
 	}
 
-	uploadStatus := pb.UploadStatus{
-		Meta: &pb.FileMeta{
-			Filename: h.fileInfo.Filename,
-			Sha256:   h.fileInfo.Sha256,
-			FileSize: h.fileInfo.FileSize,
-		},
-		Status:    status,
-		ChunkList: h.chunkList,
+	if err := h.closeStreamAndSaveInfo(status); err != nil {
+		logrus.Error(err)
 	}
-	if err := h.stream.SendAndClose(&uploadStatus); err != nil {
-		logrus.Error("[validate] err: ", err)
-	}
-
-	h.db.Model(&h.fileInfo).Updates(&h.fileInfo)
 }

@@ -68,7 +68,7 @@ func (f *FileInfo) BuildUploadTask() *pb.UploadTask {
 		},
 		ChunkNumber: f.ChunkNumber,
 		ChunkSize:   f.ChunkSize,
-		ChunkList:   f.GetUploadedChunks(),
+		ChunkList:   f.GetMissingChunks(),
 	}
 }
 
