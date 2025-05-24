@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunker"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -65,7 +65,7 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	}
 
 	for _, chunkIndex := range task.ChunkList {
-		chunk := chunker.MakeChunk(file, task.Meta.Sha256, task.ChunkSize, chunkIndex)
+		chunk := chunkio.MakeChunk(file, task.Meta.Sha256, task.ChunkSize, chunkIndex)
 
 		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", task.Meta.Filename, task.Meta.Sha256, chunk.ChunkIndex, len(chunk.Data))
 		err = c.Stream.Send(chunk)

@@ -1,0 +1,145 @@
+package model
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+
+	"github.com/chanmaoganda/fileshare/internal/algorithms"
+	"github.com/chanmaoganda/fileshare/internal/sha256"
+	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	"github.com/sirupsen/logrus"
+)
+
+type FileInfo struct {
+	Filename       string `gorm:"primaryKey"`
+	Sha256         string `gorm:"primaryKey"`
+	ChunkSize      int64
+	ChunkNumber    int32
+	FileSize       int64
+	UploadedChunks string
+}
+
+func (f *FileInfo) GetUploadedChunks() []int32 {
+	var chunks []int32
+	if err := json.Unmarshal([]byte(f.UploadedChunks), &chunks); err != nil {
+		logrus.Error(err)
+		return f.GetAllChunks()
+	}
+
+	return chunks
+}
+
+func (f *FileInfo) GetMissingChunks() []int32 {
+	loaded := f.GetUploadedChunks()
+	all := f.GetAllChunks()
+
+	return algorithms.MissingElementsInSortedList(all, loaded)
+}
+
+func (f *FileInfo) GetAllChunks() []int32 {
+	result := []int32{}
+	for i := range f.ChunkNumber {
+		result = append(result, i)
+	}
+	return result
+}
+
+func (f *FileInfo) UpdateChunks(newChunks []int32) {
+	loaded := f.GetUploadedChunks()
+	merged := algorithms.MergeList(loaded, newChunks)
+
+	bytes, err := json.Marshal(merged)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	f.UploadedChunks = string(bytes)
+}
+
+func (f *FileInfo) BuildUploadTask() *pb.UploadTask {
+	return &pb.UploadTask{
+		Meta: &pb.FileMeta{
+			Filename: f.Filename,
+			Sha256:   f.Sha256,
+			FileSize: f.FileSize,
+		},
+		ChunkNumber: f.ChunkNumber,
+		ChunkSize:   f.ChunkSize,
+		ChunkList:   f.GetUploadedChunks(),
+	}
+}
+
+func (f *FileInfo) ValidateChunks() bool {
+	filePath := fmt.Sprintf("%s/%s", f.Sha256, f.Filename)
+	out, err := os.Create(filePath)
+	if err != nil {
+		logrus.Error("[validate]", err)
+		return false
+	}
+
+	for _, index := range f.GetUploadedChunks() {
+		in, err := os.Open(fmt.Sprintf("%s/%d", f.Sha256, index))
+		if err != nil {
+			logrus.Error("[validate]", err)
+			return false
+		}
+
+		_, err = io.Copy(out, in)
+		if err != nil {
+			logrus.Error("[validate]", err)
+			return false
+		}
+		in.Close()
+	}
+	out.Close()
+
+	checkSum, err := sha256.CalculateSHA256(filePath)
+	if err != nil {
+		logrus.Error("[validate]", err)
+		return false
+	}
+
+	return checkSum == f.Sha256
+}
+
+func NewFileInfo(req *pb.UploadRequest) *FileInfo {
+	fileInfo := FileInfo{}
+
+	chunkSummary := dealChunkSize(req.FileSize)
+
+	fileInfo.Filename = req.Meta.Filename
+	fileInfo.Sha256 = req.Meta.Sha256
+	fileInfo.FileSize = req.FileSize
+	fileInfo.ChunkNumber = chunkSummary.Number
+	fileInfo.ChunkSize = chunkSummary.Size
+
+	return &fileInfo
+}
+
+const (
+	SMALL  = 1024 * 1024 // 1MB
+	MEDIUM = 2 * SMALL   // 2MB
+	LARGE  = 4 * SMALL   // 4MB
+)
+
+type ChunkSummary struct {
+	Size   int64
+	Number int32
+}
+
+func dealChunkSize(fileSize int64) ChunkSummary {
+	chunkSize := SMALL
+	chunkNumber := fileSize / int64(chunkSize)
+
+	if fileSize%int64(chunkSize) != 0 {
+		chunkNumber += 1
+	}
+
+	return ChunkSummary{
+		Size:   int64(chunkSize),
+		Number: int32(chunkNumber),
+	}
+}

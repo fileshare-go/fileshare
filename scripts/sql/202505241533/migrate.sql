@@ -1,4 +1,4 @@
-CREATE TABLE `files` (
+CREATE TABLE `file_infos` (
   `filename` text NOT NULL,
   `sha256` text NOT NULL,
   `chunk_size` bigint,
