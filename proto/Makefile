@@ -1,3 +1,6 @@
 protos:
-	protoc --go_out=. --go-grpc_out=. upload.proto
-	protoc --go_out=. --go-grpc_out=. download.proto
+	protoc --proto_path=. --go_out=. --go_opt=module=github.com/chanmaoganda/fileshare/proto --go-grpc_out=. --go-grpc_opt=module=github.com/chanmaoganda/fileshare/proto fileshare.proto
+
+@PHONY:clean
+clean:
+	rm 

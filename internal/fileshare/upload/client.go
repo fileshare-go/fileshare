@@ -7,7 +7,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/sha256"
-	pb "github.com/chanmaoganda/fileshare/proto/upload"
+	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )

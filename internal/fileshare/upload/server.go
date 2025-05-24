@@ -11,7 +11,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunk"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/lockfile"
-	pb "github.com/chanmaoganda/fileshare/proto/upload"
+	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 )
 

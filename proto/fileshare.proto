@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+option go_package = "github.com/chanmaoganda/fileshare/proto/gen";
+
+message FileMeta {
+    string filename = 1;
+    string sha256 = 2;
+}
+
+message FileChunk {
+    FileMeta meta = 1;
+    int32 index = 2;
+    int32 total = 3;
+    bytes data = 4;
+}
+
+enum Status {
+    OK = 0;
+    ERROR = 1;
+    RETRY = 2;
+}
+
+service DownloadService {
+    rpc PreDownload(DownloadTask) returns (DownloadSummary);
+    
+    rpc Download(stream FileChunk) returns (DownloadStatus);
+}
+
+message DownloadTask {
+    FileMeta meta = 1;
+}
+
+message DownloadSummary {
+    FileMeta meta = 1;
+    int32 chunkNumber = 2;
+    int64 chunkSize = 3;
+    repeated int32 chunkList = 4;
+}
+
+message DownloadStatus {
+    FileMeta meta = 1;
+    int32 status = 2;
+    repeated int32 chunkList = 3;
+}
+
+service UploadService {
+    rpc PreUpload(UploadTask) returns (UploadSummary);
+    
+    rpc Upload(stream FileChunk) returns (UploadStatus);
+}
+
+message UploadTask {
+    FileMeta meta = 1;
+    int64 fileSize = 2;
+}
+
+message UploadSummary {
+    FileMeta meta = 1;
+    int32 chunkNumber = 2;
+    int64 chunkSize = 3;
+    repeated int32 chunkList = 4;
+}
+
+message UploadStatus {
+    FileMeta meta = 1;
+    Status status = 2;
+    repeated int32 chunkList = 3;
+}
+
