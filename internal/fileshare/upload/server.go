@@ -16,23 +16,23 @@ type UploadServer struct {
 	Settings *config.Settings
 }
 
-// pre upload receives a task from client, calculate missing chunks and send the summary back
-func (s *UploadServer) PreUpload(_ context.Context, task *pb.UploadTask) (*pb.UploadSummary, error) {
-	logrus.Debugf("Upload task [filename: %s, file size: %d, sha256: %s]", task.Meta.Filename, task.FileSize, task.Meta.Sha256)
+// pre upload receives a task from client, calculate missing chunks and send the task back
+func (s *UploadServer) PreUpload(_ context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
+	logrus.Debugf("Upload request [filename: %s, file size: %d, sha256: %s]", request.Meta.Filename, request.FileSize, request.Meta.Sha256)
 
-	chunkSummary := chunker.DealChunkSize(task.FileSize)
+	chunkSummary := chunker.DealChunkSize(request.FileSize)
 
 	chunkList := make([]int32, 0)
 	for index := range chunkSummary.Number {
 		chunkList = append(chunkList, index)
 	}
 
-	required := getMissingChunks(task.Meta.Sha256, chunkSummary.Number)
+	required := getMissingChunks(request.Meta.Sha256, chunkSummary.Number)
 
 	logrus.Debugf("Chunk Summary [chunk number: %d, chunk size: %d]", chunkSummary.Number, chunkSummary.Size)
 
-	return &pb.UploadSummary{
-		Meta:        task.Meta,
+	return &pb.UploadTask{
+		Meta:        request.Meta,
 		ChunkNumber: chunkSummary.Number,
 		ChunkSize:   chunkSummary.Size,
 		ChunkList:   required,

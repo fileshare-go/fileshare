@@ -31,17 +31,17 @@ func NewUploadClient(ctx context.Context, conn *grpc.ClientConn) *UploadClient {
 	}
 }
 
-func (c *UploadClient) getSummary(ctx context.Context, filePath string) (*pb.UploadSummary, error) {
-	task, err := CreateTask(filePath)
+func (c *UploadClient) getTask(ctx context.Context, filePath string) (*pb.UploadTask, error) {
+	request, err := CreateRequest(filePath)
 	if err != nil {
 		return nil, err
 	}
-	logrus.Debugf("task [filename: %s, sha256: %s, file size: %d]", task.Meta.Filename, task.Meta.Sha256, task.FileSize)
-	summary, err := c.Client.PreUpload(ctx, task)
+	logrus.Debugf("request [filename: %s, sha256: %s, file size: %d]", request.Meta.Filename, request.Meta.Sha256, request.FileSize)
+	task, err := c.Client.PreUpload(ctx, request)
 	if err != nil {
 		return nil, err
 	}
-	return summary, nil
+	return task, nil
 }
 
 func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
@@ -50,24 +50,24 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 		return err
 	}
 
-	summary, err := c.getSummary(ctx, filePath)
+	task, err := c.getTask(ctx, filePath)
 	if err != nil {
 		return err
 	}
 
 	fileName := fileutil.GetFileName(filePath)
-	logrus.Debugf("File summary: [filename: %s, sha256: %s, chunk number: %d, chunk size: %d, uploadList: %v]", summary.Meta.Filename, summary.Meta.Sha256, summary.GetChunkNumber(), summary.GetChunkSize(), summary.GetChunkList())
+	logrus.Debugf("File task: [filename: %s, sha256: %s, chunk number: %d, chunk size: %d, uploadList: %v]", task.Meta.Filename, task.Meta.Sha256, task.GetChunkNumber(), task.GetChunkSize(), task.GetChunkList())
 
-	if len(summary.ChunkList) == 0 {
+	if len(task.ChunkList) == 0 {
 		// if no chunk is needed, just send the first chunk for messaging
 		// at least one chunk is sent cause server side needs meta for recording information
-		summary.ChunkList = append(summary.ChunkList, 0)
+		task.ChunkList = append(task.ChunkList, 0)
 	}
 
-	for _, chunkIndex := range summary.ChunkList {
-		chunk := chunker.MakeChunk(file, fileName, summary.Meta.Sha256, summary.ChunkSize, summary.ChunkNumber, chunkIndex)
+	for _, chunkIndex := range task.ChunkList {
+		chunk := chunker.MakeChunk(file, fileName, task.Meta.Sha256, task.ChunkSize, task.ChunkNumber, chunkIndex)
 
-		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", summary.Meta.Filename, summary.Meta.Sha256, chunk.GetIndex(), len(chunk.Data))
+		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", task.Meta.Filename, task.Meta.Sha256, chunk.GetIndex(), len(chunk.Data))
 		err = c.Stream.Send(chunk)
 
 		if err != nil {
@@ -84,7 +84,7 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	return nil
 }
 
-func CreateTask(filePath string) (*pb.UploadTask, error) {
+func CreateRequest(filePath string) (*pb.UploadRequest, error) {
 	stat, err := os.Stat(filePath)
 	if err != nil {
 		return nil, err
@@ -95,12 +95,12 @@ func CreateTask(filePath string) (*pb.UploadTask, error) {
 		return nil, err
 	}
 
-	task := &pb.UploadTask{
+	request := &pb.UploadRequest{
 		Meta: &pb.FileMeta{
 			Filename: fileutil.GetFileName(filePath),
 			Sha256:   sha256,
 		},
 		FileSize: stat.Size(),
 	}
-	return task, nil
+	return request, nil
 }
