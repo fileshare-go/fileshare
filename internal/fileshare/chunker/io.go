@@ -2,8 +2,11 @@ package chunker
 
 import (
 	"fmt"
+	"io"
 	"os"
 
+	"github.com/chanmaoganda/fileshare/internal/lockfile"
+	"github.com/chanmaoganda/fileshare/internal/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 )
@@ -43,4 +46,44 @@ func SaveChunk(chunk *pb.FileChunk) error {
 	}
 
 	return nil
+}
+
+func ValidateChunks(filename, Sha256 string) bool {
+	lock, err := lockfile.ReadLockFile(Sha256)
+	if err != nil {
+		logrus.Error("[validate]", err)
+		return false
+	}
+
+	filePath := fmt.Sprintf("%s/%s", Sha256, filename)
+	out, err := os.Create(filePath)
+	if err != nil {
+		logrus.Error("[validate]", err)
+		return false
+	}
+
+	for _, index := range lock.ChunkList {
+		in, err := os.Open(fmt.Sprintf("%s/%d", Sha256, index))
+		if err != nil {
+			logrus.Error("[validate]", err)
+			return false
+		}
+
+		// Copy file contents to output file
+		_, err = io.Copy(out, in)
+		if err != nil {
+			logrus.Error("[validate]", err)
+			return false
+		}
+		in.Close()
+	}
+	out.Close()
+
+	checkSum, err := sha256.CalculateSHA256(filePath)
+	if err != nil {
+		logrus.Error("[validate]", err)
+		return false
+	}
+
+	return checkSum == Sha256
 }

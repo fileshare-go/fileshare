@@ -19,6 +19,7 @@ type UploadServer struct {
 	Settings *config.Settings
 }
 
+// pre upload receives a task from client, calculate missing chunks and send the summary back
 func (s *UploadServer) PreUpload(_ context.Context, task *pb.UploadTask) (*pb.UploadSummary, error) {
 	logrus.Debugf("Upload task [filename: %s, file size: %d, sha256: %s]", task.Meta.Filename, task.FileSize, task.Meta.Sha256)
 
@@ -41,6 +42,7 @@ func (s *UploadServer) PreUpload(_ context.Context, task *pb.UploadTask) (*pb.Up
 	}, nil
 }
 
+// upload receives chunks from client, save lockfile
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	logrus.Debug("Starting Upload Process!")
 
@@ -72,22 +74,31 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 		}
 	}
 
-	uploadStatus := pb.UploadStatus{
-		Meta:      &meta,
-		Status:    pb.Status_OK,
-		ChunkList: chunkList,
-	}
-
 	if err := saveLockFile(meta.Sha256, &meta, chunkList, totalChunkNumber); err != nil {
 		logrus.Error(err)
 	}
 
+	validity := chunker.ValidateChunks(meta.Filename, meta.Sha256)
+	status := pb.Status_OK
+	if validity {
+		logrus.Debugf("[validate] %s validated! sha256 is %s", meta.Filename, meta.Sha256)
+	} else {
+		status = pb.Status_ERROR
+		logrus.Warnf("[validate] %s not validated!", meta.Filename)
+	}
+
+	uploadStatus := pb.UploadStatus{
+		Meta:      &meta,
+		Status:    status,
+		ChunkList: chunkList,
+	}
 	stream.SendAndClose(&uploadStatus)
 
 	logrus.Debug("Ending Upload Process!")
 	return nil
 }
 
+// close the stream, saving current status to lockfile
 func CloseWithErr(stream pb.UploadService_UploadServer, meta *pb.FileMeta, totalChunkNumber int32, chunkList []int32, err error) error {
 	logrus.Error(err)
 
@@ -102,6 +113,7 @@ func CloseWithErr(stream pb.UploadService_UploadServer, meta *pb.FileMeta, total
 	})
 }
 
+// get missing chunks from lockfile if exists, either return the enum of `total`
 func getMissingChunks(lockFolder string, total int32) []int32 {
 	lockPath := lockfile.GetLockPath(lockFolder)
 	if fileutil.FileExists(lockPath) {
@@ -120,6 +132,7 @@ func getMissingChunks(lockFolder string, total int32) []int32 {
 	return result
 }
 
+// store meta and totalChunkNumber
 func initUpload(chunk *pb.FileChunk, meta *pb.FileMeta, totalChunkNumber *int32) {
 	meta.Filename = chunk.Meta.Filename
 	meta.Sha256 = chunk.Meta.Sha256
@@ -139,6 +152,7 @@ func initUpload(chunk *pb.FileChunk, meta *pb.FileMeta, totalChunkNumber *int32)
 	}
 }
 
+// update lockfile if exists, else saves the lockfile
 func saveLockFile(lockDirectory string, meta *pb.FileMeta, chunkList []int32, totalChunkNumber int32) error {
 	lockPath := lockfile.GetLockPath(lockDirectory)
 	lock := lockfile.LockFile{
