@@ -14,8 +14,8 @@ import (
 )
 
 type FileInfo struct {
-	Filename       string `gorm:"primaryKey"`
-	Sha256         string `gorm:"primaryKey"`
+	Filename       string `gorm:"primaryKey;size:64"`
+	Sha256         string `gorm:"primaryKey;size:128"`
 	ChunkSize      int64
 	ChunkNumber    int32
 	FileSize       int64
@@ -101,6 +101,7 @@ func (f *FileInfo) BuildDownloadSummary() *pb.DownloadSummary {
 
 func (f *FileInfo) ValidateChunks() bool {
 	filePath := fmt.Sprintf("%s/%s", f.Sha256, f.Filename)
+	logrus.Debug("validating for file: ", filePath)
 	out, err := os.Create(filePath)
 	if err != nil {
 		logrus.Error("[validate]", err)
@@ -142,6 +143,7 @@ func NewFileInfoFromUpload(req *pb.UploadRequest) *FileInfo {
 	fileInfo.FileSize = req.FileSize
 	fileInfo.ChunkNumber = chunkSummary.Number
 	fileInfo.ChunkSize = chunkSummary.Size
+	fileInfo.UploadedChunks = "[]"
 
 	return &fileInfo
 }
@@ -154,6 +156,7 @@ func NewFileInfoFromDownload(summary *pb.DownloadSummary) *FileInfo {
 	fileInfo.FileSize = summary.FileSize
 	fileInfo.ChunkNumber = summary.ChunkNumber
 	fileInfo.ChunkSize = summary.ChunkSize
+	fileInfo.UploadedChunks = "[]"
 
 	return &fileInfo
 }

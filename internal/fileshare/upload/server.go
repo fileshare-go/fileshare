@@ -17,8 +17,8 @@ type UploadServer struct {
 }
 
 // pre upload receives a task from client, calculate missing chunks and send the task back
-func (s *UploadServer) PreUpload(_ context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
-	logrus.Debugf("Upload request [filename: %s, file size: %d, sha256: %s]", request.Meta.Filename, request.FileSize, request.Meta.Sha256)
+func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
+	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", request.Meta.Filename, request.FileSize, request.Meta.Sha256)
 
 	fileInfo, ok := model.GetFileInfo(request.Meta.Sha256, s.DB)
 	if ok {

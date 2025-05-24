@@ -2,10 +2,12 @@ package upload
 
 import (
 	"io"
+	"os"
 	"sync"
 
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
+	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -50,6 +52,11 @@ func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) {
 	h.once.Do(func() {
 		// select from database
 		h.DB.Where("sha256 = ?", chunk.Sha256).First(&h.fileInfo)
+		if !fileutil.FileExists(chunk.Sha256) {
+			if err := os.Mkdir(chunk.Sha256, 0755); err != nil {
+				logrus.Error(err)
+			}
+		}
 	})
 
 	h.chunkList = append(h.chunkList, chunk.ChunkIndex)
