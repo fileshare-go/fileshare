@@ -57,6 +57,12 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	fileName := fileutil.GetFileName(filePath)
 	logrus.Debugf("File summary: [filename: %s, sha256: %s, chunk number: %d, chunk size: %d, uploadList: %v]", summary.Meta.Filename, summary.Meta.Sha256, summary.GetChunkNumber(), summary.GetChunkSize(), summary.GetChunkList())
 
+	if len(summary.ChunkList) == 0 {
+		// if no chunk is needed, just send the first chunk for messaging
+		// at least one chunk is sent cause server side needs meta for recording information
+		summary.ChunkList = append(summary.ChunkList, 0)
+	}
+
 	for _, chunkIndex := range summary.ChunkList {
 		chunk := MakeChunk(file, fileName, summary.Meta.Sha256, summary.ChunkSize, summary.ChunkNumber, chunkIndex)
 

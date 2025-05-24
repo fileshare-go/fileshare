@@ -56,10 +56,7 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 			break
 		}
 		if err != nil {
-			logrus.Error(err)
-			return stream.SendAndClose(&pb.UploadStatus{
-				Status: pb.Status_ERROR,
-			})
+			return CloseWithErr(stream, &meta, totalChunkNumber, chunkList, err)
 		}
 
 		logrus.Debugf("filename: %s, total chunk: %d, chunk index: %d, chunk size: %d", chunk.Meta.Filename, chunk.GetTotal(), chunk.GetIndex(), len(chunk.GetData()))
@@ -72,10 +69,7 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 		chunkList = append(chunkList, chunk.Index)
 
 		if err := SaveChunk(chunk); err != nil {
-			logrus.Error(err)
-			return stream.SendAndClose(&pb.UploadStatus{
-				Status: pb.Status_ERROR,
-			})
+			return CloseWithErr(stream, &meta, totalChunkNumber, chunkList, err)
 		}
 	}
 
@@ -93,6 +87,20 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 
 	logrus.Debug("Ending Upload Process!")
 	return nil
+}
+
+func CloseWithErr(stream pb.UploadService_UploadServer, meta *pb.FileMeta, totalChunkNumber int32, chunkList []int32, err error) error {
+	logrus.Error(err)
+	
+	if err := saveLockFile(meta.Sha256, meta, chunkList, totalChunkNumber); err != nil {
+		logrus.Error(err)
+	}
+
+	return stream.SendAndClose(&pb.UploadStatus{
+		Status: pb.Status_ERROR,
+		Meta: meta,
+		ChunkList: chunkList,
+	})
 }
 
 func getMissingChunks(lockFolder string, total int32) []int32 {
