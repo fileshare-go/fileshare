@@ -20,12 +20,12 @@ type UploadServer struct {
 func (s *UploadServer) PreUpload(_ context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
 	logrus.Debugf("Upload request [filename: %s, file size: %d, sha256: %s]", request.Meta.Filename, request.FileSize, request.Meta.Sha256)
 
-	fileInfo, ok := s.getFileInfo(request.Meta.Sha256)
+	fileInfo, ok := model.GetFileInfo(request.Meta.Sha256, s.DB)
 	if ok {
 		return fileInfo.BuildUploadTask(), nil
 	}
 
-	fileInfo = model.NewFileInfo(request)
+	fileInfo = model.NewFileInfoFromUpload(request)
 
 	s.DB.Create(fileInfo)
 
@@ -48,14 +48,4 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 
 	logrus.Debug("[Upload] Ending Upload Process!")
 	return nil
-}
-
-func (s *UploadServer) getFileInfo(sha256 string) (*model.FileInfo, bool) {
-	var fileInfo model.FileInfo
-
-	if s.DB.First(&fileInfo, "sha256 = ?", sha256).RowsAffected != 0 {
-		return &fileInfo, true
-	}
-
-	return &fileInfo, false
 }

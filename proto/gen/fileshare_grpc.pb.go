@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DownloadServiceClient interface {
-	PreDownload(ctx context.Context, in *FileMeta, opts ...grpc.CallOption) (*DownloadSummary, error)
+	PreDownload(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (*DownloadSummary, error)
 	Download(ctx context.Context, in *DownloadTask, opts ...grpc.CallOption) (DownloadService_DownloadClient, error)
 }
 
@@ -34,7 +34,7 @@ func NewDownloadServiceClient(cc grpc.ClientConnInterface) DownloadServiceClient
 	return &downloadServiceClient{cc}
 }
 
-func (c *downloadServiceClient) PreDownload(ctx context.Context, in *FileMeta, opts ...grpc.CallOption) (*DownloadSummary, error) {
+func (c *downloadServiceClient) PreDownload(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (*DownloadSummary, error) {
 	out := new(DownloadSummary)
 	err := c.cc.Invoke(ctx, "/DownloadService/PreDownload", in, out, opts...)
 	if err != nil {
@@ -79,7 +79,7 @@ func (x *downloadServiceDownloadClient) Recv() (*FileChunk, error) {
 // All implementations must embed UnimplementedDownloadServiceServer
 // for forward compatibility
 type DownloadServiceServer interface {
-	PreDownload(context.Context, *FileMeta) (*DownloadSummary, error)
+	PreDownload(context.Context, *DownloadRequest) (*DownloadSummary, error)
 	Download(*DownloadTask, DownloadService_DownloadServer) error
 	mustEmbedUnimplementedDownloadServiceServer()
 }
@@ -88,7 +88,7 @@ type DownloadServiceServer interface {
 type UnimplementedDownloadServiceServer struct {
 }
 
-func (UnimplementedDownloadServiceServer) PreDownload(context.Context, *FileMeta) (*DownloadSummary, error) {
+func (UnimplementedDownloadServiceServer) PreDownload(context.Context, *DownloadRequest) (*DownloadSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PreDownload not implemented")
 }
 func (UnimplementedDownloadServiceServer) Download(*DownloadTask, DownloadService_DownloadServer) error {
@@ -108,7 +108,7 @@ func RegisterDownloadServiceServer(s grpc.ServiceRegistrar, srv DownloadServiceS
 }
 
 func _DownloadService_PreDownload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FileMeta)
+	in := new(DownloadRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func _DownloadService_PreDownload_Handler(srv interface{}, ctx context.Context, 
 		FullMethod: "/DownloadService/PreDownload",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DownloadServiceServer).PreDownload(ctx, req.(*FileMeta))
+		return srv.(DownloadServiceServer).PreDownload(ctx, req.(*DownloadRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

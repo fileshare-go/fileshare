@@ -40,3 +40,14 @@ func SaveChunk(chunk *pb.FileChunk) error {
 
 	return nil
 }
+
+func UploadChunk(sha256 string, chunkIndex int32) []byte {
+	chunkFileName := fmt.Sprintf("%s/%d", sha256, chunkIndex)
+	bytes, err := os.ReadFile(chunkFileName)
+	if err != nil {
+		logrus.Error(err)
+		return []byte{}
+	}
+
+	return bytes
+}

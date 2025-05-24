@@ -10,6 +10,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 type FileInfo struct {
@@ -72,6 +73,32 @@ func (f *FileInfo) BuildUploadTask() *pb.UploadTask {
 	}
 }
 
+func (f *FileInfo) BuildDownloadTask() *pb.DownloadTask {
+	return &pb.DownloadTask{
+		Meta: &pb.FileMeta{
+			Filename: f.Filename,
+			Sha256:   f.Sha256,
+			FileSize: f.FileSize,
+		},
+		ChunkNumber: f.ChunkNumber,
+		ChunkList:   f.GetMissingChunks(),
+	}
+}
+
+func (f *FileInfo) BuildDownloadSummary() *pb.DownloadSummary {
+	return &pb.DownloadSummary{
+		Meta: &pb.FileMeta{
+			Filename: f.Filename,
+			Sha256:   f.Sha256,
+			FileSize: f.FileSize,
+		},
+		FileSize:    f.FileSize,
+		ChunkNumber: f.ChunkNumber,
+		ChunkSize:   f.ChunkSize,
+		ChunkList:   f.GetUploadedChunks(),
+	}
+}
+
 func (f *FileInfo) ValidateChunks() bool {
 	filePath := fmt.Sprintf("%s/%s", f.Sha256, f.Filename)
 	out, err := os.Create(filePath)
@@ -105,7 +132,7 @@ func (f *FileInfo) ValidateChunks() bool {
 	return checkSum == f.Sha256
 }
 
-func NewFileInfo(req *pb.UploadRequest) *FileInfo {
+func NewFileInfoFromUpload(req *pb.UploadRequest) *FileInfo {
 	fileInfo := FileInfo{}
 
 	chunkSummary := dealChunkSize(req.FileSize)
@@ -117,6 +144,28 @@ func NewFileInfo(req *pb.UploadRequest) *FileInfo {
 	fileInfo.ChunkSize = chunkSummary.Size
 
 	return &fileInfo
+}
+
+func NewFileInfoFromDownload(summary *pb.DownloadSummary) *FileInfo {
+	fileInfo := FileInfo{}
+
+	fileInfo.Filename = summary.Meta.Filename
+	fileInfo.Sha256 = summary.Meta.Sha256
+	fileInfo.FileSize = summary.FileSize
+	fileInfo.ChunkNumber = summary.ChunkNumber
+	fileInfo.ChunkSize = summary.ChunkSize
+
+	return &fileInfo
+}
+
+func GetFileInfo(sha256 string, DB *gorm.DB) (*FileInfo, bool) {
+	var fileInfo FileInfo
+
+	if DB.First(&fileInfo, "sha256 = ?", sha256).RowsAffected != 0 {
+		return &fileInfo, true
+	}
+
+	return &fileInfo, false
 }
 
 const (

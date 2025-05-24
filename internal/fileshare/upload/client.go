@@ -44,6 +44,7 @@ func (c *UploadClient) getTask(ctx context.Context, filePath string) (*pb.Upload
 	return task, nil
 }
 
+// TODO: refactor
 func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -68,9 +69,9 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 		chunk := chunkio.MakeChunk(file, task.Meta.Sha256, task.ChunkSize, chunkIndex)
 
 		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d, chunk size: %d]", task.Meta.Filename, task.Meta.Sha256, chunk.ChunkIndex, len(chunk.Data))
-		err = c.Stream.Send(chunk)
 
-		if err != nil {
+		if err := c.Stream.Send(chunk); err != nil {
+			logrus.Error(err)
 			break
 		}
 	}

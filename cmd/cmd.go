@@ -22,5 +22,6 @@ func init() {
 	// logrus.SetReportCaller(true)
 
 	RootCmd.AddCommand(client.UploadCmd)
+	RootCmd.AddCommand(client.DownloadCmd)
 	RootCmd.AddCommand(server.ServerCmd)
 }

@@ -21,9 +21,13 @@ enum Status {
 }
 
 service DownloadService {
-    rpc PreDownload(FileMeta) returns (DownloadSummary);
+    rpc PreDownload(DownloadRequest) returns (DownloadSummary);
     
     rpc Download(DownloadTask) returns (stream FileChunk);
+}
+
+message DownloadRequest {
+    FileMeta meta = 1;    
 }
 
 message DownloadSummary {

@@ -1,4 +1,4 @@
-package upload
+package download
 
 import (
 	"io"
@@ -12,18 +12,17 @@ import (
 )
 
 type Handler struct {
-	stream    pb.UploadService_UploadServer
+	stream    pb.DownloadService_DownloadClient
 	once      sync.Once
 	DB        *gorm.DB
 	fileInfo  model.FileInfo
 	chunkList []int32
 }
 
-func NewHandler(stream pb.UploadService_UploadServer, db *gorm.DB) *Handler {
+func NewHandler(stream pb.DownloadService_DownloadClient, db *gorm.DB) *Handler {
 	return &Handler{
-		stream:    stream,
-		DB: db,
-		chunkList: []int32{},
+		stream: stream,
+		DB:     db,
 	}
 }
 
@@ -39,7 +38,7 @@ func (h *Handler) Recv() error {
 
 		h.saveChunkToDisk(chunk)
 	}
-	
+
 	h.fileInfo.UpdateChunks(h.chunkList)
 	return nil
 }
@@ -59,20 +58,10 @@ func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
 	}
 }
 
-func (h *Handler) closeStreamAndSaveInfo(status pb.Status) error {
-	uploadStatus := &pb.UploadStatus{
-		Status: status,
-		Meta: &pb.FileMeta{
-			Filename: h.fileInfo.Filename,
-			Sha256:   h.fileInfo.Sha256,
-			FileSize: h.fileInfo.FileSize,
-		},
-		ChunkList: h.chunkList,
-	}
-
+func (h *Handler) closeStreamAndSaveInfo() error {
 	h.DB.Save(h.fileInfo)
 
-	return h.stream.SendAndClose(uploadStatus)
+	return h.stream.CloseSend()
 }
 
 // close the stream, saving current status to lockfile
@@ -83,19 +72,17 @@ func (h *Handler) CloseWithErr(err error) error {
 		logrus.Error(err)
 	}
 
-	return h.closeStreamAndSaveInfo(pb.Status_ERROR)
+	return h.closeStreamAndSaveInfo()
 }
 
 func (h *Handler) ValidateAndClose() {
-	status := pb.Status_OK
 	if h.fileInfo.ValidateChunks() {
 		logrus.Debugf("[validate] %s validated! sha256 is %s", h.fileInfo.Filename, h.fileInfo.Sha256)
 	} else {
-		status = pb.Status_ERROR
 		logrus.Warnf("[validate] %s not validated!", h.fileInfo.Filename)
 	}
 
-	if err := h.closeStreamAndSaveInfo(status); err != nil {
+	if err := h.closeStreamAndSaveInfo(); err != nil {
 		logrus.Error(err)
 	}
 }

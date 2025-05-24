@@ -190,6 +190,50 @@ func (x *FileChunk) GetData() []byte {
 	return nil
 }
 
+type DownloadRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DownloadRequest) Reset() {
+	*x = DownloadRequest{}
+	mi := &file_fileshare_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DownloadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DownloadRequest) ProtoMessage() {}
+
+func (x *DownloadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fileshare_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DownloadRequest.ProtoReflect.Descriptor instead.
+func (*DownloadRequest) Descriptor() ([]byte, []int) {
+	return file_fileshare_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *DownloadRequest) GetMeta() *FileMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
+}
+
 type DownloadSummary struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
@@ -203,7 +247,7 @@ type DownloadSummary struct {
 
 func (x *DownloadSummary) Reset() {
 	*x = DownloadSummary{}
-	mi := &file_fileshare_proto_msgTypes[2]
+	mi := &file_fileshare_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -215,7 +259,7 @@ func (x *DownloadSummary) String() string {
 func (*DownloadSummary) ProtoMessage() {}
 
 func (x *DownloadSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[2]
+	mi := &file_fileshare_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -228,7 +272,7 @@ func (x *DownloadSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadSummary.ProtoReflect.Descriptor instead.
 func (*DownloadSummary) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{2}
+	return file_fileshare_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DownloadSummary) GetMeta() *FileMeta {
@@ -277,7 +321,7 @@ type DownloadTask struct {
 
 func (x *DownloadTask) Reset() {
 	*x = DownloadTask{}
-	mi := &file_fileshare_proto_msgTypes[3]
+	mi := &file_fileshare_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -289,7 +333,7 @@ func (x *DownloadTask) String() string {
 func (*DownloadTask) ProtoMessage() {}
 
 func (x *DownloadTask) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[3]
+	mi := &file_fileshare_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -302,7 +346,7 @@ func (x *DownloadTask) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadTask.ProtoReflect.Descriptor instead.
 func (*DownloadTask) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{3}
+	return file_fileshare_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *DownloadTask) GetMeta() *FileMeta {
@@ -336,7 +380,7 @@ type UploadRequest struct {
 
 func (x *UploadRequest) Reset() {
 	*x = UploadRequest{}
-	mi := &file_fileshare_proto_msgTypes[4]
+	mi := &file_fileshare_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -348,7 +392,7 @@ func (x *UploadRequest) String() string {
 func (*UploadRequest) ProtoMessage() {}
 
 func (x *UploadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[4]
+	mi := &file_fileshare_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -361,7 +405,7 @@ func (x *UploadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadRequest.ProtoReflect.Descriptor instead.
 func (*UploadRequest) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{4}
+	return file_fileshare_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UploadRequest) GetMeta() *FileMeta {
@@ -390,7 +434,7 @@ type UploadTask struct {
 
 func (x *UploadTask) Reset() {
 	*x = UploadTask{}
-	mi := &file_fileshare_proto_msgTypes[5]
+	mi := &file_fileshare_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -402,7 +446,7 @@ func (x *UploadTask) String() string {
 func (*UploadTask) ProtoMessage() {}
 
 func (x *UploadTask) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[5]
+	mi := &file_fileshare_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -415,7 +459,7 @@ func (x *UploadTask) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadTask.ProtoReflect.Descriptor instead.
 func (*UploadTask) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{5}
+	return file_fileshare_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *UploadTask) GetMeta() *FileMeta {
@@ -457,7 +501,7 @@ type UploadStatus struct {
 
 func (x *UploadStatus) Reset() {
 	*x = UploadStatus{}
-	mi := &file_fileshare_proto_msgTypes[6]
+	mi := &file_fileshare_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -469,7 +513,7 @@ func (x *UploadStatus) String() string {
 func (*UploadStatus) ProtoMessage() {}
 
 func (x *UploadStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[6]
+	mi := &file_fileshare_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -482,7 +526,7 @@ func (x *UploadStatus) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadStatus.ProtoReflect.Descriptor instead.
 func (*UploadStatus) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{6}
+	return file_fileshare_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UploadStatus) GetMeta() *FileMeta {
@@ -520,7 +564,9 @@ const file_fileshare_proto_rawDesc = "" +
 	"\n" +
 	"chunkIndex\x18\x02 \x01(\x05R\n" +
 	"chunkIndex\x12\x12\n" +
-	"\x04data\x18\x03 \x01(\fR\x04data\"\xaa\x01\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\"0\n" +
+	"\x0fDownloadRequest\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\"\xaa\x01\n" +
 	"\x0fDownloadSummary\x12\x1d\n" +
 	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x1a\n" +
 	"\bfileSize\x18\x02 \x01(\x03R\bfileSize\x12 \n" +
@@ -547,9 +593,9 @@ const file_fileshare_proto_rawDesc = "" +
 	"\x06Status\x12\x06\n" +
 	"\x02OK\x10\x00\x12\t\n" +
 	"\x05ERROR\x10\x01\x12\t\n" +
-	"\x05RETRY\x10\x022f\n" +
-	"\x0fDownloadService\x12*\n" +
-	"\vPreDownload\x12\t.FileMeta\x1a\x10.DownloadSummary\x12'\n" +
+	"\x05RETRY\x10\x022m\n" +
+	"\x0fDownloadService\x121\n" +
+	"\vPreDownload\x12\x10.DownloadRequest\x1a\x10.DownloadSummary\x12'\n" +
 	"\bDownload\x12\r.DownloadTask\x1a\n" +
 	".FileChunk0\x012`\n" +
 	"\rUploadService\x12(\n" +
@@ -570,37 +616,39 @@ func file_fileshare_proto_rawDescGZIP() []byte {
 }
 
 var file_fileshare_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_fileshare_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_fileshare_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_fileshare_proto_goTypes = []any{
 	(Status)(0),             // 0: Status
 	(*FileMeta)(nil),        // 1: FileMeta
 	(*FileChunk)(nil),       // 2: FileChunk
-	(*DownloadSummary)(nil), // 3: DownloadSummary
-	(*DownloadTask)(nil),    // 4: DownloadTask
-	(*UploadRequest)(nil),   // 5: UploadRequest
-	(*UploadTask)(nil),      // 6: UploadTask
-	(*UploadStatus)(nil),    // 7: UploadStatus
+	(*DownloadRequest)(nil), // 3: DownloadRequest
+	(*DownloadSummary)(nil), // 4: DownloadSummary
+	(*DownloadTask)(nil),    // 5: DownloadTask
+	(*UploadRequest)(nil),   // 6: UploadRequest
+	(*UploadTask)(nil),      // 7: UploadTask
+	(*UploadStatus)(nil),    // 8: UploadStatus
 }
 var file_fileshare_proto_depIdxs = []int32{
-	1,  // 0: DownloadSummary.meta:type_name -> FileMeta
-	1,  // 1: DownloadTask.meta:type_name -> FileMeta
-	1,  // 2: UploadRequest.meta:type_name -> FileMeta
-	1,  // 3: UploadTask.meta:type_name -> FileMeta
-	1,  // 4: UploadStatus.meta:type_name -> FileMeta
-	0,  // 5: UploadStatus.status:type_name -> Status
-	1,  // 6: DownloadService.PreDownload:input_type -> FileMeta
-	4,  // 7: DownloadService.Download:input_type -> DownloadTask
-	5,  // 8: UploadService.PreUpload:input_type -> UploadRequest
-	2,  // 9: UploadService.Upload:input_type -> FileChunk
-	3,  // 10: DownloadService.PreDownload:output_type -> DownloadSummary
-	2,  // 11: DownloadService.Download:output_type -> FileChunk
-	6,  // 12: UploadService.PreUpload:output_type -> UploadTask
-	7,  // 13: UploadService.Upload:output_type -> UploadStatus
-	10, // [10:14] is the sub-list for method output_type
-	6,  // [6:10] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	1,  // 0: DownloadRequest.meta:type_name -> FileMeta
+	1,  // 1: DownloadSummary.meta:type_name -> FileMeta
+	1,  // 2: DownloadTask.meta:type_name -> FileMeta
+	1,  // 3: UploadRequest.meta:type_name -> FileMeta
+	1,  // 4: UploadTask.meta:type_name -> FileMeta
+	1,  // 5: UploadStatus.meta:type_name -> FileMeta
+	0,  // 6: UploadStatus.status:type_name -> Status
+	3,  // 7: DownloadService.PreDownload:input_type -> DownloadRequest
+	5,  // 8: DownloadService.Download:input_type -> DownloadTask
+	6,  // 9: UploadService.PreUpload:input_type -> UploadRequest
+	2,  // 10: UploadService.Upload:input_type -> FileChunk
+	4,  // 11: DownloadService.PreDownload:output_type -> DownloadSummary
+	2,  // 12: DownloadService.Download:output_type -> FileChunk
+	7,  // 13: UploadService.PreUpload:output_type -> UploadTask
+	8,  // 14: UploadService.Upload:output_type -> UploadStatus
+	11, // [11:15] is the sub-list for method output_type
+	7,  // [7:11] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_fileshare_proto_init() }
@@ -614,7 +662,7 @@ func file_fileshare_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fileshare_proto_rawDesc), len(file_fileshare_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   7,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   2,
 		},
