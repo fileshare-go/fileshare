@@ -6,6 +6,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/db"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/download"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/sharelink"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -34,8 +35,9 @@ var ServerCmd = &cobra.Command{
 
 		DB := db.SetupDB(settings.Database)
 
-		pb.RegisterUploadServiceServer(grpcServer, &upload.UploadServer{Settings: settings, DB: DB})
-		pb.RegisterDownloadServiceServer(grpcServer, &download.DownloadServer{Settings: settings, DB: DB})
+		pb.RegisterUploadServiceServer(grpcServer, upload.NewUploadServer(settings, DB))
+		pb.RegisterDownloadServiceServer(grpcServer, download.NewDownloadServer(settings, DB))
+		pb.RegisterShareLinkServiceServer(grpcServer, sharelink.NewShareLinkServer(settings, DB))
 
 		if err := grpcServer.Serve(listen); err != nil {
 			logrus.Error(err)

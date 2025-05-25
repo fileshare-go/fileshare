@@ -26,7 +26,7 @@ func init() {
 	RootCmd.AddCommand(client.UploadCmd)
 	RootCmd.AddCommand(client.DownloadCmd)
 	RootCmd.AddCommand(server.ServerCmd)
-
+	RootCmd.AddCommand(client.ShareLinkGenCmd)
 	PrintBanner()
 }
 

@@ -643,16 +643,16 @@ const file_fileshare_proto_rawDesc = "" +
 	"\rUploadService\x12(\n" +
 	"\tPreUpload\x12\x0e.UploadRequest\x1a\v.UploadTask\x12%\n" +
 	"\x06Upload\x12\n" +
-	".FileChunk\x1a\r.UploadStatus(\x012m\n" +
-	"\x0fDownloadService\x121\n" +
+	".FileChunk\x1a\r.UploadStatus(\x012\xa2\x01\n" +
+	"\x0fDownloadService\x123\n" +
+	"\x13PreDownloadWithCode\x12\n" +
+	".ShareLink\x1a\x10.DownloadSummary\x121\n" +
 	"\vPreDownload\x12\x10.DownloadRequest\x1a\x10.DownloadSummary\x12'\n" +
 	"\bDownload\x12\r.DownloadTask\x1a\n" +
-	".FileChunk0\x012Z\n" +
-	"\vLinkService\x12%\n" +
+	".FileChunk0\x0129\n" +
+	"\x10ShareLinkService\x12%\n" +
 	"\fGenerateLink\x12\t.FileMeta\x1a\n" +
-	".ShareLink\x12$\n" +
-	"\vGetFileMeta\x12\n" +
-	".ShareLink\x1a\t.FileMetaB-Z+github.com/chanmaoganda/fileshare/proto/genb\x06proto3"
+	".ShareLinkB-Z+github.com/chanmaoganda/fileshare/proto/genb\x06proto3"
 
 var (
 	file_fileshare_proto_rawDescOnce sync.Once
@@ -690,16 +690,16 @@ var file_fileshare_proto_depIdxs = []int32{
 	1,  // 6: DownloadTask.meta:type_name -> FileMeta
 	3,  // 7: UploadService.PreUpload:input_type -> UploadRequest
 	2,  // 8: UploadService.Upload:input_type -> FileChunk
-	6,  // 9: DownloadService.PreDownload:input_type -> DownloadRequest
-	8,  // 10: DownloadService.Download:input_type -> DownloadTask
-	1,  // 11: LinkService.GenerateLink:input_type -> FileMeta
-	9,  // 12: LinkService.GetFileMeta:input_type -> ShareLink
+	9,  // 9: DownloadService.PreDownloadWithCode:input_type -> ShareLink
+	6,  // 10: DownloadService.PreDownload:input_type -> DownloadRequest
+	8,  // 11: DownloadService.Download:input_type -> DownloadTask
+	1,  // 12: ShareLinkService.GenerateLink:input_type -> FileMeta
 	4,  // 13: UploadService.PreUpload:output_type -> UploadTask
 	5,  // 14: UploadService.Upload:output_type -> UploadStatus
-	7,  // 15: DownloadService.PreDownload:output_type -> DownloadSummary
-	2,  // 16: DownloadService.Download:output_type -> FileChunk
-	9,  // 17: LinkService.GenerateLink:output_type -> ShareLink
-	1,  // 18: LinkService.GetFileMeta:output_type -> FileMeta
+	7,  // 15: DownloadService.PreDownloadWithCode:output_type -> DownloadSummary
+	7,  // 16: DownloadService.PreDownload:output_type -> DownloadSummary
+	2,  // 17: DownloadService.Download:output_type -> FileChunk
+	9,  // 18: ShareLinkService.GenerateLink:output_type -> ShareLink
 	13, // [13:19] is the sub-list for method output_type
 	7,  // [7:13] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name

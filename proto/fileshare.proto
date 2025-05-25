@@ -47,6 +47,8 @@ message UploadStatus {
 
 // Download Service defined here
 service DownloadService {
+    rpc PreDownloadWithCode(ShareLink) returns (DownloadSummary);
+
     rpc PreDownload(DownloadRequest) returns (DownloadSummary);
     
     rpc Download(DownloadTask) returns (stream FileChunk);
@@ -71,10 +73,8 @@ message DownloadTask {
 }
 
 // Link Service defined here
-service LinkService {
+service ShareLinkService {
     rpc GenerateLink(FileMeta) returns (ShareLink);
-
-    rpc GetFileMeta(ShareLink) returns (FileMeta);
 }
 
 message ShareLink {

@@ -2,22 +2,22 @@ package client
 
 import (
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/db"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/download"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/sharelink"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var DownloadCmd = &cobra.Command{
-	Use: "download",
+var ShareLinkGenCmd = &cobra.Command{
+	Use: "linkgen",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
+		if len(args) < 2 {
 			logrus.Error("Too few arguments, size is", len(args))
 			return
 		}
-		key := args[0]
+		transferFile := args[0]
+		sha256 := args[1]
 
 		settings, err := config.ReadSettings("settings.yml")
 		if err != nil {
@@ -25,7 +25,7 @@ var DownloadCmd = &cobra.Command{
 			return
 		}
 
-		logrus.Debug("Connecting to ", settings.Address)
+		logrus.Debug("Uploading file to ", settings.Address)
 
 		conn, err := grpc.NewClient(settings.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
@@ -35,12 +35,10 @@ var DownloadCmd = &cobra.Command{
 
 		defer conn.Close()
 
-		DB := db.SetupDB(settings.Database)
+		client := sharelink.NewShareLinkClient(cmd.Context(), conn)
 
-		client := download.NewDownloadClient(cmd.Context(), conn, DB)
-
-		if err := client.DownloadFile(cmd.Context(), key); err != nil {
-			logrus.Error(err)
-		}
+		code := client.GenerateLink(transferFile, sha256)
+		logrus.Infof("Generated Code is: [%s]", code)
 	},
 }
+

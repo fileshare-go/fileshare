@@ -179,6 +179,7 @@ var UploadService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DownloadServiceClient interface {
+	PreDownloadWithCode(ctx context.Context, in *ShareLink, opts ...grpc.CallOption) (*DownloadSummary, error)
 	PreDownload(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (*DownloadSummary, error)
 	Download(ctx context.Context, in *DownloadTask, opts ...grpc.CallOption) (DownloadService_DownloadClient, error)
 }
@@ -189,6 +190,15 @@ type downloadServiceClient struct {
 
 func NewDownloadServiceClient(cc grpc.ClientConnInterface) DownloadServiceClient {
 	return &downloadServiceClient{cc}
+}
+
+func (c *downloadServiceClient) PreDownloadWithCode(ctx context.Context, in *ShareLink, opts ...grpc.CallOption) (*DownloadSummary, error) {
+	out := new(DownloadSummary)
+	err := c.cc.Invoke(ctx, "/DownloadService/PreDownloadWithCode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *downloadServiceClient) PreDownload(ctx context.Context, in *DownloadRequest, opts ...grpc.CallOption) (*DownloadSummary, error) {
@@ -236,6 +246,7 @@ func (x *downloadServiceDownloadClient) Recv() (*FileChunk, error) {
 // All implementations must embed UnimplementedDownloadServiceServer
 // for forward compatibility
 type DownloadServiceServer interface {
+	PreDownloadWithCode(context.Context, *ShareLink) (*DownloadSummary, error)
 	PreDownload(context.Context, *DownloadRequest) (*DownloadSummary, error)
 	Download(*DownloadTask, DownloadService_DownloadServer) error
 	mustEmbedUnimplementedDownloadServiceServer()
@@ -245,6 +256,9 @@ type DownloadServiceServer interface {
 type UnimplementedDownloadServiceServer struct {
 }
 
+func (UnimplementedDownloadServiceServer) PreDownloadWithCode(context.Context, *ShareLink) (*DownloadSummary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PreDownloadWithCode not implemented")
+}
 func (UnimplementedDownloadServiceServer) PreDownload(context.Context, *DownloadRequest) (*DownloadSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PreDownload not implemented")
 }
@@ -262,6 +276,24 @@ type UnsafeDownloadServiceServer interface {
 
 func RegisterDownloadServiceServer(s grpc.ServiceRegistrar, srv DownloadServiceServer) {
 	s.RegisterService(&DownloadService_ServiceDesc, srv)
+}
+
+func _DownloadService_PreDownloadWithCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ShareLink)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DownloadServiceServer).PreDownloadWithCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/DownloadService/PreDownloadWithCode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DownloadServiceServer).PreDownloadWithCode(ctx, req.(*ShareLink))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _DownloadService_PreDownload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -311,6 +343,10 @@ var DownloadService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*DownloadServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "PreDownloadWithCode",
+			Handler:    _DownloadService_PreDownloadWithCode_Handler,
+		},
+		{
 			MethodName: "PreDownload",
 			Handler:    _DownloadService_PreDownload_Handler,
 		},
@@ -325,122 +361,86 @@ var DownloadService_ServiceDesc = grpc.ServiceDesc{
 	Metadata: "fileshare.proto",
 }
 
-// LinkServiceClient is the client API for LinkService service.
+// ShareLinkServiceClient is the client API for ShareLinkService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type LinkServiceClient interface {
+type ShareLinkServiceClient interface {
 	GenerateLink(ctx context.Context, in *FileMeta, opts ...grpc.CallOption) (*ShareLink, error)
-	GetFileMeta(ctx context.Context, in *ShareLink, opts ...grpc.CallOption) (*FileMeta, error)
 }
 
-type linkServiceClient struct {
+type shareLinkServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewLinkServiceClient(cc grpc.ClientConnInterface) LinkServiceClient {
-	return &linkServiceClient{cc}
+func NewShareLinkServiceClient(cc grpc.ClientConnInterface) ShareLinkServiceClient {
+	return &shareLinkServiceClient{cc}
 }
 
-func (c *linkServiceClient) GenerateLink(ctx context.Context, in *FileMeta, opts ...grpc.CallOption) (*ShareLink, error) {
+func (c *shareLinkServiceClient) GenerateLink(ctx context.Context, in *FileMeta, opts ...grpc.CallOption) (*ShareLink, error) {
 	out := new(ShareLink)
-	err := c.cc.Invoke(ctx, "/LinkService/GenerateLink", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/ShareLinkService/GenerateLink", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *linkServiceClient) GetFileMeta(ctx context.Context, in *ShareLink, opts ...grpc.CallOption) (*FileMeta, error) {
-	out := new(FileMeta)
-	err := c.cc.Invoke(ctx, "/LinkService/GetFileMeta", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// LinkServiceServer is the server API for LinkService service.
-// All implementations must embed UnimplementedLinkServiceServer
+// ShareLinkServiceServer is the server API for ShareLinkService service.
+// All implementations must embed UnimplementedShareLinkServiceServer
 // for forward compatibility
-type LinkServiceServer interface {
+type ShareLinkServiceServer interface {
 	GenerateLink(context.Context, *FileMeta) (*ShareLink, error)
-	GetFileMeta(context.Context, *ShareLink) (*FileMeta, error)
-	mustEmbedUnimplementedLinkServiceServer()
+	mustEmbedUnimplementedShareLinkServiceServer()
 }
 
-// UnimplementedLinkServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedLinkServiceServer struct {
+// UnimplementedShareLinkServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedShareLinkServiceServer struct {
 }
 
-func (UnimplementedLinkServiceServer) GenerateLink(context.Context, *FileMeta) (*ShareLink, error) {
+func (UnimplementedShareLinkServiceServer) GenerateLink(context.Context, *FileMeta) (*ShareLink, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateLink not implemented")
 }
-func (UnimplementedLinkServiceServer) GetFileMeta(context.Context, *ShareLink) (*FileMeta, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetFileMeta not implemented")
-}
-func (UnimplementedLinkServiceServer) mustEmbedUnimplementedLinkServiceServer() {}
+func (UnimplementedShareLinkServiceServer) mustEmbedUnimplementedShareLinkServiceServer() {}
 
-// UnsafeLinkServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to LinkServiceServer will
+// UnsafeShareLinkServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ShareLinkServiceServer will
 // result in compilation errors.
-type UnsafeLinkServiceServer interface {
-	mustEmbedUnimplementedLinkServiceServer()
+type UnsafeShareLinkServiceServer interface {
+	mustEmbedUnimplementedShareLinkServiceServer()
 }
 
-func RegisterLinkServiceServer(s grpc.ServiceRegistrar, srv LinkServiceServer) {
-	s.RegisterService(&LinkService_ServiceDesc, srv)
+func RegisterShareLinkServiceServer(s grpc.ServiceRegistrar, srv ShareLinkServiceServer) {
+	s.RegisterService(&ShareLinkService_ServiceDesc, srv)
 }
 
-func _LinkService_GenerateLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ShareLinkService_GenerateLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FileMeta)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(LinkServiceServer).GenerateLink(ctx, in)
+		return srv.(ShareLinkServiceServer).GenerateLink(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/LinkService/GenerateLink",
+		FullMethod: "/ShareLinkService/GenerateLink",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LinkServiceServer).GenerateLink(ctx, req.(*FileMeta))
+		return srv.(ShareLinkServiceServer).GenerateLink(ctx, req.(*FileMeta))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _LinkService_GetFileMeta_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ShareLink)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(LinkServiceServer).GetFileMeta(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/LinkService/GetFileMeta",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(LinkServiceServer).GetFileMeta(ctx, req.(*ShareLink))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-// LinkService_ServiceDesc is the grpc.ServiceDesc for LinkService service.
+// ShareLinkService_ServiceDesc is the grpc.ServiceDesc for ShareLinkService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var LinkService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "LinkService",
-	HandlerType: (*LinkServiceServer)(nil),
+var ShareLinkService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "ShareLinkService",
+	HandlerType: (*ShareLinkServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GenerateLink",
-			Handler:    _LinkService_GenerateLink_Handler,
-		},
-		{
-			MethodName: "GetFileMeta",
-			Handler:    _LinkService_GetFileMeta_Handler,
+			Handler:    _ShareLinkService_GenerateLink_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

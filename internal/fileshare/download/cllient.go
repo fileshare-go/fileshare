@@ -24,13 +24,25 @@ func NewDownloadClient(ctx context.Context, conn *grpc.ClientConn, DB *gorm.DB) 
 	}
 }
 
-func (c *DownloadClient) getTask(ctx context.Context, sha256 string) (*pb.DownloadTask, error) {
-	summary, err := c.Client.PreDownload(ctx, &pb.DownloadRequest{Meta: &pb.FileMeta{Sha256: sha256}})
-	if err != nil {
-		return nil, err
+func (c *DownloadClient) getTask(ctx context.Context, key string) (*pb.DownloadTask, error) {
+	var summary *pb.DownloadSummary
+
+	// if the key is not the fixed size of sha256, then recognize this as link code
+	if len(key) != 64 {
+		s, err := c.Client.PreDownloadWithCode(ctx, &pb.ShareLink{LinkCode: key})
+		if err != nil {
+			return nil, err
+		}
+		summary = s
+	} else {
+		s, err := c.Client.PreDownload(ctx, &pb.DownloadRequest{Meta: &pb.FileMeta{Sha256: key}})
+		if err != nil {
+			return nil, err
+		}
+		summary = s
 	}
 
-	fileInfo, ok := model.GetFileInfo(sha256, c.DB)
+	fileInfo, ok := model.GetFileInfo(summary.Meta.Sha256, c.DB)
 	if ok {
 		return fileInfo.BuildDownloadTask(), nil
 	}
@@ -44,13 +56,13 @@ func (c *DownloadClient) getTask(ctx context.Context, sha256 string) (*pb.Downlo
 		ChunkNumber: summary.ChunkNumber,
 		ChunkList:   summary.ChunkList,
 	}
-	return task, err
+	return task, nil
 }
 
-func (c *DownloadClient) PreDownload(ctx context.Context, sha256 string) (pb.DownloadService_DownloadClient, error) {
-	logrus.Debugf("Download request [sha256: %s]", sha256)
+func (c *DownloadClient) downloadStream(ctx context.Context, key string) (pb.DownloadService_DownloadClient, error) {
+	logrus.Debugf("Download request [key: %s]", key)
 
-	task, err := c.getTask(ctx, sha256)
+	task, err := c.getTask(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -58,8 +70,8 @@ func (c *DownloadClient) PreDownload(ctx context.Context, sha256 string) (pb.Dow
 	return c.Client.Download(ctx, task)
 }
 
-func (c *DownloadClient) DownloadFile(ctx context.Context, sha256 string) error {
-	stream, err := c.PreDownload(ctx, sha256)
+func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
+	stream, err := c.downloadStream(ctx, key)
 
 	if err != nil {
 		return err

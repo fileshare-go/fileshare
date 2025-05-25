@@ -2,6 +2,7 @@ package download
 
 import (
 	"context"
+	"errors"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
@@ -17,9 +18,30 @@ type DownloadServer struct {
 	DB       *gorm.DB
 }
 
+func NewDownloadServer(settings *config.Settings, DB *gorm.DB) *DownloadServer {
+	return &DownloadServer{
+		Settings: settings,
+		DB: DB,
+	}
+}
+
 func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequest) (*pb.DownloadSummary, error) {
 	logrus.Debugf("File meta [filename: %s, sha256: %s]", request.Meta.Filename, request.Meta.Sha256)
 	fileInfo, ok := model.GetFileInfo(request.Meta.Sha256, s.DB)
+	if ok {
+		return fileInfo.BuildDownloadSummary(), nil
+	}
+
+	return nil, nil
+}
+
+func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLink) (*pb.DownloadSummary, error) {
+	var fileLink model.Link
+	if s.DB.Where("link_code = ?", link.LinkCode).First(&fileLink).RowsAffected == 0 {
+		return nil, errors.New("no file associated is found!")
+	}
+
+	fileInfo, ok := model.GetFileInfo(fileLink.Sha256, s.DB)
 	if ok {
 		return fileInfo.BuildDownloadSummary(), nil
 	}

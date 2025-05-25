@@ -1,8 +1,6 @@
 package model
 
 type Link struct {
-	LinkCode string
-	Sha256   string
+	LinkCode string `gorm:"primaryKey"`
+	Sha256   string `gorm:"primaryKey"`
 }
-
-

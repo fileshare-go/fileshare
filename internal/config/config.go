@@ -9,6 +9,7 @@ import (
 type Settings struct {
 	Address  string `yaml:"address"`
 	Database string `yaml:"database"`
+	ShareCodeLength int `yaml:"share_code_length"`
 }
 
 func ReadSettings(filename string) (*Settings, error) {
