@@ -19,6 +19,8 @@ RUN go mod download
 # Copy the rest of your application source code
 COPY . .
 
+RUN sed -i 's#https\?://dl-cdn.alpinelinux.org/alpine#https://mirrors.tuna.tsinghua.edu.cn/alpine#g' /etc/apk/repositories
+
 RUN apk add --no-cache \
     # Important: required for go-sqlite3
     gcc \
