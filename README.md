@@ -6,7 +6,7 @@ Fileshare auto check the validity of the file transferred.
 On both server and client side, both download and upload, **fileshare** will check the `sha256sum` value automatically
 
 # How to use?
-Each fileshare needs a `settings.yml` file, which should contains below parts
+Each fileshare needs a `settings.yml` file in the `same folder with fileshare`, which should contains below parts
 
 ``` yaml
 address: 127.0.0.1:60011
@@ -46,25 +46,51 @@ address: 127.0.0.1:60011
 database: server.db
 ```
 
+
+## LinkCode generating:
+### Exciting ability introduced! If u wanna share a file with your friends, you can generate linkcode by doing this:
+
+``` sh
+# this command will generate a linkcode like
+# INFO[0000] Generated Code is: [tdP7RXiY]
+fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
+
+fileshare download tdP7RXiY
+```
+
+
 ## Example cmd usages:
-### Client Upload
+
+#### Server
 ``` sh
-cd client
-./fileshare upload llvm-2.2.tar.gz
+fileshare server
 ```
 
-### Client Download
-Notice that `following hash` is the `checksum` of the file using **sha256sum**
+#### Client Upload
 ``` sh
-cd client
-./fileshare download 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
+fileshare upload llvm-2.2.tar.gz
 ```
 
-### Server
+#### Client Download
+- Use the linkcode shared by your friends, and download with this code is ok!
 ``` sh
-cd server
-./fileshare server
+fileshare download tdP7RXiY
 ```
+
+- Optional Usages: Notice that `following hash` is the `checksum` of the file using **sha256sum**
+``` sh
+fileshare download 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
+```
+
+#### Client Gen Code
+Notice that the parameters are `filename` `checksum256`
+``` sh
+fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
+```
+
+
+
+
 
 ## Using Docker?
 First download `fileshare.docker.zip` from releases and import this zip file to your docker
