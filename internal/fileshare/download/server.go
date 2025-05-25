@@ -52,6 +52,11 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) error {
 	logrus.Debugf("Download Task: %s", task.Meta.Sha256)
 
+	// if chunklist is empty, at least send one chunk
+	if len(task.ChunkList) == 0 {
+		task.ChunkList = append(task.ChunkList, 0)
+	}
+
 	for _, chunkIndex := range task.ChunkList {
 		bytes := chunkio.UploadChunk(task.Meta.Sha256, chunkIndex)
 
