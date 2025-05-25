@@ -7,6 +7,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -46,7 +47,7 @@ func (h *Handler) Recv() error {
 }
 
 func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
-	logrus.Debugf("file sha256: %s, chunk index: %d, chunk size: %d", chunk.Sha256, chunk.ChunkIndex, len(chunk.GetData()))
+	debugprint.DebugChunk(chunk)
 
 	h.once.Do(func() {
 		// select from database
@@ -78,7 +79,7 @@ func (h *Handler) CloseWithErr(err error) error {
 
 func (h *Handler) ValidateAndClose() {
 	if h.fileInfo.ValidateChunks() {
-		logrus.Debugf("[validate] %s validated! sha256 is %s", h.fileInfo.Filename, h.fileInfo.Sha256)
+		logrus.Debugf("[Validate] %s validated! sha256 is %s", h.fileInfo.Filename, h.fileInfo.Sha256)
 	} else {
 		logrus.Warnf("[validate] %s not validated!", h.fileInfo.Filename)
 	}

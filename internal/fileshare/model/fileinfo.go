@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/algorithms"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -102,23 +103,23 @@ func (f *FileInfo) BuildDownloadSummary() *pb.DownloadSummary {
 
 func (f *FileInfo) ValidateChunks() bool {
 	filePath := fmt.Sprintf("%s/%s", f.Sha256, f.Filename)
-	logrus.Debug("validating for file: ", filePath)
+	logrus.Debug("[Validate] File: ", debugprint.Render(filePath))
 	out, err := os.Create(filePath)
 	if err != nil {
-		logrus.Error("[validate]", err)
+		logrus.Error("[Validate]", err)
 		return false
 	}
 
 	for _, index := range f.GetUploadedChunks() {
 		in, err := os.Open(fmt.Sprintf("%s/%d", f.Sha256, index))
 		if err != nil {
-			logrus.Error("[validate]", err)
+			logrus.Error("[Validate]", err)
 			return false
 		}
 
 		_, err = io.Copy(out, in)
 		if err != nil {
-			logrus.Error("[validate]", err)
+			logrus.Error("[Validate]", err)
 			return false
 		}
 		in.Close()
@@ -127,7 +128,7 @@ func (f *FileInfo) ValidateChunks() bool {
 
 	checkSum, err := sha256.CalculateSHA256(filePath)
 	if err != nil {
-		logrus.Error("[validate]", err)
+		logrus.Error("[Validate]", err)
 		return false
 	}
 

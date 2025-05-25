@@ -7,6 +7,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -40,16 +41,40 @@ func (h *StreamHandler) Recv() error {
 			return err
 		}
 
-		h.saveChunkToDisk(chunk)
+		if !h.saveChunkToDisk(chunk) {
+			break
+		}
 	}
 
 	h.fileInfo.UpdateChunks(h.chunkList)
 	return nil
 }
 
-func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) {
-	logrus.Debugf("file sha256: %s, chunk index: %d, chunk size: %d", chunk.Sha256, chunk.ChunkIndex, len(chunk.GetData()))
+func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) bool {
+	debugprint.DebugChunk(chunk)
 
+	h.recordFileInfo(chunk)
+
+	// we need to handle if chunk has no data actually
+	// or the situation that, task does not require any chunk
+	// but for recording meta, send a chunk without actual data
+	if len(chunk.Data) == 0 {
+		logrus.Debugf("[Upload] This chunk [%s] is empty, maybe it is for send file meta instead", chunk.Sha256[:8])
+		return false
+	}
+
+	h.chunkList = append(h.chunkList, chunk.ChunkIndex)
+
+	if err := chunkio.SaveChunk(chunk); err != nil {
+		logrus.Error(err)
+		return false
+	}
+
+	return true
+}
+
+// record chunk info for the first chunk
+func (h *StreamHandler) recordFileInfo(chunk *pb.FileChunk) {
 	h.once.Do(func() {
 		// select from database
 		h.fileInfo.Sha256 = chunk.Sha256
@@ -61,12 +86,6 @@ func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) {
 			}
 		}
 	})
-
-	h.chunkList = append(h.chunkList, chunk.ChunkIndex)
-
-	if err := chunkio.SaveChunk(chunk); err != nil {
-		logrus.Error(err)
-	}
 }
 
 func (h *StreamHandler) closeStreamAndSaveInfo(status pb.Status) error {
@@ -99,10 +118,10 @@ func (h *StreamHandler) CloseWithErr(err error) error {
 func (h *StreamHandler) ValidateAndClose() {
 	status := pb.Status_OK
 	if h.fileInfo.ValidateChunks() {
-		logrus.Debugf("[validate] %s validated! sha256 is %s", h.fileInfo.Filename, h.fileInfo.Sha256)
+		logrus.Debugf("[Validate] %s validated! sha256 is %s", debugprint.Render(h.fileInfo.Filename), debugprint.Render(h.fileInfo.Sha256))
 	} else {
 		status = pb.Status_ERROR
-		logrus.Warnf("[validate] %s not validated!", h.fileInfo.Filename)
+		logrus.Warnf("[validate] %s not validated!", debugprint.Render(h.fileInfo.Filename))
 	}
 
 	if err := h.closeStreamAndSaveInfo(status); err != nil {

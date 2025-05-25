@@ -7,6 +7,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -27,7 +28,8 @@ func NewDownloadServer(settings *config.Settings, DB *gorm.DB) *DownloadServer {
 }
 
 func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequest) (*pb.DownloadSummary, error) {
-	logrus.Debugf("File meta [filename: %s, sha256: %s]", request.Meta.Filename, request.Meta.Sha256)
+	debugprint.DebugMeta(request.Meta)
+
 	var fileInfo model.FileInfo
 	fileInfo.Sha256 = request.Meta.Sha256
 	fileInfo.Filename = request.Meta.Filename
@@ -59,7 +61,7 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 }
 
 func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) error {
-	logrus.Debugf("Download Task: %s", task.Meta.Sha256)
+	debugprint.DebugDownloadTask(task)
 
 	// if chunklist is empty, at least send one chunk
 	if len(task.ChunkList) == 0 {
@@ -69,13 +71,13 @@ func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadServi
 	for _, chunkIndex := range task.ChunkList {
 		bytes := chunkio.UploadChunk(task.Meta.Sha256, chunkIndex)
 
-		logrus.Debugf("File Chunk:[filename: %s, sha256: %s, chunk index: %d]", task.Meta.Filename, task.Meta.Sha256, chunkIndex)
-
 		chunk := &pb.FileChunk{
 			Sha256:     task.Meta.Sha256,
 			ChunkIndex: chunkIndex,
 			Data:       bytes,
 		}
+
+		debugprint.DebugChunk(chunk)
 
 		if err := stream.Send(chunk); err != nil {
 			logrus.Error(err)

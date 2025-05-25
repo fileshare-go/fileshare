@@ -5,6 +5,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ func NewUploadServer(settings *config.Settings, DB *gorm.DB) *UploadServer {
 
 // pre upload receives a task from client, calculate missing chunks and send the task back
 func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
-	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", request.Meta.Filename, request.FileSize, request.Meta.Sha256)
+	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", debugprint.Render(request.Meta.Filename), request.FileSize, debugprint.Render(request.Meta.Sha256[:8]))
 
 	fileInfo := &model.FileInfo{
 		Sha256: request.Meta.Sha256,
