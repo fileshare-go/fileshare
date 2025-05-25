@@ -35,27 +35,35 @@ below is a example structure of client and server structure
 
 ```
 
+## Configuration files Example
+
+#### Server
+Notice that share_code_length `cannot` be set to the length of the size of sha256, which is `64`
+``` yaml
+# config for server/settings.yml
+address: 127.0.0.1:60011
+database: server.db
+# this config determines the length of sharelink code
+# any length is ok, except the fixed size of sha256, which is 64
+share_code_length: 8
+```
+
+#### Client
 ``` yaml
 # config for client/settings.yml
 address: 127.0.0.1:60011
 database: client.db
 ```
-``` yaml
-# config for server/settings.yml
-address: 127.0.0.1:60011
-database: server.db
-```
-
 
 ## LinkCode generating:
 ### Exciting ability introduced! If u wanna share a file with your friends, you can generate linkcode by doing this:
 
 ``` sh
 # this command will generate a linkcode like
-# INFO[0000] Generated Code is: [tdP7RXiY]
+# INFO[0000] Generated Code is: [fzHghSyr]
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 
-fileshare download tdP7RXiY
+fileshare download fzHghSyr
 ```
 
 
@@ -74,7 +82,7 @@ fileshare upload llvm-2.2.tar.gz
 #### Client Download
 - Use the linkcode shared by your friends, and download with this code is ok!
 ``` sh
-fileshare download tdP7RXiY
+fileshare download fzHghSyr
 ```
 
 - Optional Usages: Notice that `following hash` is the `checksum` of the file using **sha256sum**
@@ -99,7 +107,7 @@ And download binary from `fileshare.tar.gz`, extract to fileshare
 
 Then run following commands:
 ``` sh
-docker run -d --name fileshare -p 60011:60011 fileshare:0.1.2
+docker run -d --name fileshare -p 60011:60011 fileshare:0.1.2.1
 ```
 
 # Pictures
