@@ -190,6 +190,186 @@ func (x *FileChunk) GetData() []byte {
 	return nil
 }
 
+type UploadRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	FileSize      int64                  `protobuf:"varint,2,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadRequest) Reset() {
+	*x = UploadRequest{}
+	mi := &file_fileshare_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadRequest) ProtoMessage() {}
+
+func (x *UploadRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fileshare_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadRequest.ProtoReflect.Descriptor instead.
+func (*UploadRequest) Descriptor() ([]byte, []int) {
+	return file_fileshare_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *UploadRequest) GetMeta() *FileMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
+}
+
+func (x *UploadRequest) GetFileSize() int64 {
+	if x != nil {
+		return x.FileSize
+	}
+	return 0
+}
+
+type UploadTask struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	ChunkNumber   int32                  `protobuf:"varint,2,opt,name=chunkNumber,proto3" json:"chunkNumber,omitempty"`
+	ChunkSize     int64                  `protobuf:"varint,3,opt,name=chunkSize,proto3" json:"chunkSize,omitempty"`
+	ChunkList     []int32                `protobuf:"varint,4,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadTask) Reset() {
+	*x = UploadTask{}
+	mi := &file_fileshare_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadTask) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadTask) ProtoMessage() {}
+
+func (x *UploadTask) ProtoReflect() protoreflect.Message {
+	mi := &file_fileshare_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadTask.ProtoReflect.Descriptor instead.
+func (*UploadTask) Descriptor() ([]byte, []int) {
+	return file_fileshare_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *UploadTask) GetMeta() *FileMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
+}
+
+func (x *UploadTask) GetChunkNumber() int32 {
+	if x != nil {
+		return x.ChunkNumber
+	}
+	return 0
+}
+
+func (x *UploadTask) GetChunkSize() int64 {
+	if x != nil {
+		return x.ChunkSize
+	}
+	return 0
+}
+
+func (x *UploadTask) GetChunkList() []int32 {
+	if x != nil {
+		return x.ChunkList
+	}
+	return nil
+}
+
+type UploadStatus struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
+	Status        Status                 `protobuf:"varint,2,opt,name=status,proto3,enum=Status" json:"status,omitempty"`
+	ChunkList     []int32                `protobuf:"varint,3,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UploadStatus) Reset() {
+	*x = UploadStatus{}
+	mi := &file_fileshare_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadStatus) ProtoMessage() {}
+
+func (x *UploadStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_fileshare_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadStatus.ProtoReflect.Descriptor instead.
+func (*UploadStatus) Descriptor() ([]byte, []int) {
+	return file_fileshare_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *UploadStatus) GetMeta() *FileMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
+}
+
+func (x *UploadStatus) GetStatus() Status {
+	if x != nil {
+		return x.Status
+	}
+	return Status_OK
+}
+
+func (x *UploadStatus) GetChunkList() []int32 {
+	if x != nil {
+		return x.ChunkList
+	}
+	return nil
+}
+
 type DownloadRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
@@ -199,7 +379,7 @@ type DownloadRequest struct {
 
 func (x *DownloadRequest) Reset() {
 	*x = DownloadRequest{}
-	mi := &file_fileshare_proto_msgTypes[2]
+	mi := &file_fileshare_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -211,7 +391,7 @@ func (x *DownloadRequest) String() string {
 func (*DownloadRequest) ProtoMessage() {}
 
 func (x *DownloadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[2]
+	mi := &file_fileshare_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -224,7 +404,7 @@ func (x *DownloadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadRequest.ProtoReflect.Descriptor instead.
 func (*DownloadRequest) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{2}
+	return file_fileshare_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *DownloadRequest) GetMeta() *FileMeta {
@@ -247,7 +427,7 @@ type DownloadSummary struct {
 
 func (x *DownloadSummary) Reset() {
 	*x = DownloadSummary{}
-	mi := &file_fileshare_proto_msgTypes[3]
+	mi := &file_fileshare_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -259,7 +439,7 @@ func (x *DownloadSummary) String() string {
 func (*DownloadSummary) ProtoMessage() {}
 
 func (x *DownloadSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[3]
+	mi := &file_fileshare_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -272,7 +452,7 @@ func (x *DownloadSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadSummary.ProtoReflect.Descriptor instead.
 func (*DownloadSummary) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{3}
+	return file_fileshare_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DownloadSummary) GetMeta() *FileMeta {
@@ -321,7 +501,7 @@ type DownloadTask struct {
 
 func (x *DownloadTask) Reset() {
 	*x = DownloadTask{}
-	mi := &file_fileshare_proto_msgTypes[4]
+	mi := &file_fileshare_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -333,7 +513,7 @@ func (x *DownloadTask) String() string {
 func (*DownloadTask) ProtoMessage() {}
 
 func (x *DownloadTask) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[4]
+	mi := &file_fileshare_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -346,7 +526,7 @@ func (x *DownloadTask) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DownloadTask.ProtoReflect.Descriptor instead.
 func (*DownloadTask) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{4}
+	return file_fileshare_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *DownloadTask) GetMeta() *FileMeta {
@@ -370,29 +550,28 @@ func (x *DownloadTask) GetChunkList() []int32 {
 	return nil
 }
 
-type UploadRequest struct {
+type ShareLink struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	FileSize      int64                  `protobuf:"varint,2,opt,name=fileSize,proto3" json:"fileSize,omitempty"`
+	LinkCode      string                 `protobuf:"bytes,1,opt,name=linkCode,proto3" json:"linkCode,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *UploadRequest) Reset() {
-	*x = UploadRequest{}
-	mi := &file_fileshare_proto_msgTypes[5]
+func (x *ShareLink) Reset() {
+	*x = ShareLink{}
+	mi := &file_fileshare_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *UploadRequest) String() string {
+func (x *ShareLink) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*UploadRequest) ProtoMessage() {}
+func (*ShareLink) ProtoMessage() {}
 
-func (x *UploadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[5]
+func (x *ShareLink) ProtoReflect() protoreflect.Message {
+	mi := &file_fileshare_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -403,151 +582,16 @@ func (x *UploadRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use UploadRequest.ProtoReflect.Descriptor instead.
-func (*UploadRequest) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{5}
+// Deprecated: Use ShareLink.ProtoReflect.Descriptor instead.
+func (*ShareLink) Descriptor() ([]byte, []int) {
+	return file_fileshare_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *UploadRequest) GetMeta() *FileMeta {
+func (x *ShareLink) GetLinkCode() string {
 	if x != nil {
-		return x.Meta
+		return x.LinkCode
 	}
-	return nil
-}
-
-func (x *UploadRequest) GetFileSize() int64 {
-	if x != nil {
-		return x.FileSize
-	}
-	return 0
-}
-
-type UploadTask struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	ChunkNumber   int32                  `protobuf:"varint,2,opt,name=chunkNumber,proto3" json:"chunkNumber,omitempty"`
-	ChunkSize     int64                  `protobuf:"varint,3,opt,name=chunkSize,proto3" json:"chunkSize,omitempty"`
-	ChunkList     []int32                `protobuf:"varint,4,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UploadTask) Reset() {
-	*x = UploadTask{}
-	mi := &file_fileshare_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UploadTask) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UploadTask) ProtoMessage() {}
-
-func (x *UploadTask) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UploadTask.ProtoReflect.Descriptor instead.
-func (*UploadTask) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *UploadTask) GetMeta() *FileMeta {
-	if x != nil {
-		return x.Meta
-	}
-	return nil
-}
-
-func (x *UploadTask) GetChunkNumber() int32 {
-	if x != nil {
-		return x.ChunkNumber
-	}
-	return 0
-}
-
-func (x *UploadTask) GetChunkSize() int64 {
-	if x != nil {
-		return x.ChunkSize
-	}
-	return 0
-}
-
-func (x *UploadTask) GetChunkList() []int32 {
-	if x != nil {
-		return x.ChunkList
-	}
-	return nil
-}
-
-type UploadStatus struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Meta          *FileMeta              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	Status        Status                 `protobuf:"varint,2,opt,name=status,proto3,enum=Status" json:"status,omitempty"`
-	ChunkList     []int32                `protobuf:"varint,3,rep,packed,name=chunkList,proto3" json:"chunkList,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UploadStatus) Reset() {
-	*x = UploadStatus{}
-	mi := &file_fileshare_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UploadStatus) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UploadStatus) ProtoMessage() {}
-
-func (x *UploadStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_fileshare_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UploadStatus.ProtoReflect.Descriptor instead.
-func (*UploadStatus) Descriptor() ([]byte, []int) {
-	return file_fileshare_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *UploadStatus) GetMeta() *FileMeta {
-	if x != nil {
-		return x.Meta
-	}
-	return nil
-}
-
-func (x *UploadStatus) GetStatus() Status {
-	if x != nil {
-		return x.Status
-	}
-	return Status_OK
-}
-
-func (x *UploadStatus) GetChunkList() []int32 {
-	if x != nil {
-		return x.ChunkList
-	}
-	return nil
+	return ""
 }
 
 var File_fileshare_proto protoreflect.FileDescriptor
@@ -564,19 +608,7 @@ const file_fileshare_proto_rawDesc = "" +
 	"\n" +
 	"chunkIndex\x18\x02 \x01(\x05R\n" +
 	"chunkIndex\x12\x12\n" +
-	"\x04data\x18\x03 \x01(\fR\x04data\"0\n" +
-	"\x0fDownloadRequest\x12\x1d\n" +
-	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\"\xaa\x01\n" +
-	"\x0fDownloadSummary\x12\x1d\n" +
-	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x1a\n" +
-	"\bfileSize\x18\x02 \x01(\x03R\bfileSize\x12 \n" +
-	"\vchunkNumber\x18\x03 \x01(\x05R\vchunkNumber\x12\x1c\n" +
-	"\tchunkSize\x18\x04 \x01(\x03R\tchunkSize\x12\x1c\n" +
-	"\tchunkList\x18\x05 \x03(\x05R\tchunkList\"m\n" +
-	"\fDownloadTask\x12\x1d\n" +
-	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12 \n" +
-	"\vchunkNumber\x18\x02 \x01(\x05R\vchunkNumber\x12\x1c\n" +
-	"\tchunkList\x18\x03 \x03(\x05R\tchunkList\"J\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\"J\n" +
 	"\rUploadRequest\x12\x1d\n" +
 	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x1a\n" +
 	"\bfileSize\x18\x02 \x01(\x03R\bfileSize\"\x89\x01\n" +
@@ -589,19 +621,38 @@ const file_fileshare_proto_rawDesc = "" +
 	"\fUploadStatus\x12\x1d\n" +
 	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x1f\n" +
 	"\x06status\x18\x02 \x01(\x0e2\a.StatusR\x06status\x12\x1c\n" +
-	"\tchunkList\x18\x03 \x03(\x05R\tchunkList*&\n" +
+	"\tchunkList\x18\x03 \x03(\x05R\tchunkList\"0\n" +
+	"\x0fDownloadRequest\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\"\xaa\x01\n" +
+	"\x0fDownloadSummary\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12\x1a\n" +
+	"\bfileSize\x18\x02 \x01(\x03R\bfileSize\x12 \n" +
+	"\vchunkNumber\x18\x03 \x01(\x05R\vchunkNumber\x12\x1c\n" +
+	"\tchunkSize\x18\x04 \x01(\x03R\tchunkSize\x12\x1c\n" +
+	"\tchunkList\x18\x05 \x03(\x05R\tchunkList\"m\n" +
+	"\fDownloadTask\x12\x1d\n" +
+	"\x04meta\x18\x01 \x01(\v2\t.FileMetaR\x04meta\x12 \n" +
+	"\vchunkNumber\x18\x02 \x01(\x05R\vchunkNumber\x12\x1c\n" +
+	"\tchunkList\x18\x03 \x03(\x05R\tchunkList\"'\n" +
+	"\tShareLink\x12\x1a\n" +
+	"\blinkCode\x18\x01 \x01(\tR\blinkCode*&\n" +
 	"\x06Status\x12\x06\n" +
 	"\x02OK\x10\x00\x12\t\n" +
 	"\x05ERROR\x10\x01\x12\t\n" +
-	"\x05RETRY\x10\x022m\n" +
-	"\x0fDownloadService\x121\n" +
-	"\vPreDownload\x12\x10.DownloadRequest\x1a\x10.DownloadSummary\x12'\n" +
-	"\bDownload\x12\r.DownloadTask\x1a\n" +
-	".FileChunk0\x012`\n" +
+	"\x05RETRY\x10\x022`\n" +
 	"\rUploadService\x12(\n" +
 	"\tPreUpload\x12\x0e.UploadRequest\x1a\v.UploadTask\x12%\n" +
 	"\x06Upload\x12\n" +
-	".FileChunk\x1a\r.UploadStatus(\x01B-Z+github.com/chanmaoganda/fileshare/proto/genb\x06proto3"
+	".FileChunk\x1a\r.UploadStatus(\x012m\n" +
+	"\x0fDownloadService\x121\n" +
+	"\vPreDownload\x12\x10.DownloadRequest\x1a\x10.DownloadSummary\x12'\n" +
+	"\bDownload\x12\r.DownloadTask\x1a\n" +
+	".FileChunk0\x012Z\n" +
+	"\vLinkService\x12%\n" +
+	"\fGenerateLink\x12\t.FileMeta\x1a\n" +
+	".ShareLink\x12$\n" +
+	"\vGetFileMeta\x12\n" +
+	".ShareLink\x1a\t.FileMetaB-Z+github.com/chanmaoganda/fileshare/proto/genb\x06proto3"
 
 var (
 	file_fileshare_proto_rawDescOnce sync.Once
@@ -616,36 +667,41 @@ func file_fileshare_proto_rawDescGZIP() []byte {
 }
 
 var file_fileshare_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_fileshare_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_fileshare_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_fileshare_proto_goTypes = []any{
 	(Status)(0),             // 0: Status
 	(*FileMeta)(nil),        // 1: FileMeta
 	(*FileChunk)(nil),       // 2: FileChunk
-	(*DownloadRequest)(nil), // 3: DownloadRequest
-	(*DownloadSummary)(nil), // 4: DownloadSummary
-	(*DownloadTask)(nil),    // 5: DownloadTask
-	(*UploadRequest)(nil),   // 6: UploadRequest
-	(*UploadTask)(nil),      // 7: UploadTask
-	(*UploadStatus)(nil),    // 8: UploadStatus
+	(*UploadRequest)(nil),   // 3: UploadRequest
+	(*UploadTask)(nil),      // 4: UploadTask
+	(*UploadStatus)(nil),    // 5: UploadStatus
+	(*DownloadRequest)(nil), // 6: DownloadRequest
+	(*DownloadSummary)(nil), // 7: DownloadSummary
+	(*DownloadTask)(nil),    // 8: DownloadTask
+	(*ShareLink)(nil),       // 9: ShareLink
 }
 var file_fileshare_proto_depIdxs = []int32{
-	1,  // 0: DownloadRequest.meta:type_name -> FileMeta
-	1,  // 1: DownloadSummary.meta:type_name -> FileMeta
-	1,  // 2: DownloadTask.meta:type_name -> FileMeta
-	1,  // 3: UploadRequest.meta:type_name -> FileMeta
-	1,  // 4: UploadTask.meta:type_name -> FileMeta
-	1,  // 5: UploadStatus.meta:type_name -> FileMeta
-	0,  // 6: UploadStatus.status:type_name -> Status
-	3,  // 7: DownloadService.PreDownload:input_type -> DownloadRequest
-	5,  // 8: DownloadService.Download:input_type -> DownloadTask
-	6,  // 9: UploadService.PreUpload:input_type -> UploadRequest
-	2,  // 10: UploadService.Upload:input_type -> FileChunk
-	4,  // 11: DownloadService.PreDownload:output_type -> DownloadSummary
-	2,  // 12: DownloadService.Download:output_type -> FileChunk
-	7,  // 13: UploadService.PreUpload:output_type -> UploadTask
-	8,  // 14: UploadService.Upload:output_type -> UploadStatus
-	11, // [11:15] is the sub-list for method output_type
-	7,  // [7:11] is the sub-list for method input_type
+	1,  // 0: UploadRequest.meta:type_name -> FileMeta
+	1,  // 1: UploadTask.meta:type_name -> FileMeta
+	1,  // 2: UploadStatus.meta:type_name -> FileMeta
+	0,  // 3: UploadStatus.status:type_name -> Status
+	1,  // 4: DownloadRequest.meta:type_name -> FileMeta
+	1,  // 5: DownloadSummary.meta:type_name -> FileMeta
+	1,  // 6: DownloadTask.meta:type_name -> FileMeta
+	3,  // 7: UploadService.PreUpload:input_type -> UploadRequest
+	2,  // 8: UploadService.Upload:input_type -> FileChunk
+	6,  // 9: DownloadService.PreDownload:input_type -> DownloadRequest
+	8,  // 10: DownloadService.Download:input_type -> DownloadTask
+	1,  // 11: LinkService.GenerateLink:input_type -> FileMeta
+	9,  // 12: LinkService.GetFileMeta:input_type -> ShareLink
+	4,  // 13: UploadService.PreUpload:output_type -> UploadTask
+	5,  // 14: UploadService.Upload:output_type -> UploadStatus
+	7,  // 15: DownloadService.PreDownload:output_type -> DownloadSummary
+	2,  // 16: DownloadService.Download:output_type -> FileChunk
+	9,  // 17: LinkService.GenerateLink:output_type -> ShareLink
+	1,  // 18: LinkService.GetFileMeta:output_type -> FileMeta
+	13, // [13:19] is the sub-list for method output_type
+	7,  // [7:13] is the sub-list for method input_type
 	7,  // [7:7] is the sub-list for extension type_name
 	7,  // [7:7] is the sub-list for extension extendee
 	0,  // [0:7] is the sub-list for field type_name
@@ -662,9 +718,9 @@ func file_fileshare_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fileshare_proto_rawDesc), len(file_fileshare_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   8,
+			NumMessages:   9,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_fileshare_proto_goTypes,
 		DependencyIndexes: file_fileshare_proto_depIdxs,

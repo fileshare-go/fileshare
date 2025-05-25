@@ -20,30 +20,6 @@ enum Status {
     RETRY = 2;
 }
 
-service DownloadService {
-    rpc PreDownload(DownloadRequest) returns (DownloadSummary);
-    
-    rpc Download(DownloadTask) returns (stream FileChunk);
-}
-
-message DownloadRequest {
-    FileMeta meta = 1;    
-}
-
-message DownloadSummary {
-    FileMeta meta = 1;
-    int64 fileSize = 2;
-    int32 chunkNumber = 3;
-    int64 chunkSize = 4;
-    repeated int32 chunkList = 5;
-}
-
-message DownloadTask {
-    FileMeta meta = 1;
-    int32 chunkNumber = 2;
-    repeated int32 chunkList = 3;
-}
-
 // Upload Service defined here
 service UploadService {
     rpc PreUpload(UploadRequest) returns (UploadTask);
@@ -69,3 +45,38 @@ message UploadStatus {
     repeated int32 chunkList = 3;
 }
 
+// Download Service defined here
+service DownloadService {
+    rpc PreDownload(DownloadRequest) returns (DownloadSummary);
+    
+    rpc Download(DownloadTask) returns (stream FileChunk);
+}
+
+message DownloadRequest {
+    FileMeta meta = 1;    
+}
+
+message DownloadSummary {
+    FileMeta meta = 1;
+    int64 fileSize = 2;
+    int32 chunkNumber = 3;
+    int64 chunkSize = 4;
+    repeated int32 chunkList = 5;
+}
+
+message DownloadTask {
+    FileMeta meta = 1;
+    int32 chunkNumber = 2;
+    repeated int32 chunkList = 3;
+}
+
+// Link Service defined here
+service LinkService {
+    rpc GenerateLink(FileMeta) returns (ShareLink);
+
+    rpc GetFileMeta(ShareLink) returns (FileMeta);
+}
+
+message ShareLink {
+    string linkCode = 1;
+}
