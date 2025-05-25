@@ -99,7 +99,7 @@ And download binary from `fileshare.tar.gz`, extract to fileshare
 
 Then run following commands:
 ``` sh
-docker run -d --name fileshare -p 60011:60011 fileshare:0.1.1
+docker run -d --name fileshare -p 60011:60011 fileshare:0.1.2
 ```
 
 # Pictures
