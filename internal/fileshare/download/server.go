@@ -6,6 +6,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -15,19 +16,23 @@ import (
 type DownloadServer struct {
 	pb.UnimplementedDownloadServiceServer
 	Settings *config.Settings
-	DB       *gorm.DB
+	Manager  *dbmanager.DBManager
 }
 
 func NewDownloadServer(settings *config.Settings, DB *gorm.DB) *DownloadServer {
 	return &DownloadServer{
 		Settings: settings,
-		DB: DB,
+		Manager:  dbmanager.NewDBManager(DB),
 	}
 }
 
 func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequest) (*pb.DownloadSummary, error) {
 	logrus.Debugf("File meta [filename: %s, sha256: %s]", request.Meta.Filename, request.Meta.Sha256)
-	fileInfo, ok := model.GetFileInfo(request.Meta.Sha256, s.DB)
+	var fileInfo model.FileInfo
+	fileInfo.Sha256 = request.Meta.Sha256
+	fileInfo.Filename = request.Meta.Filename
+
+	ok := s.Manager.SelectFileInfo(&fileInfo)
 	if ok {
 		return fileInfo.BuildDownloadSummary(), nil
 	}
@@ -36,13 +41,17 @@ func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequ
 }
 
 func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLink) (*pb.DownloadSummary, error) {
-	var fileLink model.Link
-	if s.DB.Where("link_code = ?", link.LinkCode).First(&fileLink).RowsAffected == 0 {
+	var shareLink model.ShareLink
+	shareLink.LinkCode = link.LinkCode
+
+	if !s.Manager.SelectShareLink(&shareLink) {
 		return nil, errors.New("no file associated is found!")
 	}
 
-	fileInfo, ok := model.GetFileInfo(fileLink.Sha256, s.DB)
-	if ok {
+	var fileInfo model.FileInfo
+	fileInfo.Sha256 = shareLink.Sha256
+
+	if !s.Manager.SelectFileInfo(&fileInfo) {
 		return fileInfo.BuildDownloadSummary(), nil
 	}
 

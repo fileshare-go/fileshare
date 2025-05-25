@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -16,15 +17,15 @@ import (
 type StreamHandler struct {
 	stream    pb.UploadService_UploadServer
 	once      sync.Once
-	DB        *gorm.DB
+	Manager   *dbmanager.DBManager
 	fileInfo  model.FileInfo
 	chunkList []int32
 }
 
-func NewHandler(stream pb.UploadService_UploadServer, db *gorm.DB) *StreamHandler {
+func NewHandler(stream pb.UploadService_UploadServer, DB *gorm.DB) *StreamHandler {
 	return &StreamHandler{
 		stream:    stream,
-		DB:        db,
+		Manager:   dbmanager.NewDBManager(DB),
 		chunkList: []int32{},
 	}
 }
@@ -51,7 +52,9 @@ func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) {
 
 	h.once.Do(func() {
 		// select from database
-		h.DB.Where("sha256 = ?", chunk.Sha256).First(&h.fileInfo)
+		h.fileInfo.Sha256 = chunk.Sha256
+		h.Manager.SelectFileInfo(&h.fileInfo)
+
 		if !fileutil.FileExists(chunk.Sha256) {
 			if err := os.Mkdir(chunk.Sha256, 0755); err != nil {
 				logrus.Error(err)
@@ -77,7 +80,7 @@ func (h *StreamHandler) closeStreamAndSaveInfo(status pb.Status) error {
 		ChunkList: h.chunkList,
 	}
 
-	h.DB.Save(h.fileInfo)
+	h.Manager.UpdateFileInfo(&h.fileInfo)
 
 	return h.stream.SendAndClose(uploadStatus)
 }
@@ -86,8 +89,8 @@ func (h *StreamHandler) closeStreamAndSaveInfo(status pb.Status) error {
 func (h *StreamHandler) CloseWithErr(err error) error {
 	logrus.Error("[handler] close with err: ", err)
 
-	if err := h.DB.Save(h.fileInfo); err != nil {
-		logrus.Error(err)
+	if !h.Manager.UpdateFileInfo(&h.fileInfo) {
+		logrus.Warn("FileInfo save failed")
 	}
 
 	return h.closeStreamAndSaveInfo(pb.Status_ERROR)

@@ -6,25 +6,25 @@ import (
 	"sync"
 
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 type Handler struct {
 	stream    pb.DownloadService_DownloadClient
 	once      sync.Once
-	DB        *gorm.DB
+	Manager   *dbmanager.DBManager
 	fileInfo  model.FileInfo
 	chunkList []int32
 }
 
-func NewHandler(stream pb.DownloadService_DownloadClient, db *gorm.DB) *Handler {
+func NewHandler(stream pb.DownloadService_DownloadClient, manager *dbmanager.DBManager) *Handler {
 	return &Handler{
-		stream: stream,
-		DB:     db,
+		stream:  stream,
+		Manager: manager,
 	}
 }
 
@@ -50,7 +50,9 @@ func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
 
 	h.once.Do(func() {
 		// select from database
-		h.DB.Where("sha256 = ?", chunk.Sha256).First(&h.fileInfo)
+		h.fileInfo.Sha256 = chunk.Sha256
+		h.Manager.SelectFileInfo(&h.fileInfo)
+
 		if !fileutil.FileExists(chunk.Sha256) {
 			if err := os.Mkdir(chunk.Sha256, 0755); err != nil {
 				logrus.Error(err)
@@ -65,21 +67,13 @@ func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
 	}
 }
 
-func (h *Handler) closeStreamAndSaveInfo() error {
-	h.DB.Save(h.fileInfo)
-
-	return h.stream.CloseSend()
-}
-
 // close the stream, saving current status to lockfile
 func (h *Handler) CloseWithErr(err error) error {
 	logrus.Error("[handler] close with err: ", err)
 
-	if err := h.DB.Save(h.fileInfo); err != nil {
-		logrus.Error(err)
-	}
+	h.Manager.UpdateFileInfo(&h.fileInfo)
 
-	return h.closeStreamAndSaveInfo()
+	return h.stream.CloseSend()
 }
 
 func (h *Handler) ValidateAndClose() {
@@ -89,7 +83,9 @@ func (h *Handler) ValidateAndClose() {
 		logrus.Warnf("[validate] %s not validated!", h.fileInfo.Filename)
 	}
 
-	if err := h.closeStreamAndSaveInfo(); err != nil {
+	h.Manager.UpdateFileInfo(&h.fileInfo)
+
+	if err := h.stream.CloseSend(); err != nil {
 		logrus.Error(err)
 	}
 }

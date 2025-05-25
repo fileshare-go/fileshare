@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -13,13 +14,13 @@ import (
 type UploadServer struct {
 	pb.UnimplementedUploadServiceServer
 	Settings *config.Settings
-	DB       *gorm.DB
+	Manager  *dbmanager.DBManager
 }
 
 func NewUploadServer(settings *config.Settings, DB *gorm.DB) *UploadServer {
 	return &UploadServer{
 		Settings: settings,
-		DB: DB,
+		Manager:  dbmanager.NewDBManager(DB),
 	}
 }
 
@@ -27,14 +28,17 @@ func NewUploadServer(settings *config.Settings, DB *gorm.DB) *UploadServer {
 func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
 	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", request.Meta.Filename, request.FileSize, request.Meta.Sha256)
 
-	fileInfo, ok := model.GetFileInfo(request.Meta.Sha256, s.DB)
-	if ok {
+	fileInfo := &model.FileInfo{
+		Sha256: request.Meta.Sha256,
+	}
+	// , ok := model.GetFileInfo(request.Meta.Sha256, s.DB)
+	if s.Manager.SelectFileInfo(fileInfo) {
 		return fileInfo.BuildUploadTask(), nil
 	}
 
 	fileInfo = model.NewFileInfoFromUpload(request)
 
-	s.DB.Create(fileInfo)
+	s.Manager.CreateFileInfo(fileInfo)
 
 	return fileInfo.BuildUploadTask(), nil
 }
@@ -43,7 +47,7 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	logrus.Debug("[Upload] Starting Upload Process!")
 
-	handler := NewHandler(stream, s.DB)
+	handler := NewHandler(stream, s.Manager.DB)
 
 	// if recv or saving has any err, just close and return err
 	if err := handler.Recv(); err != nil {

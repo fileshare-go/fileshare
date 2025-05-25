@@ -12,6 +12,6 @@ func SetupDB(sqliteFile string) *gorm.DB {
 	if err != nil {
 		logrus.Fatalf("sqlite %s: %v", sqliteFile, err)
 	}
-	db.AutoMigrate(&model.FileInfo{}, &model.Link{})
+	db.AutoMigrate(&model.FileInfo{}, &model.ShareLink{})
 	return db
 }

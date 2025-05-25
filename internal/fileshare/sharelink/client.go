@@ -23,7 +23,7 @@ func NewShareLinkClient(ctx context.Context, conn *grpc.ClientConn) *ShareLinkCl
 func (c *ShareLinkClient) GenerateLink(filename, sha256 string) string {
 	meta := &pb.FileMeta{
 		Filename: filename,
-		Sha256: sha256,
+		Sha256:   sha256,
 	}
 
 	link, err := c.Client.GenerateLink(context.Background(), meta)

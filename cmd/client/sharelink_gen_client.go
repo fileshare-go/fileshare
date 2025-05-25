@@ -41,4 +41,3 @@ var ShareLinkGenCmd = &cobra.Command{
 		logrus.Infof("Generated Code is: [%s]", code)
 	},
 }
-

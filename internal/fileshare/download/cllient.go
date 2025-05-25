@@ -3,6 +3,7 @@ package download
 import (
 	"context"
 
+	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -11,45 +12,44 @@ import (
 )
 
 type DownloadClient struct {
-	Client pb.DownloadServiceClient
-	DB     *gorm.DB
+	Client  pb.DownloadServiceClient
+	Manager *dbmanager.DBManager
 }
 
 func NewDownloadClient(ctx context.Context, conn *grpc.ClientConn, DB *gorm.DB) *DownloadClient {
 	client := pb.NewDownloadServiceClient(conn)
 
 	return &DownloadClient{
-		Client: client,
-		DB:     DB,
+		Client:  client,
+		Manager: dbmanager.NewDBManager(DB),
+	}
+}
+
+func (c *DownloadClient) getSummary(ctx context.Context, key string) (*pb.DownloadSummary, error) {
+	// if the key is not the fixed size of sha256, then recognize this as link code
+	if len(key) != 64 {
+		return c.Client.PreDownloadWithCode(ctx, &pb.ShareLink{LinkCode: key})
+	} else {
+		return c.Client.PreDownload(ctx, &pb.DownloadRequest{Meta: &pb.FileMeta{Sha256: key}})
 	}
 }
 
 func (c *DownloadClient) getTask(ctx context.Context, key string) (*pb.DownloadTask, error) {
-	var summary *pb.DownloadSummary
-
-	// if the key is not the fixed size of sha256, then recognize this as link code
-	if len(key) != 64 {
-		s, err := c.Client.PreDownloadWithCode(ctx, &pb.ShareLink{LinkCode: key})
-		if err != nil {
-			return nil, err
-		}
-		summary = s
-	} else {
-		s, err := c.Client.PreDownload(ctx, &pb.DownloadRequest{Meta: &pb.FileMeta{Sha256: key}})
-		if err != nil {
-			return nil, err
-		}
-		summary = s
+	summary, err := c.getSummary(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	fileInfo := &model.FileInfo{
+		Sha256: summary.Meta.Sha256,
 	}
 
-	fileInfo, ok := model.GetFileInfo(summary.Meta.Sha256, c.DB)
-	if ok {
+	if c.Manager.SelectFileInfo(fileInfo) {
 		return fileInfo.BuildDownloadTask(), nil
 	}
 
 	fileInfo = model.NewFileInfoFromDownload(summary)
 
-	c.DB.Create(fileInfo)
+	c.Manager.CreateFileInfo(fileInfo)
 
 	task := &pb.DownloadTask{
 		Meta:        summary.Meta,
@@ -77,7 +77,7 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 		return err
 	}
 
-	handler := NewHandler(stream, c.DB)
+	handler := NewHandler(stream, c.Manager)
 
 	// if recv or saving has any err, just close and return err
 	if err := handler.Recv(); err != nil {

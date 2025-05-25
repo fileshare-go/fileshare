@@ -20,7 +20,7 @@ type FileInfo struct {
 	ChunkNumber    int32
 	FileSize       int64
 	UploadedChunks string
-	Link           Link `gorm:"foreignKey:Sha256;references:Sha256"`
+	Link           ShareLink `gorm:"foreignKey:Sha256;references:Sha256"`
 }
 
 func (f *FileInfo) GetUploadedChunks() []int32 {
