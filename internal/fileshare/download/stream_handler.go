@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Handler struct {
+type StreamHandler struct {
 	stream    pb.DownloadService_DownloadClient
 	once      sync.Once
 	Manager   *dbmanager.DBManager
@@ -22,14 +22,14 @@ type Handler struct {
 	chunkList []int32
 }
 
-func NewHandler(stream pb.DownloadService_DownloadClient, manager *dbmanager.DBManager) *Handler {
-	return &Handler{
+func NewHandler(stream pb.DownloadService_DownloadClient, manager *dbmanager.DBManager) *StreamHandler {
+	return &StreamHandler{
 		stream:  stream,
 		Manager: manager,
 	}
 }
 
-func (h *Handler) Recv() error {
+func (h *StreamHandler) Recv() error {
 	for {
 		chunk, err := h.stream.Recv()
 		if err == io.EOF {
@@ -46,9 +46,31 @@ func (h *Handler) Recv() error {
 	return nil
 }
 
-func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
+func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) bool {
 	debugprint.DebugChunk(chunk)
 
+	h.onceJob(chunk)
+
+	// we need to handle if chunk has no data actually
+	// or the situation that, task does not require any chunk
+	// but for recording meta, send a chunk without actual data
+	if len(chunk.Data) == 0 {
+		logrus.Debugf("[Download] This chunk [%s] is empty, maybe it is for send file meta instead", chunk.Sha256[:8])
+		return false
+	}
+
+	h.chunkList = append(h.chunkList, chunk.ChunkIndex)
+
+	if err := chunkio.SaveChunk(chunk); err != nil {
+		logrus.Error(err)
+		return false
+	}
+
+	return true
+}
+
+// record chunk info for the first chunk
+func (h *StreamHandler) onceJob(chunk *pb.FileChunk) {
 	h.once.Do(func() {
 		// select from database
 		h.fileInfo.Sha256 = chunk.Sha256
@@ -60,24 +82,20 @@ func (h *Handler) saveChunkToDisk(chunk *pb.FileChunk) {
 			}
 		}
 	})
-
-	h.chunkList = append(h.chunkList, chunk.ChunkIndex)
-
-	if err := chunkio.SaveChunk(chunk); err != nil {
-		logrus.Error(err)
-	}
 }
 
 // close the stream, saving current status to lockfile
-func (h *Handler) CloseWithErr(err error) error {
+func (h *StreamHandler) CloseWithErr(err error) error {
 	logrus.Error("[handler] close with err: ", err)
 
-	h.Manager.UpdateFileInfo(&h.fileInfo)
+	if !h.Manager.UpdateFileInfo(&h.fileInfo) {
+		logrus.Warn("FileInfo save failed")
+	}
 
 	return h.stream.CloseSend()
 }
 
-func (h *Handler) ValidateAndClose() {
+func (h *StreamHandler) ValidateAndClose() {
 	if h.fileInfo.ValidateChunks() {
 		logrus.Debugf("[Validate] %s validated! sha256 is %s", h.fileInfo.Filename, h.fileInfo.Sha256)
 	} else {

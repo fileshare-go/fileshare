@@ -53,7 +53,7 @@ func (h *StreamHandler) Recv() error {
 func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) bool {
 	debugprint.DebugChunk(chunk)
 
-	h.recordFileInfo(chunk)
+	h.onceJob(chunk)
 
 	// we need to handle if chunk has no data actually
 	// or the situation that, task does not require any chunk
@@ -74,7 +74,7 @@ func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) bool {
 }
 
 // record chunk info for the first chunk
-func (h *StreamHandler) recordFileInfo(chunk *pb.FileChunk) {
+func (h *StreamHandler) onceJob(chunk *pb.FileChunk) {
 	h.once.Do(func() {
 		// select from database
 		h.fileInfo.Sha256 = chunk.Sha256

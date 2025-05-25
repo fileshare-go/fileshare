@@ -34,12 +34,13 @@ func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequ
 	fileInfo.Sha256 = request.Meta.Sha256
 	fileInfo.Filename = request.Meta.Filename
 
-	ok := s.Manager.SelectFileInfo(&fileInfo)
-	if ok {
-		return fileInfo.BuildDownloadSummary(), nil
+	if s.Manager.SelectFileInfo(&fileInfo) {
+		summary := fileInfo.BuildDownloadSummary()
+		debugprint.DebugDownloadSummary(summary)
+		return summary, nil
 	}
 
-	return nil, nil
+	return nil, errors.New("no matching file found")
 }
 
 func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLink) (*pb.DownloadSummary, error) {
@@ -53,11 +54,13 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 	var fileInfo model.FileInfo
 	fileInfo.Sha256 = shareLink.Sha256
 
-	if !s.Manager.SelectFileInfo(&fileInfo) {
-		return fileInfo.BuildDownloadSummary(), nil
+	if s.Manager.SelectFileInfo(&fileInfo) {
+		summary := fileInfo.BuildDownloadSummary()
+		debugprint.DebugDownloadSummary(summary)
+		return summary, nil
 	}
 
-	return nil, nil
+	return nil, errors.New("no matching file found")
 }
 
 func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) error {
@@ -65,7 +68,9 @@ func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadServi
 
 	// if chunklist is empty, at least send one chunk
 	if len(task.ChunkList) == 0 {
-		task.ChunkList = append(task.ChunkList, 0)
+		// if no chunk is needed, just send the first chunk for messaging
+		// at least one chunk is sent cause server side needs meta for recording information
+		return s.uploadEmptyTask(stream, task)
 	}
 
 	for _, chunkIndex := range task.ChunkList {
@@ -87,4 +92,14 @@ func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadServi
 
 	logrus.Debugf("File Sent! %s", task.Meta.Filename)
 	return nil
+}
+
+func (s *DownloadServer) uploadEmptyTask(stream pb.DownloadService_DownloadServer, task *pb.DownloadTask) error {
+	logrus.Debug("Download Task is empty, just send empty data instead")
+	chunk := &pb.FileChunk{
+		Sha256:     task.Meta.Sha256,
+		ChunkIndex: 0,
+		Data:       []byte{},
+	}
+	return stream.Send(chunk)
 }

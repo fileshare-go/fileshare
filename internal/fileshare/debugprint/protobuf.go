@@ -15,7 +15,15 @@ func DebugUploadTask(task *pb.UploadTask) {
 }
 
 func DebugDownloadTask(task *pb.DownloadTask) {
+	logrus.Debugf("task filename: %s, sha256: %s, file size %s, chunk number: %s",
+		Render(task.Meta.Filename), Render(task.Meta.Sha256[:8]), Render(task.Meta.FileSize),
+		Render(task.ChunkNumber))
+}
 
+func DebugDownloadSummary(summary *pb.DownloadSummary) {
+	logrus.Debugf("summary filename: %s, sha256: %s, file size %s, chunk number: %s, chunk size: %s",
+		Render(summary.Meta.Filename), Render(summary.Meta.Sha256[:8]), Render(summary.Meta.FileSize),
+		Render(summary.ChunkNumber), Render(summary.ChunkSize))
 }
 
 func DebugChunk(chunk *pb.FileChunk) {

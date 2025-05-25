@@ -25,7 +25,7 @@ var ShareLinkGenCmd = &cobra.Command{
 			return
 		}
 
-		logrus.Debug("Uploading file to ", settings.Address)
+		logrus.Debug("Connecting to ", settings.Address)
 
 		conn, err := grpc.NewClient(settings.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 

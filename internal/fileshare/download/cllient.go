@@ -39,6 +39,7 @@ func (c *DownloadClient) getTask(ctx context.Context, key string) (*pb.DownloadT
 	if err != nil {
 		return nil, err
 	}
+
 	fileInfo := &model.FileInfo{
 		Sha256: summary.Meta.Sha256,
 	}
