@@ -185,7 +185,15 @@ type ChunkSummary struct {
 }
 
 func dealChunkSize(fileSize int64) ChunkSummary {
-	chunkSize := SMALL
+	var chunkSize int
+	if fileSize < 64 * SMALL {
+		chunkSize = SMALL
+	} else if fileSize < 1024 * SMALL {
+		chunkSize = MEDIUM
+	} else {
+		chunkSize = LARGE
+	}
+
 	chunkNumber := fileSize / int64(chunkSize)
 
 	if fileSize%int64(chunkSize) != 0 {
