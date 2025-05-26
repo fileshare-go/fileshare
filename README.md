@@ -9,8 +9,11 @@ On both server and client side, both download and upload, **fileshare** will che
 Each fileshare needs a `settings.yml` file in the `same folder with fileshare`, which should contains below parts
 
 ``` yaml
-address: 127.0.0.1:60011
-database: client/client.db
+address: 0.0.0.0:60011
+database: server.db
+share_code_length: 8
+cache_directory: .cache
+download_directory: .download
 ```
 
 - for address, make sure that client and server has same ip address that can be accessed
@@ -24,6 +27,7 @@ below is a example structure of client and server structure
 ├── client
 │   ├── client.db
 │   ├── fileshare
+│   ├── kafka_2.13-4.0.0.tgz
 │   ├── llvm-2.2.tar.gz
 │   └── settings.yml
 └── server
@@ -32,27 +36,36 @@ below is a example structure of client and server structure
     └── settings.yml
 
 3 directories, 8 files
-
 ```
 
 ## Configuration files Example
 
-#### Server
+#### If `cache_directory` not set, then use `$HOME/.fileshare`
+
+#### If `download_directory` not set, then use `$HOME/Downloads`
+
+### Server
 Notice that share_code_length `cannot` be set to the length of the size of sha256, which is `64`
 ``` yaml
 # config for server/settings.yml
-address: 127.0.0.1:60011
+address: 0.0.0.0:60011
 database: server.db
+
 # this config determines the length of sharelink code
 # any length is ok, except the fixed size of sha256, which is 64
 share_code_length: 8
+cache_directory: .cache
+download_directory: .download
 ```
 
-#### Client
+### Client
 ``` yaml
 # config for client/settings.yml
-address: 127.0.0.1:60011
+address: 0.0.0.0:60011
 database: client.db
+share_code_length: 8
+cache_directory: .cache
+download_directory: .download
 ```
 
 ## LinkCode generating:
@@ -109,7 +122,7 @@ And download binary from `fileshare.tar.gz`, extract to fileshare
 
 Then run following commands:
 ``` sh
-docker run -d --name fileshare -p 60011:60011 fileshare:0.1.2.2
+docker run -d --name fileshare -p 60011:60011 fileshare:0.1.3
 ```
 
 # Pictures

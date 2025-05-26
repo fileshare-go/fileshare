@@ -20,6 +20,7 @@ Example Usages:
 - fileshare cache clean
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		cmd.Usage()
 	},
 }
 

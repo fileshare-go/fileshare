@@ -1,3 +1,5 @@
 address: 0.0.0.0:60011
 database: server.db
 share_code_length: 8
+cache_directory: .cache
+download_directory: .download
