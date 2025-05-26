@@ -40,7 +40,7 @@ func MergeList(list1, list2 []int32) []int32 {
 }
 
 func MissingElementsInSortedList(total []int32, subList []int32) []int32 {
-	if len(subList) == len(total) {
+	if len(subList) == len(total) || len(total) == 0 {
 		return []int32{}
 	}
 
