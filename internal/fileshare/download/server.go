@@ -74,7 +74,7 @@ func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadServi
 	}
 
 	for _, chunkIndex := range task.ChunkList {
-		bytes := chunkio.UploadChunk(task.Meta.Sha256, chunkIndex)
+		bytes := chunkio.UploadChunk(s.Settings.CacheDirectory, task.Meta.Sha256, chunkIndex)
 
 		chunk := &pb.FileChunk{
 			Sha256:     task.Meta.Sha256,

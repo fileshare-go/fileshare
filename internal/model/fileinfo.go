@@ -101,8 +101,8 @@ func (f *FileInfo) BuildDownloadSummary() *pb.DownloadSummary {
 	}
 }
 
-func (f *FileInfo) ValidateChunks() bool {
-	filePath := fmt.Sprintf("%s/%s", f.Sha256, f.Filename)
+func (f *FileInfo) ValidateChunks(cache_directory, download_directory string) bool {
+	filePath := fmt.Sprintf("%s/%s", download_directory, f.Filename)
 	logrus.Debug("[Validate] File: ", debugprint.Render(filePath))
 	out, err := os.Create(filePath)
 	if err != nil {
@@ -111,7 +111,7 @@ func (f *FileInfo) ValidateChunks() bool {
 	}
 
 	for _, index := range f.GetUploadedChunks() {
-		in, err := os.Open(fmt.Sprintf("%s/%d", f.Sha256, index))
+		in, err := os.Open(fmt.Sprintf("%s/%s/%d", cache_directory, f.Sha256, index))
 		if err != nil {
 			logrus.Error("[Validate]", err)
 			return false
@@ -126,7 +126,7 @@ func (f *FileInfo) ValidateChunks() bool {
 	}
 	out.Close()
 
-	checkSum, err := sha256.CalculateSHA256(filePath)
+	checkSum, err := sha256.CalculateFileSHA256(filePath)
 	if err != nil {
 		logrus.Error("[Validate]", err)
 		return false

@@ -25,7 +25,7 @@ func init() {
 
 	// server commands
 	RootCmd.AddCommand(server.ServerCmd)
-	
+
 	// client commands
 	RootCmd.AddCommand(client.UploadCmd)
 	RootCmd.AddCommand(client.DownloadCmd)

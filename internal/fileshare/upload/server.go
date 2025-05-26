@@ -48,7 +48,7 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	logrus.Debug("[Upload] Starting Upload Process!")
 
-	handler := NewHandler(stream, s.Manager.DB)
+	handler := NewHandler(s.Settings, stream, s.Manager.DB)
 
 	// if recv or saving has any err, just close and return err
 	if err := handler.Recv(); err != nil {

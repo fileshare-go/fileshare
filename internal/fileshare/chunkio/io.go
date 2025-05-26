@@ -23,9 +23,9 @@ func MakeChunk(file *os.File, sha256 string, chunkSize int64, chunkIndex int32) 
 	}
 }
 
-func SaveChunk(chunk *pb.FileChunk) error {
+func SaveChunk(cache_dir string, chunk *pb.FileChunk) error {
 	// Create or truncate the file
-	chunkFileName := fmt.Sprintf("%s/%d", chunk.Sha256, chunk.ChunkIndex)
+	chunkFileName := fmt.Sprintf("%s/%s/%d", cache_dir, chunk.Sha256, chunk.ChunkIndex)
 	file, err := os.Create(chunkFileName)
 	if err != nil {
 		return err
@@ -41,8 +41,8 @@ func SaveChunk(chunk *pb.FileChunk) error {
 	return nil
 }
 
-func UploadChunk(sha256 string, chunkIndex int32) []byte {
-	chunkFileName := fmt.Sprintf("%s/%d", sha256, chunkIndex)
+func UploadChunk(cache_dir, sha256 string, chunkIndex int32) []byte {
+	chunkFileName := fmt.Sprintf("%s/%s/%d", cache_dir, sha256, chunkIndex)
 	bytes, err := os.ReadFile(chunkFileName)
 	if err != nil {
 		logrus.Error(err)

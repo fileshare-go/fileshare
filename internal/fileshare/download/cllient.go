@@ -3,6 +3,7 @@ package download
 import (
 	"context"
 
+	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -12,16 +13,18 @@ import (
 )
 
 type DownloadClient struct {
-	Client  pb.DownloadServiceClient
-	Manager *dbmanager.DBManager
+	Settings *config.Settings
+	Client   pb.DownloadServiceClient
+	Manager  *dbmanager.DBManager
 }
 
-func NewDownloadClient(ctx context.Context, conn *grpc.ClientConn, DB *gorm.DB) *DownloadClient {
+func NewDownloadClient(ctx context.Context, settings *config.Settings, conn *grpc.ClientConn, DB *gorm.DB) *DownloadClient {
 	client := pb.NewDownloadServiceClient(conn)
 
 	return &DownloadClient{
-		Client:  client,
-		Manager: dbmanager.NewDBManager(DB),
+		Settings: settings,
+		Client:   client,
+		Manager:  dbmanager.NewDBManager(DB),
 	}
 }
 
@@ -78,7 +81,7 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 		return err
 	}
 
-	handler := NewHandler(stream, c.Manager)
+	handler := NewHandler(c.Settings, stream, c.Manager)
 
 	// if recv or saving has any err, just close and return err
 	if err := handler.Recv(); err != nil {

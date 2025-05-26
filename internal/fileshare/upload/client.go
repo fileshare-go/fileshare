@@ -111,7 +111,7 @@ func (c *UploadClient) createRequest(filePath string) (*pb.UploadRequest, error)
 		return nil, err
 	}
 
-	sha256, err := sha256.CalculateSHA256(filePath)
+	sha256, err := sha256.CalculateFileSHA256(filePath)
 	if err != nil {
 		return nil, err
 	}

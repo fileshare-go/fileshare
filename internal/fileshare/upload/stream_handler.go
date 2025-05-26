@@ -1,10 +1,12 @@
 package upload
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"sync"
 
+	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
@@ -18,13 +20,15 @@ import (
 type StreamHandler struct {
 	stream    pb.UploadService_UploadServer
 	once      sync.Once
+	Settings  *config.Settings
 	Manager   *dbmanager.DBManager
 	fileInfo  model.FileInfo
 	chunkList []int32
 }
 
-func NewHandler(stream pb.UploadService_UploadServer, DB *gorm.DB) *StreamHandler {
+func NewHandler(settings *config.Settings, stream pb.UploadService_UploadServer, DB *gorm.DB) *StreamHandler {
 	return &StreamHandler{
+		Settings:  settings,
 		stream:    stream,
 		Manager:   dbmanager.NewDBManager(DB),
 		chunkList: []int32{},
@@ -53,7 +57,7 @@ func (h *StreamHandler) Recv() error {
 func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) bool {
 	debugprint.DebugChunk(chunk)
 
-	h.onceJob(chunk)
+	h.recordFileInfoAndCreateCacheDir(chunk)
 
 	// we need to handle if chunk has no data actually
 	// or the situation that, task does not require any chunk
@@ -65,7 +69,7 @@ func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) bool {
 
 	h.chunkList = append(h.chunkList, chunk.ChunkIndex)
 
-	if err := chunkio.SaveChunk(chunk); err != nil {
+	if err := chunkio.SaveChunk(h.Settings.CacheDirectory, chunk); err != nil {
 		logrus.Error(err)
 		return false
 	}
@@ -74,14 +78,15 @@ func (h *StreamHandler) saveChunkToDisk(chunk *pb.FileChunk) bool {
 }
 
 // record chunk info for the first chunk
-func (h *StreamHandler) onceJob(chunk *pb.FileChunk) {
+func (h *StreamHandler) recordFileInfoAndCreateCacheDir(chunk *pb.FileChunk) {
 	h.once.Do(func() {
 		// select from database
 		h.fileInfo.Sha256 = chunk.Sha256
 		h.Manager.SelectFileInfo(&h.fileInfo)
 
-		if !fileutil.FileExists(chunk.Sha256) {
-			if err := os.Mkdir(chunk.Sha256, 0755); err != nil {
+		folder := fmt.Sprintf("%s/%s", h.Settings.CacheDirectory, chunk.Sha256)
+		if !fileutil.FileExists(folder) {
+			if err := os.Mkdir(folder, 0755); err != nil {
 				logrus.Error(err)
 			}
 		}
@@ -117,7 +122,7 @@ func (h *StreamHandler) CloseWithErr(err error) error {
 
 func (h *StreamHandler) ValidateAndClose() {
 	status := pb.Status_OK
-	if h.fileInfo.ValidateChunks() {
+	if h.fileInfo.ValidateChunks(h.Settings.CacheDirectory, h.Settings.DownloadDirectory) {
 		logrus.Debugf("[Validate] %s validated! sha256 is %s", debugprint.Render(h.fileInfo.Filename), debugprint.Render(h.fileInfo.Sha256))
 	} else {
 		status = pb.Status_ERROR

@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func CalculateSHA256(filePath string) (string, error) {
+func CalculateFileSHA256(filePath string) (string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		logrus.Error("Error opening file:", err)

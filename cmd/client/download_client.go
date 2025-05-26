@@ -37,7 +37,7 @@ var DownloadCmd = &cobra.Command{
 
 		DB := db.SetupDB(settings.Database)
 
-		client := download.NewDownloadClient(cmd.Context(), conn, DB)
+		client := download.NewDownloadClient(cmd.Context(), settings, conn, DB)
 
 		if err := client.DownloadFile(cmd.Context(), key); err != nil {
 			logrus.Error(err)
