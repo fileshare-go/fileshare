@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/algorithms"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/debugprint"
+	"github.com/chanmaoganda/fileshare/internal/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -186,9 +186,9 @@ type ChunkSummary struct {
 
 func dealChunkSize(fileSize int64) ChunkSummary {
 	var chunkSize int
-	if fileSize < 64 * SMALL {
+	if fileSize < 64*SMALL {
 		chunkSize = SMALL
-	} else if fileSize < 1024 * SMALL {
+	} else if fileSize < 1024*SMALL {
 		chunkSize = MEDIUM
 	} else {
 		chunkSize = LARGE

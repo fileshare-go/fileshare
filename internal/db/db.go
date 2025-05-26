@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
+	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

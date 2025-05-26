@@ -5,11 +5,11 @@ import (
 	"os"
 	"sync"
 
+	"github.com/chanmaoganda/fileshare/internal/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/debugprint"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
+	"github.com/chanmaoganda/fileshare/internal/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"

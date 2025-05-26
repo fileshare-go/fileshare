@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/chanmaoganda/fileshare/internal/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"

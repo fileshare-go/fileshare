@@ -1,7 +1,7 @@
 package dbmanager
 
 import (
-	"github.com/chanmaoganda/fileshare/internal/fileshare/model"
+	"github.com/chanmaoganda/fileshare/internal/model"
 	"gorm.io/gorm"
 )
 
