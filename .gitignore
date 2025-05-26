@@ -36,9 +36,10 @@ go.work.sum
 build/
 bin/
 /fileshare
-fileshare.tar.gz
-fileshare.zip
-fileshare.docker.tar.gz
-fileshare.docker.zip
-client.db
-server.db
+/fileshare.tar.gz
+/fileshare.zip
+/fileshare.docker.tar.gz
+/fileshare.docker.zip
+/client.db
+/server.db
+/default.db

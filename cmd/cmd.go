@@ -23,9 +23,12 @@ func init() {
 	})
 	// logrus.SetReportCaller(true)
 
+	// server commands
+	RootCmd.AddCommand(server.ServerCmd)
+	
+	// client commands
 	RootCmd.AddCommand(client.UploadCmd)
 	RootCmd.AddCommand(client.DownloadCmd)
-	RootCmd.AddCommand(server.ServerCmd)
 	RootCmd.AddCommand(client.ShareLinkGenCmd)
 	PrintBanner()
 }
