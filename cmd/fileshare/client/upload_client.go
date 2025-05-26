@@ -10,7 +10,8 @@ import (
 )
 
 var UploadCmd = &cobra.Command{
-	Use: "upload",
+	Use:   "upload",
+	Short: "Uploads the file, requires the filename as argument",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			logrus.Error("Too few arguments, size is", len(args))

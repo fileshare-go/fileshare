@@ -16,7 +16,8 @@ import (
 )
 
 var ServerCmd = &cobra.Command{
-	Use: "server",
+	Use:   "server",
+	Short: "Starts fileshare server",
 	Run: func(cmd *cobra.Command, args []string) {
 		PrintBanner()
 

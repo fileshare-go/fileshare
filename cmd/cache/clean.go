@@ -9,7 +9,8 @@ import (
 )
 
 var cleanCmd = &cobra.Command{
-	Use: "clean",
+	Use:   "clean",
+	Short: "Cleans db file and cache folder by settings.yml, if not set then clean the default ones(default.db, $HOME/.fileshare)",
 	Run: func(cmd *cobra.Command, args []string) {
 		settings, err := config.ReadSettings("settings.yml")
 		if err != nil {
@@ -27,6 +28,11 @@ func cleanCache(settings *config.Settings) {
 	}
 
 	if err := os.Remove(settings.Database); err != nil {
-		logrus.Errorf("Error removing database %s, err: %s", settings.Database, err.Error())
+		if !os.IsNotExist(err) {
+			logrus.Errorf("Error removing database %s, err: %s", settings.Database, err.Error())
+			return
+		}
 	}
+
+	logrus.Info("Cache cleaned successfully")
 }

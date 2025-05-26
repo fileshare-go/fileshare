@@ -11,7 +11,8 @@ import (
 )
 
 var DownloadCmd = &cobra.Command{
-	Use: "download",
+	Use:   "download",
+	Short: "Download file, either with sharelink code or file checksum256 hash",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			logrus.Error("Too few arguments, size is", len(args))

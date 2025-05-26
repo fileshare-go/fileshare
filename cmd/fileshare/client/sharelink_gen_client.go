@@ -10,7 +10,8 @@ import (
 )
 
 var ShareLinkGenCmd = &cobra.Command{
-	Use: "linkgen",
+	Use:   "linkgen",
+	Short: "Generates sharelink code for friends to easily download",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 2 {
 			logrus.Error("Too few arguments, size is", len(args))

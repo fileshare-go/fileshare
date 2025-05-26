@@ -6,7 +6,8 @@ import (
 )
 
 var CacheCmd = &cobra.Command{
-	Use: "cache",
+	Use:   "cache",
+	Short: "Operating cache set in settings.yml, if not set then operate the default cache folder ($HOME/.fileshare)",
 	Run: func(cmd *cobra.Command, args []string) {
 		logrus.Info("Cache operations for fileshare")
 	},
