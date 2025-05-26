@@ -79,7 +79,23 @@ fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e914054
 fileshare download fzHghSyr
 ```
 
-## Example cmd usages:
+# Example Usages
+## Upload
+![](docs/pictures/upload.png)
+
+## Download
+![](docs/pictures/download.png)
+
+## LinkGen
+![](docs/pictures/linkgen.png)
+
+## Final Structure be like:
+![](docs/pictures/final-structure.png)
+
+## Cache Clean
+![](docs/pictures/cache-clean.png)
+
+## Cmd usages:
 
 #### Server
 ``` sh
@@ -113,8 +129,6 @@ Clean cache command can be used both at server and client
 ``` sh
 fileshare cache clean
 ```
-
-
 ## Using Docker?
 First download `fileshare.docker.zip` from releases and import this zip file to your docker
 
@@ -124,12 +138,3 @@ Then run following commands:
 ``` sh
 docker run -d --name fileshare -p 60011:60011 fileshare:0.1.3
 ```
-
-# Pictures
-## Upload
-![](docs/pictures/upload.png)
-## Download
-![](docs/pictures/download.png)
-
-## Final Structure be like:
-![](docs/pictures/final-structure.png)
