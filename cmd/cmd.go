@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
-	"github.com/chanmaoganda/fileshare/cmd/client"
-	"github.com/chanmaoganda/fileshare/cmd/server"
+	"github.com/chanmaoganda/fileshare/cmd/cache"
+	"github.com/chanmaoganda/fileshare/cmd/fileshare/client"
+	"github.com/chanmaoganda/fileshare/cmd/fileshare/server"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -17,12 +16,6 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	logrus.SetLevel(logrus.DebugLevel)
-	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors: true,
-	})
-	// logrus.SetReportCaller(true)
-
 	// server commands
 	RootCmd.AddCommand(server.ServerCmd)
 
@@ -30,10 +23,12 @@ func init() {
 	RootCmd.AddCommand(client.UploadCmd)
 	RootCmd.AddCommand(client.DownloadCmd)
 	RootCmd.AddCommand(client.ShareLinkGenCmd)
-	PrintBanner()
-}
 
-func PrintBanner() {
-	banner := []byte{32, 32, 32, 32, 95, 95, 95, 95, 95, 32, 95, 95, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 95, 95, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 32, 32, 32, 47, 32, 95, 95, 40, 95, 41, 32, 47, 95, 95, 32, 32, 32, 32, 32, 95, 95, 95, 95, 95, 47, 32, 47, 95, 32, 32, 95, 95, 95, 95, 32, 95, 95, 95, 95, 95, 95, 95, 95, 95, 32, 10, 32, 32, 47, 32, 47, 95, 47, 32, 47, 32, 47, 32, 95, 32, 92, 32, 32, 32, 47, 32, 95, 95, 95, 47, 32, 95, 95, 32, 92, 47, 32, 95, 95, 32, 96, 47, 32, 95, 95, 95, 47, 32, 95, 32, 92, 10, 32, 47, 32, 95, 95, 47, 32, 47, 32, 47, 32, 32, 95, 95, 47, 32, 32, 40, 95, 95, 32, 32, 41, 32, 47, 32, 47, 32, 47, 32, 47, 95, 47, 32, 47, 32, 47, 32, 32, 47, 32, 32, 95, 95, 47, 10, 47, 95, 47, 32, 47, 95, 47, 95, 47, 92, 95, 95, 95, 47, 32, 32, 47, 95, 95, 95, 95, 47, 95, 47, 32, 47, 95, 47, 92, 95, 95, 44, 95, 47, 95, 47, 32, 32, 32, 92, 95, 95, 95, 47, 32, 10}
-	fmt.Printf("\n%s\n\n\n", string(banner))
+	// cache commands
+	RootCmd.AddCommand(cache.CacheCmd)
+
+	logrus.SetLevel(logrus.DebugLevel)
+	logrus.SetFormatter(&logrus.TextFormatter{
+		ForceColors: true,
+	})
 }

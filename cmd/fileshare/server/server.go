@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
@@ -17,11 +18,15 @@ import (
 var ServerCmd = &cobra.Command{
 	Use: "server",
 	Run: func(cmd *cobra.Command, args []string) {
+		PrintBanner()
+
 		settings, err := config.ReadSettings("settings.yml")
 		if err != nil {
 			logrus.Error(err)
 			return
 		}
+
+		settings.PrintSettings()
 
 		listen, err := net.Listen("tcp", settings.Address)
 
@@ -43,4 +48,9 @@ var ServerCmd = &cobra.Command{
 			logrus.Error(err)
 		}
 	},
+}
+
+func PrintBanner() {
+	banner := []byte{32, 32, 32, 32, 95, 95, 95, 95, 95, 32, 95, 95, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 95, 95, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 10, 32, 32, 32, 47, 32, 95, 95, 40, 95, 41, 32, 47, 95, 95, 32, 32, 32, 32, 32, 95, 95, 95, 95, 95, 47, 32, 47, 95, 32, 32, 95, 95, 95, 95, 32, 95, 95, 95, 95, 95, 95, 95, 95, 95, 32, 10, 32, 32, 47, 32, 47, 95, 47, 32, 47, 32, 47, 32, 95, 32, 92, 32, 32, 32, 47, 32, 95, 95, 95, 47, 32, 95, 95, 32, 92, 47, 32, 95, 95, 32, 96, 47, 32, 95, 95, 95, 47, 32, 95, 32, 92, 10, 32, 47, 32, 95, 95, 47, 32, 47, 32, 47, 32, 32, 95, 95, 47, 32, 32, 40, 95, 95, 32, 32, 41, 32, 47, 32, 47, 32, 47, 32, 47, 95, 47, 32, 47, 32, 47, 32, 32, 47, 32, 32, 95, 95, 47, 10, 47, 95, 47, 32, 47, 95, 47, 95, 47, 92, 95, 95, 95, 47, 32, 32, 47, 95, 95, 95, 95, 47, 95, 47, 32, 47, 95, 47, 92, 95, 95, 44, 95, 47, 95, 47, 32, 32, 32, 92, 95, 95, 95, 47, 32, 10}
+	fmt.Printf("\n%s\n\n\n", string(banner))
 }

@@ -41,7 +41,6 @@ func ReadSettings(filename string) (*Settings, error) {
 
 func (s *Settings) SetupEssentials() error {
 	s.FillMissingWithDefault()
-	s.PrintSettings()
 	return s.SetupDirectory()
 }
 
