@@ -1,12 +1,11 @@
 package client
 
 import (
+	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 var UploadCmd = &cobra.Command{
@@ -27,10 +26,9 @@ var UploadCmd = &cobra.Command{
 
 		logrus.Debug("Uploading file to ", settings.Address)
 
-		conn, err := grpc.NewClient(settings.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
-
+		conn, err := fileshare.NewClientConn(settings)
 		if err != nil {
-			logrus.Error(err)
+			logrus.Panic(err)
 		}
 
 		defer conn.Close()

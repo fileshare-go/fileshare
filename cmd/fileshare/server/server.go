@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/db"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/download"
@@ -12,7 +13,6 @@ import (
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
 )
 
 var ServerCmd = &cobra.Command{
@@ -37,7 +37,10 @@ var ServerCmd = &cobra.Command{
 			logrus.Fatalln("cannot bind address")
 		}
 
-		grpcServer := grpc.NewServer()
+		grpcServer, err := fileshare.NewServerConn(settings)
+		if err != nil {
+			logrus.Panic(err)
+		}
 
 		DB := db.SetupDB(settings.Database)
 

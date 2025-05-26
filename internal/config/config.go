@@ -15,6 +15,7 @@ type Settings struct {
 	ShareCodeLength   int    `yaml:"share_code_length"`
 	CacheDirectory    string `yaml:"cache_directory"`
 	DownloadDirectory string `yaml:"download_directory"`
+	CertsPath         string `yaml:"certs_path"`
 }
 
 func ReadSettings(filename string) (*Settings, error) {
@@ -72,6 +73,7 @@ func (s *Settings) PrintSettings() {
 	logrus.Debugf("[Settings] Database: %s", s.Database)
 	logrus.Debugf("[Settings] ShareCodeLength: %d", s.ShareCodeLength)
 	logrus.Debugf("[Settings] CacheDirectory %s", s.CacheDirectory)
+	logrus.Debugf("[Settings] CertPath %s", s.CertsPath)
 }
 
 func (s *Settings) SetupDirectory() error {

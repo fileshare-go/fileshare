@@ -1,13 +1,12 @@
 package client
 
 import (
+	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/db"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/download"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 var DownloadCmd = &cobra.Command{
@@ -28,10 +27,9 @@ var DownloadCmd = &cobra.Command{
 
 		logrus.Debug("Connecting to ", settings.Address)
 
-		conn, err := grpc.NewClient(settings.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
-
+		conn, err := fileshare.NewClientConn(settings)
 		if err != nil {
-			logrus.Error(err)
+			logrus.Panic(err)
 		}
 
 		defer conn.Close()

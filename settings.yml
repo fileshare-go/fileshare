@@ -3,3 +3,4 @@ database: server.db
 share_code_length: 8
 cache_directory: .cache
 download_directory: .download
+certs_path: /home/ethan/Codes/Go/FileShare/certs

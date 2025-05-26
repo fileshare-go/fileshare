@@ -43,3 +43,5 @@ bin/
 /client.db
 /server.db
 /default.db
+/.cache
+/.download
