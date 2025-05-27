@@ -16,23 +16,24 @@ import (
 )
 
 type StreamRecvCore interface {
+	// recv all chunks
 	RecvStreamChunks() error
+	// recv one chunk, used in RecvStreamChunks
 	RecvChunk() (*pb.FileChunk, error)
+	// validate all received chunks with checksum256
 	ValidateRecvChunks() bool
+	// close stream and save states
 	CloseStream(bool) error
 }
 
 type StreamSendCore interface {
+	// send all chunks
 	SendStreamChunks() error
+	// send one chunk, used in SendStreamChunks
 	SendChunk(*pb.FileChunk) error
+	// close stream and save states
 	CloseStream() error
 }
-
-// type TaskMeta interface {
-// 	GetChunkList() []int32
-// 	GetMeta() *pb.FileMeta
-// 	GetChunkNumber() int32
-// }
 
 type Core struct {
 	Settings  *config.Settings
@@ -42,6 +43,7 @@ type Core struct {
 	ChunkList []int32
 }
 
+// the first time core recv a chunk, record the FileInfo and then mkdir for cache folder with checksum
 func (c *Core) SetupAndRecordInfo(chunk *pb.FileChunk) {
 	c.Once.Do(func() {
 		// select from database

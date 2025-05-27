@@ -32,34 +32,12 @@ func NewUploadClient(ctx context.Context, conn *grpc.ClientConn) *UploadClient {
 }
 
 func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
-	task, err := c.getTask(ctx, filePath)
+	builder := TaskBuilder{Client: c.Client}
+
+	task, err := builder.GetTask(ctx, filePath)
 	if err != nil {
 		return err
 	}
-
-	if err := c.uploadWithTask(task, filePath); err != nil {
-		return err
-	}
-
-	logrus.Debug("[Upload] Upload done")
-	return nil
-}
-
-func (c *UploadClient) getTask(ctx context.Context, filePath string) (*pb.UploadTask, error) {
-	request, err := c.createRequest(filePath)
-	if err != nil {
-		return nil, err
-	}
-	logrus.Debugf("request [filename: %s, sha256: %s, file size: %d]", request.Meta.Filename, request.Meta.Sha256, request.FileSize)
-	task, err := c.Client.PreUpload(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return task, nil
-}
-
-// use task to upload chunks to server
-func (c *UploadClient) uploadWithTask(task *pb.UploadTask, filePath string) error {
 	debugprint.DebugUploadTask(task)
 
 	sendStream := send.NewClientSendStream(task, filePath, c.Stream)
@@ -68,11 +46,16 @@ func (c *UploadClient) uploadWithTask(task *pb.UploadTask, filePath string) erro
 		return err
 	}
 
+	logrus.Debug("[Upload] Upload done")
 	return sendStream.CloseStream()
 }
 
-// create upload request
-func (c *UploadClient) createRequest(filePath string) (*pb.UploadRequest, error) {
+type TaskBuilder struct {
+	Client pb.UploadServiceClient
+}
+
+// build upload request
+func (b *TaskBuilder) BuildRequest(filePath string) (*pb.UploadRequest, error) {
 	stat, err := os.Stat(filePath)
 	if err != nil {
 		return nil, err
@@ -91,4 +74,19 @@ func (c *UploadClient) createRequest(filePath string) (*pb.UploadRequest, error)
 		FileSize: stat.Size(),
 	}
 	return request, nil
+}
+
+// recv
+func (b *TaskBuilder) GetTask(ctx context.Context, filePath string) (*pb.UploadTask, error) {
+	request, err := b.BuildRequest(filePath)
+	if err != nil {
+		return nil, err
+	}
+	logrus.Debugf("request [filename: %s, sha256: %s, file size: %d]", request.Meta.Filename, request.Meta.Sha256, request.FileSize)
+
+	task, err := b.Client.PreUpload(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }
