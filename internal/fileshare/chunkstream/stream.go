@@ -21,6 +21,17 @@ type StreamRecvCore interface {
 	CloseStream(bool) error
 }
 
+type StreamSendCore interface {
+	SendStreamChunks() error
+	SendChunk(*pb.FileChunk) error
+}
+
+// type TaskMeta interface {
+// 	GetChunkList() []int32
+// 	GetMeta() *pb.FileMeta
+// 	GetChunkNumber() int32
+// }
+
 type Core struct {
 	Settings  *config.Settings
 	Manager   *dbmanager.DBManager

@@ -53,5 +53,7 @@ func (c *ClientRecvStream) ValidateFile() bool {
 }
 
 func (c *ClientRecvStream) CloseStream(bool) error {
+	c.Manager.UpdateFileInfo(&c.FileInfo)
+
 	return c.Stream.CloseSend()
 }

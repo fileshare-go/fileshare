@@ -8,6 +8,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/algorithms"
 	"github.com/chanmaoganda/fileshare/internal/debugprint"
+	"github.com/chanmaoganda/fileshare/internal/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -105,35 +106,54 @@ func (f *FileInfo) BuildDownloadSummary() *pb.DownloadSummary {
 func (f *FileInfo) ValidateChunks(cache_directory, download_directory string) bool {
 	filePath := fmt.Sprintf("%s/%s", download_directory, f.Filename)
 	logrus.Debug("[Validate] File: ", debugprint.Render(filePath))
+
+	if fileutil.FileExists(filePath) {
+		checkSum, err := sha256.CalculateFileSHA256(filePath)
+		if err != nil {
+			logrus.Warn("[Validate]", err)
+		}
+
+		if checkSum == f.Sha256 {
+			logrus.Debugf("Existing file [%s] matches checksum!", filePath)
+			return true
+		}
+		logrus.Debugf("Existing file [%s] does not match checksum, remaking new file", filePath)
+	}
+
+	if err := f.RemakeFile(cache_directory, filePath); err != nil {
+		logrus.Error("[Validate] ", err)
+	}
+
+	checkSum, err := sha256.CalculateFileSHA256(filePath)
+	if err != nil {
+		logrus.Error("[Validate] ", err)
+		return false
+	}
+
+	return checkSum == f.Sha256
+}
+
+func (f *FileInfo) RemakeFile(cache_directory, filePath string) error {
 	out, err := os.Create(filePath)
 	if err != nil {
-		logrus.Error("[Validate]", err)
-		return false
+		return err
 	}
 
 	for _, index := range f.GetUploadedChunks() {
 		in, err := os.Open(fmt.Sprintf("%s/%s/%d", cache_directory, f.Sha256, index))
 		if err != nil {
-			logrus.Error("[Validate]", err)
-			return false
+			return err
 		}
 
 		_, err = io.Copy(out, in)
 		if err != nil {
-			logrus.Error("[Validate]", err)
-			return false
+			return err
 		}
-		in.Close()
+		if err := in.Close(); err != nil {
+			return err
+		}
 	}
-	out.Close()
-
-	checkSum, err := sha256.CalculateFileSHA256(filePath)
-	if err != nil {
-		logrus.Error("[Validate]", err)
-		return false
-	}
-
-	return checkSum == f.Sha256
+	return out.Close()
 }
 
 func NewFileInfoFromUpload(req *pb.UploadRequest) *FileInfo {
