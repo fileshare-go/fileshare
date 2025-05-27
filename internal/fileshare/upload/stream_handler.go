@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/debugprint"
@@ -14,6 +15,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/peer"
 	"gorm.io/gorm"
 )
 
@@ -105,6 +107,7 @@ func (h *StreamHandler) closeStreamAndSaveInfo(status pb.Status) error {
 	}
 
 	h.Manager.UpdateFileInfo(&h.fileInfo)
+	h.Manager.CreateRecord(h.genRecord())
 
 	return h.stream.SendAndClose(uploadStatus)
 }
@@ -131,5 +134,22 @@ func (h *StreamHandler) ValidateAndClose() {
 
 	if err := h.closeStreamAndSaveInfo(status); err != nil {
 		logrus.Error(err)
+	}
+}
+
+func (h *StreamHandler) getPeerAddress() string {
+	peer, ok := peer.FromContext(h.stream.Context())
+	if ok {
+		return peer.Addr.String()
+	}
+	return "unknown"
+}
+
+func (h *StreamHandler) genRecord() *model.Record {
+	return &model.Record{
+		Sha256: h.fileInfo.Sha256,
+		InteractAction: "upload",
+		ClientIp: h.getPeerAddress(),
+		Time: time.Now(),
 	}
 }

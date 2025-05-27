@@ -77,6 +77,7 @@ func (s *Settings) PrintSettings() {
 }
 
 func (s *Settings) SetupDirectory() error {
+	logrus.Debugf("Setting up Directories, %s, %s", s.CacheDirectory, s.DownloadDirectory)
 	if fileutil.FileExists(s.CacheDirectory) {
 		return nil
 	}

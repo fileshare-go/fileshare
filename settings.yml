@@ -1,4 +1,4 @@
-address: 0.0.0.0:60011
+address: 172.16.40.42:60011
 database: server.db
 share_code_length: 8
 cache_directory: .cache

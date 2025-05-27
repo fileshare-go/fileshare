@@ -44,3 +44,8 @@ func (m *DBManager) UpdateShareLink(shareLink *model.ShareLink) bool {
 	result := m.DB.Save(shareLink).First(shareLink)
 	return result.Error == nil && result.RowsAffected == 1
 }
+
+func (m *DBManager) CreateRecord(record *model.Record) bool {
+	result := m.DB.Create(record)
+	return result.Error == nil && result.RowsAffected == 1
+}
