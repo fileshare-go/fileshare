@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/send"
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/pkg/sha256"
@@ -32,19 +32,6 @@ func NewUploadClient(ctx context.Context, conn *grpc.ClientConn) *UploadClient {
 	}
 }
 
-func (c *UploadClient) getTask(ctx context.Context, filePath string) (*pb.UploadTask, error) {
-	request, err := c.createRequest(filePath)
-	if err != nil {
-		return nil, err
-	}
-	logrus.Debugf("request [filename: %s, sha256: %s, file size: %d]", request.Meta.Filename, request.Meta.Sha256, request.FileSize)
-	task, err := c.Client.PreUpload(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return task, nil
-}
-
 func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	task, err := c.getTask(ctx, filePath)
 	if err != nil {
@@ -62,46 +49,31 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	return nil
 }
 
-// use task to upload chunks to server
-func (c *UploadClient) uploadWithTask(task *pb.UploadTask, filePath string) {
-	debugprint.DebugUploadTask(task)
-
-	if len(task.ChunkList) == 0 {
-		// if no chunk is needed, just send the first chunk for messaging
-		// at least one chunk is sent cause server side needs meta for recording information
-		c.uploadEmptyTask(task)
-		return
-	}
-
-	file, err := os.Open(filePath)
+func (c *UploadClient) getTask(ctx context.Context, filePath string) (*pb.UploadTask, error) {
+	request, err := c.createRequest(filePath)
 	if err != nil {
-		logrus.Error("File cannot open, upload abort! ERR: ", err)
-		return
+		return nil, err
 	}
-
-	for _, chunkIndex := range task.ChunkList {
-		chunk := chunkio.MakeChunk(file, task.Meta.Sha256, task.ChunkSize, chunkIndex)
-
-		debugprint.DebugChunk(chunk)
-
-		if err := c.Stream.Send(chunk); err != nil {
-			logrus.Error(err)
-			break
-		}
+	logrus.Debugf("request [filename: %s, sha256: %s, file size: %d]", request.Meta.Filename, request.Meta.Sha256, request.FileSize)
+	task, err := c.Client.PreUpload(ctx, request)
+	if err != nil {
+		return nil, err
 	}
-	logrus.Debug("[Upload] Upload done")
+	return task, nil
 }
 
-func (c *UploadClient) uploadEmptyTask(task *pb.UploadTask) {
-	logrus.Debug("Upload Task is empty, just send empty data instead")
-	chunk := &pb.FileChunk{
-		Sha256:     task.Meta.Sha256,
-		ChunkIndex: 0,
-		Data:       []byte{},
+// use task to upload chunks to server
+func (c *UploadClient) uploadWithTask(task *pb.UploadTask, filePath string) error {
+	debugprint.DebugUploadTask(task)
+
+	sendStream := send.NewClientSendStream(task, filePath, c.Stream)
+
+	if err := sendStream.SendStreamChunks(); err != nil {
+		return err
 	}
-	if err := c.Stream.Send(chunk); err != nil {
-		logrus.Error(err)
-	}
+
+	logrus.Debug("[Upload] Upload done")
+	return nil
 }
 
 // create upload request
