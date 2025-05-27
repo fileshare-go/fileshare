@@ -5,6 +5,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/debugprint"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -34,30 +35,26 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 	}
 	// , ok := model.GetFileInfo(request.Meta.Sha256, s.DB)
 	if s.Manager.SelectFileInfo(fileInfo) {
+		logrus.Debug("Existing file info ", fileInfo.Filename)
 		return fileInfo.BuildUploadTask(), nil
 	}
 
 	fileInfo = model.NewFileInfoFromUpload(request)
 
+	logrus.Debug("Creating file info ", fileInfo.Filename)
 	s.Manager.CreateFileInfo(fileInfo)
 
 	return fileInfo.BuildUploadTask(), nil
 }
 
-// upload receives chunks from client, save lockfile
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	logrus.Debug("[Upload] Starting Upload Process!")
-
-	handler := NewHandler(s.Settings, stream, s.Manager.DB)
-
-	// if recv or saving has any err, just close and return err
-	if err := handler.Recv(); err != nil {
-		return handler.CloseWithErr(err)
+	
+	chunkStream := chunkstream.NewServerStream(s.Settings, s.Manager, stream)
+	if err := chunkStream.RecvStreamChunks(); err != nil {
+		return chunkStream.CloseStream(false)
 	}
 
-	// if recv and saving do not has any error, validate and close
-	handler.ValidateAndClose()
-
-	logrus.Debug("[Upload] Ending Upload Process!")
-	return nil
+	validate := chunkStream.Validate()
+	return chunkStream.CloseStream(validate)
 }

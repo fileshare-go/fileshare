@@ -1,8 +1,8 @@
 package fileutil
 
 import (
+	"path/filepath"
 	"os"
-	"strings"
 )
 
 func FileExists(filePath string) bool {
@@ -14,6 +14,5 @@ func FileExists(filePath string) bool {
 }
 
 func GetFileName(path string) string {
-	list := strings.Split(path, "/")
-	return list[len(list)-1]
+	return filepath.Base(path)
 }

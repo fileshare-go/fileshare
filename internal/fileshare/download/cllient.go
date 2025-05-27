@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -76,21 +77,15 @@ func (c *DownloadClient) downloadStream(ctx context.Context, key string) (pb.Dow
 
 func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 	stream, err := c.downloadStream(ctx, key)
-
 	if err != nil {
 		return err
 	}
 
-	handler := NewHandler(c.Settings, stream, c.Manager)
-
-	// if recv or saving has any err, just close and return err
-	if err := handler.Recv(); err != nil {
-		return handler.CloseWithErr(err)
+	chunkStream := chunkstream.NewClientStream(c.Settings, c.Manager, stream)
+	if err := chunkStream.RecvStreamChunks(); err != nil {
+		return chunkStream.CloseStream(false)
 	}
 
-	// if recv and saving do not has any error, validate and close
-	handler.ValidateAndClose()
-
-	logrus.Debug("[Download] Ending Download Process!")
-	return nil
+	validate := chunkStream.Validate()
+	return chunkStream.CloseStream(validate)
 }
