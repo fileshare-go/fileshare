@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/chanmaoganda/fileshare/proto/gen";
+option go_package = "github.com/chanmaoganda/fileshare/internal/proto/gen";
 
 message FileMeta {
     string filename = 1;

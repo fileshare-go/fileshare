@@ -7,7 +7,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/recv"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
-	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"

@@ -11,7 +11,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
-	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 )
 

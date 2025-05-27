@@ -5,7 +5,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
-	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 )
 
 type ServerSendStream struct {

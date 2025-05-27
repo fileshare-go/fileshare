@@ -10,7 +10,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/fileshare/sharelink"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	"github.com/chanmaoganda/fileshare/internal/pkg/db"
-	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

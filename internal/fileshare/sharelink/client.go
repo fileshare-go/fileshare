@@ -3,7 +3,7 @@ package sharelink
 import (
 	"context"
 
-	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )

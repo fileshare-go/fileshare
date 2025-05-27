@@ -1,7 +1,7 @@
 package debugprint
 
 import (
-	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/gookit/color"
 	"github.com/sirupsen/logrus"
 )

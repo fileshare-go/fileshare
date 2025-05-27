@@ -10,7 +10,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/pkg/sha256"
-	pb "github.com/chanmaoganda/fileshare/proto/gen"
+	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
