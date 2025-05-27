@@ -18,7 +18,7 @@ func NewClientRecvStream(settings *config.Settings, manager *dbmanager.DBManager
 	return &ClientRecvStream{
 		Core: chunkstream.Core{
 			Settings: settings,
-			Manager: manager,
+			Manager:  manager,
 		},
 		Stream: stream,
 	}

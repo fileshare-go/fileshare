@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chanmaoganda/fileshare/internal/fileutil"
+	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )

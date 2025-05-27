@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/recv"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
+	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -49,7 +49,7 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	logrus.Debug("[Upload] Starting Upload Process!")
-	
+
 	chunkStream := recv.NewServerRecvStream(s.Settings, s.Manager, stream)
 	if err := chunkStream.RecvStreamChunks(); err != nil {
 		return chunkStream.CloseStream(false)

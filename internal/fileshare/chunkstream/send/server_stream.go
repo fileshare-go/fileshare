@@ -8,21 +8,20 @@ import (
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 )
 
-
 type ServerSendStream struct {
 	chunkstream.Core
 	Stream pb.DownloadService_DownloadServer
-	Task *pb.DownloadTask
+	Task   *pb.DownloadTask
 }
 
 func NewServerSendStream(settings *config.Settings, manager *dbmanager.DBManager, task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) *ServerSendStream {
 	return &ServerSendStream{
 		Core: chunkstream.Core{
 			Settings: settings,
-			Manager: manager,
+			Manager:  manager,
 		},
 		Stream: stream,
-		Task: task,
+		Task:   task,
 	}
 }
 
@@ -47,16 +46,16 @@ func (s *ServerSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {
 	byteSlice := chunkio.UploadChunk(s.Settings.CacheDirectory, s.Task.Meta.Sha256, chunkIdx)
 
 	return &pb.FileChunk{
-		Sha256: s.Task.Meta.Sha256,
+		Sha256:     s.Task.Meta.Sha256,
 		ChunkIndex: chunkIdx,
-		Data: byteSlice,
+		Data:       byteSlice,
 	}
 }
 
 func (s *ServerSendStream) LoadEmptyChunk() *pb.FileChunk {
 	return &pb.FileChunk{
-		Sha256: s.Task.Meta.Sha256,
+		Sha256:     s.Task.Meta.Sha256,
 		ChunkIndex: 0,
-		Data: []byte{},
+		Data:       []byte{},
 	}
 }

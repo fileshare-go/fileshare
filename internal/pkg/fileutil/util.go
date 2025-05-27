@@ -1,8 +1,8 @@
 package fileutil
 
 import (
-	"path/filepath"
 	"os"
+	"path/filepath"
 )
 
 func FileExists(filePath string) bool {

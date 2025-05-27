@@ -5,10 +5,10 @@ import (
 	"io"
 	"os"
 
-	"github.com/chanmaoganda/fileshare/internal/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
-	"github.com/chanmaoganda/fileshare/internal/fileutil"
-	"github.com/chanmaoganda/fileshare/internal/sha256"
+	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
+	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
+	"github.com/chanmaoganda/fileshare/internal/pkg/sha256"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"

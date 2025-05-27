@@ -6,10 +6,10 @@ import (
 
 	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/db"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/download"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/sharelink"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
+	"github.com/chanmaoganda/fileshare/internal/pkg/db"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

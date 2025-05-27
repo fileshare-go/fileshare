@@ -21,7 +21,7 @@ func NewServerRecvStream(settings *config.Settings, manager *dbmanager.DBManager
 	return &ServerRecvStream{
 		Core: chunkstream.Core{
 			Settings: settings,
-			Manager: manager,
+			Manager:  manager,
 		},
 		Stream: stream,
 	}
@@ -71,7 +71,7 @@ func (s *ServerRecvStream) MakeRecord() *model.Record {
 func (s *ServerRecvStream) CloseStream(validate bool) error {
 	s.Manager.UpdateFileInfo(&s.FileInfo)
 	s.Manager.CreateRecord(s.MakeRecord())
-	
+
 	status := s.genUploadStatus(validate)
 
 	return s.Stream.SendAndClose(status)
@@ -88,10 +88,10 @@ func (s *ServerRecvStream) genUploadStatus(validate bool) *pb.UploadStatus {
 	return &pb.UploadStatus{
 		Meta: &pb.FileMeta{
 			Filename: s.FileInfo.Filename,
-			Sha256: s.FileInfo.Sha256,
+			Sha256:   s.FileInfo.Sha256,
 			FileSize: s.FileInfo.FileSize,
 		},
-		Status: statusCode,
+		Status:    statusCode,
 		ChunkList: s.ChunkList,
 	}
 }
