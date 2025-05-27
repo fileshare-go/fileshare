@@ -12,7 +12,6 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/pkg/sha256"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 type FileInfo struct {
@@ -182,16 +181,6 @@ func NewFileInfoFromDownload(summary *pb.DownloadSummary) *FileInfo {
 	fileInfo.UploadedChunks = "[]"
 
 	return &fileInfo
-}
-
-func GetFileInfo(sha256 string, DB *gorm.DB) (*FileInfo, bool) {
-	var fileInfo FileInfo
-
-	if DB.First(&fileInfo, "sha256 = ?", sha256).RowsAffected != 0 {
-		return &fileInfo, true
-	}
-
-	return &fileInfo, false
 }
 
 const (

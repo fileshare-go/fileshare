@@ -18,12 +18,14 @@ import (
 type StreamRecvCore interface {
 	RecvStreamChunks() error
 	RecvChunk() (*pb.FileChunk, error)
+	ValidateRecvChunks() bool
 	CloseStream(bool) error
 }
 
 type StreamSendCore interface {
 	SendStreamChunks() error
 	SendChunk(*pb.FileChunk) error
+	CloseStream() error
 }
 
 // type TaskMeta interface {

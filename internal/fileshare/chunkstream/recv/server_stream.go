@@ -17,7 +17,7 @@ type ServerRecvStream struct {
 	Stream pb.UploadService_UploadServer
 }
 
-func NewServerRecvStream(settings *config.Settings, manager *dbmanager.DBManager, stream pb.UploadService_UploadServer) *ServerRecvStream {
+func NewServerRecvStream(settings *config.Settings, manager *dbmanager.DBManager, stream pb.UploadService_UploadServer) chunkstream.StreamRecvCore {
 	return &ServerRecvStream{
 		Core: chunkstream.Core{
 			Settings: settings,
@@ -49,6 +49,10 @@ func (s *ServerRecvStream) RecvStreamChunks() error {
 
 func (s *ServerRecvStream) RecvChunk() (*pb.FileChunk, error) {
 	return s.Stream.Recv()
+}
+
+func (s *ServerRecvStream) ValidateRecvChunks() bool {
+	return s.Validate()
 }
 
 func (s *ServerRecvStream) PeerAddress() string {

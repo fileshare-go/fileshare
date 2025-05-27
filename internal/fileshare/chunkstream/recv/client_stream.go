@@ -14,7 +14,7 @@ type ClientRecvStream struct {
 	Stream pb.DownloadService_DownloadClient
 }
 
-func NewClientRecvStream(settings *config.Settings, manager *dbmanager.DBManager, stream pb.DownloadService_DownloadClient) *ClientRecvStream {
+func NewClientRecvStream(settings *config.Settings, manager *dbmanager.DBManager, stream pb.DownloadService_DownloadClient) chunkstream.StreamRecvCore {
 	return &ClientRecvStream{
 		Core: chunkstream.Core{
 			Settings: settings,
@@ -46,6 +46,10 @@ func (c *ClientRecvStream) RecvStreamChunks() error {
 
 func (c *ClientRecvStream) RecvChunk() (*pb.FileChunk, error) {
 	return c.Stream.Recv()
+}
+
+func (c *ClientRecvStream) ValidateRecvChunks() bool {
+	return c.Validate()
 }
 
 func (c *ClientRecvStream) CloseStream(bool) error {

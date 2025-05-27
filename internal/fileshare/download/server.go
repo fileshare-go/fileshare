@@ -72,5 +72,5 @@ func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadServi
 	}
 
 	logrus.Debugf("File Sent! %s", task.Meta.Filename)
-	return nil
+	return sendStream.CloseStream()
 }

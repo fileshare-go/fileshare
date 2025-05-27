@@ -33,7 +33,7 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 	fileInfo := &model.FileInfo{
 		Sha256: request.Meta.Sha256,
 	}
-	// , ok := model.GetFileInfo(request.Meta.Sha256, s.DB)
+
 	if s.Manager.SelectFileInfo(fileInfo) {
 		logrus.Debug("Existing file info ", fileInfo.Filename)
 		return fileInfo.BuildUploadTask(), nil
@@ -50,11 +50,11 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	logrus.Debug("[Upload] Starting Upload Process!")
 
-	chunkStream := recv.NewServerRecvStream(s.Settings, s.Manager, stream)
-	if err := chunkStream.RecvStreamChunks(); err != nil {
-		return chunkStream.CloseStream(false)
+	recvStream := recv.NewServerRecvStream(s.Settings, s.Manager, stream)
+	if err := recvStream.RecvStreamChunks(); err != nil {
+		return recvStream.CloseStream(false)
 	}
 
-	validate := chunkStream.Validate()
-	return chunkStream.CloseStream(validate)
+	validate := recvStream.ValidateRecvChunks()
+	return recvStream.CloseStream(validate)
 }

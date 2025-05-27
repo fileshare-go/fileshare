@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 )
@@ -14,7 +15,7 @@ type ClientSendStream struct {
 	File   *os.File
 }
 
-func NewClientSendStream(task *pb.UploadTask, filePath string, stream pb.UploadService_UploadClient) *ClientSendStream {
+func NewClientSendStream(task *pb.UploadTask, filePath string, stream pb.UploadService_UploadClient) chunkstream.StreamSendCore {
 	file, err := os.Open(filePath)
 	if err != nil {
 		logrus.Panic(err)
@@ -27,21 +28,32 @@ func NewClientSendStream(task *pb.UploadTask, filePath string, stream pb.UploadS
 	}
 }
 
-func (s *ClientSendStream) SendStreamChunks() error {
-	if len(s.Task.ChunkList) == 0 {
-		return s.SendChunk(s.LoadEmptyChunk())
+func (c *ClientSendStream) SendStreamChunks() error {
+	if len(c.Task.ChunkList) == 0 {
+		return c.SendChunk(c.LoadEmptyChunk())
 	}
 
-	for _, idx := range s.Task.ChunkList {
-		if err := s.SendChunk(s.LoadChunk(idx)); err != nil {
+	for _, idx := range c.Task.ChunkList {
+		if err := c.SendChunk(c.LoadChunk(idx)); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (s *ClientSendStream) SendChunk(chunk *pb.FileChunk) error {
-	return s.Stream.Send(chunk)
+func (c *ClientSendStream) SendChunk(chunk *pb.FileChunk) error {
+	return c.Stream.Send(chunk)
+}
+
+func (c *ClientSendStream) CloseStream() error {
+	status, err := c.Stream.CloseAndRecv()
+	if err != nil {
+		logrus.Error(err)
+		return err
+	}
+
+	logrus.Debugf("[Upload] Status Info [status: %d]", status.Status)
+	return nil
 }
 
 func (s *ClientSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {

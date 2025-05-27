@@ -2,7 +2,6 @@ package upload
 
 import (
 	"context"
-	"io"
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/send"
@@ -38,14 +37,11 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 		return err
 	}
 
-	c.uploadWithTask(task, filePath)
-
-	status, err := c.Stream.CloseAndRecv()
-	if err != nil && err != io.EOF {
+	if err := c.uploadWithTask(task, filePath); err != nil {
 		return err
 	}
 
-	logrus.Debugf("[Upload] Status Info [status: %d]", status.Status)
+	logrus.Debug("[Upload] Upload done")
 	return nil
 }
 
@@ -72,8 +68,7 @@ func (c *UploadClient) uploadWithTask(task *pb.UploadTask, filePath string) erro
 		return err
 	}
 
-	logrus.Debug("[Upload] Upload done")
-	return nil
+	return sendStream.CloseStream()
 }
 
 // create upload request

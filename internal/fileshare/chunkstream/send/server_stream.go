@@ -6,6 +6,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/sirupsen/logrus"
 )
 
 type ServerSendStream struct {
@@ -14,7 +15,7 @@ type ServerSendStream struct {
 	Task   *pb.DownloadTask
 }
 
-func NewServerSendStream(settings *config.Settings, manager *dbmanager.DBManager, task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) *ServerSendStream {
+func NewServerSendStream(settings *config.Settings, manager *dbmanager.DBManager, task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) chunkstream.StreamSendCore {
 	return &ServerSendStream{
 		Core: chunkstream.Core{
 			Settings: settings,
@@ -40,6 +41,11 @@ func (s *ServerSendStream) SendStreamChunks() error {
 
 func (s *ServerSendStream) SendChunk(chunk *pb.FileChunk) error {
 	return s.Stream.Send(chunk)
+}
+
+func (s *ServerSendStream) CloseStream() error {
+	logrus.Debug("Closing server sending stream")
+	return nil
 }
 
 func (s *ServerSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {

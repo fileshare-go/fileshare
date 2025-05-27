@@ -81,11 +81,11 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 		return err
 	}
 
-	chunkStream := recv.NewClientRecvStream(c.Settings, c.Manager, stream)
-	if err := chunkStream.RecvStreamChunks(); err != nil {
-		return chunkStream.CloseStream(false)
+	recvStream := recv.NewClientRecvStream(c.Settings, c.Manager, stream)
+	if err := recvStream.RecvStreamChunks(); err != nil {
+		return recvStream.CloseStream(false)
 	}
 
-	validate := chunkStream.Validate()
-	return chunkStream.CloseStream(validate)
+	validate := recvStream.ValidateRecvChunks()
+	return recvStream.CloseStream(validate)
 }
