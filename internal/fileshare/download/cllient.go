@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/recv"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -81,7 +81,7 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 		return err
 	}
 
-	chunkStream := chunkstream.NewClientStream(c.Settings, c.Manager, stream)
+	chunkStream := recv.NewClientRecvStream(c.Settings, c.Manager, stream)
 	if err := chunkStream.RecvStreamChunks(); err != nil {
 		return chunkStream.CloseStream(false)
 	}

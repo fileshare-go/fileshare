@@ -15,7 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type StreamCore interface {
+type StreamRecvCore interface {
 	RecvStreamChunks() error
 	RecvChunk() (*pb.FileChunk, error)
 	CloseStream(bool) error

@@ -1,24 +1,25 @@
-package chunkstream
+package recv
 
 import (
 	"io"
 	"time"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
 	"google.golang.org/grpc/peer"
 )
 
-type ServerStream struct {
-	Core
+type ServerRecvStream struct {
+	chunkstream.Core
 	Stream pb.UploadService_UploadServer
 }
 
-func NewServerStream(settings *config.Settings, manager *dbmanager.DBManager, stream pb.UploadService_UploadServer) *ServerStream {
-	return &ServerStream{
-		Core: Core{
+func NewServerRecvStream(settings *config.Settings, manager *dbmanager.DBManager, stream pb.UploadService_UploadServer) *ServerRecvStream {
+	return &ServerRecvStream{
+		Core: chunkstream.Core{
 			Settings: settings,
 			Manager: manager,
 		},
@@ -26,7 +27,7 @@ func NewServerStream(settings *config.Settings, manager *dbmanager.DBManager, st
 	}
 }
 
-func (s *ServerStream) RecvStreamChunks() error {
+func (s *ServerRecvStream) RecvStreamChunks() error {
 	var chunk *pb.FileChunk
 	var err error
 
@@ -46,11 +47,11 @@ func (s *ServerStream) RecvStreamChunks() error {
 	return nil
 }
 
-func (s *ServerStream) RecvChunk() (*pb.FileChunk, error) {
+func (s *ServerRecvStream) RecvChunk() (*pb.FileChunk, error) {
 	return s.Stream.Recv()
 }
 
-func (s *ServerStream) PeerAddress() string {
+func (s *ServerRecvStream) PeerAddress() string {
 	peer, ok := peer.FromContext(s.Stream.Context())
 	if ok {
 		return peer.Addr.String()
@@ -58,7 +59,7 @@ func (s *ServerStream) PeerAddress() string {
 	return "unknown"
 }
 
-func (s *ServerStream) MakeRecord() *model.Record {
+func (s *ServerRecvStream) MakeRecord() *model.Record {
 	return &model.Record{
 		Sha256:         s.FileInfo.Sha256,
 		InteractAction: "upload",
@@ -67,7 +68,7 @@ func (s *ServerStream) MakeRecord() *model.Record {
 	}
 }
 
-func (s *ServerStream) CloseStream(validate bool) error {
+func (s *ServerRecvStream) CloseStream(validate bool) error {
 	s.Manager.UpdateFileInfo(&s.FileInfo)
 	s.Manager.CreateRecord(s.MakeRecord())
 	
@@ -76,7 +77,7 @@ func (s *ServerStream) CloseStream(validate bool) error {
 	return s.Stream.SendAndClose(status)
 }
 
-func (s *ServerStream) genUploadStatus(validate bool) *pb.UploadStatus {
+func (s *ServerRecvStream) genUploadStatus(validate bool) *pb.UploadStatus {
 	var statusCode pb.Status
 	if validate {
 		statusCode = pb.Status_OK

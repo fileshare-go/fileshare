@@ -5,7 +5,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/debugprint"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
+	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/recv"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	pb "github.com/chanmaoganda/fileshare/proto/gen"
@@ -50,7 +50,7 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	logrus.Debug("[Upload] Starting Upload Process!")
 	
-	chunkStream := chunkstream.NewServerStream(s.Settings, s.Manager, stream)
+	chunkStream := recv.NewServerRecvStream(s.Settings, s.Manager, stream)
 	if err := chunkStream.RecvStreamChunks(); err != nil {
 		return chunkStream.CloseStream(false)
 	}
