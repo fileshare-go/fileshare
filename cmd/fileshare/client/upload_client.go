@@ -31,11 +31,13 @@ var UploadCmd = &cobra.Command{
 			logrus.Panic(err)
 		}
 
-		defer conn.Close()
-
 		client := upload.NewUploadClient(cmd.Context(), conn)
 
 		if err := client.UploadFile(cmd.Context(), transferFile); err != nil {
+			logrus.Error(err)
+		}
+
+		if err := conn.Close(); err != nil {
 			logrus.Error(err)
 		}
 	},

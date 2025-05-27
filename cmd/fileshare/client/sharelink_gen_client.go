@@ -32,11 +32,13 @@ var ShareLinkGenCmd = &cobra.Command{
 			logrus.Panic(err)
 		}
 
-		defer conn.Close()
-
 		client := sharelink.NewShareLinkClient(cmd.Context(), conn)
 
 		code := client.GenerateLink(transferFile, sha256)
 		logrus.Infof("Generated Code is: [%s]", code)
+
+		if err := conn.Close(); err != nil {
+			logrus.Error(err)
+		}
 	},
 }

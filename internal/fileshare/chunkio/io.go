@@ -10,7 +10,9 @@ import (
 
 func MakeChunk(file *os.File, sha256 string, chunkSize int64, chunkIndex int32) *pb.FileChunk {
 	data := make([]byte, chunkSize)
-	file.Seek(chunkSize*int64(chunkIndex), 0)
+	if _, err := file.Seek(chunkSize*int64(chunkIndex), 0); err != nil {
+		logrus.Panic("File cannot be seeked to ", chunkSize*int64(chunkIndex))
+	}
 	n, err := file.Read(data)
 	if err != nil {
 		logrus.Error(err)
@@ -30,7 +32,11 @@ func SaveChunk(cache_dir string, chunk *pb.FileChunk) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			logrus.Warn(err)
+		}
+	}()
 
 	// Write bytes to the file
 	_, err = file.Write(chunk.Data)

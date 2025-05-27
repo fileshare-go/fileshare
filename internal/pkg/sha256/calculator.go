@@ -15,7 +15,11 @@ func CalculateFileSHA256(filePath string) (string, error) {
 		logrus.Error("Error opening file:", err)
 		return "", err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			logrus.Warn(err)
+		}
+	}()
 
 	hasher := sha256.New()
 	if _, err := io.Copy(hasher, file); err != nil {

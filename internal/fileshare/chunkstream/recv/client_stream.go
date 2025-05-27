@@ -48,10 +48,6 @@ func (c *ClientRecvStream) RecvChunk() (*pb.FileChunk, error) {
 	return c.Stream.Recv()
 }
 
-func (c *ClientRecvStream) ValidateFile() bool {
-	return c.Core.Validate()
-}
-
 func (c *ClientRecvStream) CloseStream(bool) error {
 	c.Manager.UpdateFileInfo(&c.FileInfo)
 

@@ -48,7 +48,7 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 	shareLink.LinkCode = link.LinkCode
 
 	if !s.Manager.SelectShareLink(&shareLink) {
-		return nil, errors.New("no file associated is found!")
+		return nil, errors.New("no file associated is found")
 	}
 
 	var fileInfo model.FileInfo
@@ -61,16 +61,6 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 	}
 
 	return nil, errors.New("no matching file found")
-}
-
-func (s *DownloadServer) uploadEmptyTask(stream pb.DownloadService_DownloadServer, task *pb.DownloadTask) error {
-	logrus.Debug("Download Task is empty, just send empty data instead")
-	chunk := &pb.FileChunk{
-		Sha256:     task.Meta.Sha256,
-		ChunkIndex: 0,
-		Data:       []byte{},
-	}
-	return stream.Send(chunk)
 }
 
 func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) error {

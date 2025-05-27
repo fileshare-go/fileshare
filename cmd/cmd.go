@@ -19,8 +19,8 @@ Example Usages:
 - fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 - fileshare cache clean
 	`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return cmd.Usage()
 	},
 }
 

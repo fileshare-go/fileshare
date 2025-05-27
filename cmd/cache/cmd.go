@@ -7,8 +7,8 @@ import (
 var CacheCmd = &cobra.Command{
 	Use:   "cache",
 	Short: "Operating cache set in settings.yml, if not set then operate the default cache folder ($HOME/.fileshare)",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return cmd.Usage()
 	},
 }
 
