@@ -11,13 +11,10 @@ import (
 )
 
 var ShareLinkGenCmd = &cobra.Command{
-	Use:   "linkgen",
+	Use:   "linkgen <filename> <checksum256> <expire days>",
 	Short: "Generates sharelink code for friends to easily download",
+	Args: cobra.MinimumNArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 3 {
-			logrus.Error("Too few arguments, size is", len(args))
-			return
-		}
 		settings, err := config.ReadSettings("settings.yml")
 		if err != nil {
 			logrus.Error(err)
