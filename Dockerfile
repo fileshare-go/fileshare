@@ -56,5 +56,7 @@ COPY settings.yml .
 # Expose the port your Go application listens on
 EXPOSE 60011
 
+EXPOSE 8080
+
 # Define the command to run your application
 CMD ["/app/fileshare", "server"]
