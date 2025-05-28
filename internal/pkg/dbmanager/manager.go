@@ -1,6 +1,8 @@
 package dbmanager
 
 import (
+	"time"
+
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"gorm.io/gorm"
 )
@@ -45,7 +47,18 @@ func (m *DBManager) UpdateShareLink(shareLink *model.ShareLink) bool {
 	return result.Error == nil && result.RowsAffected == 1
 }
 
+func (m *DBManager) SelectValidShareLink(shareLink *model.ShareLink) bool {
+	result := m.DB.Scopes(NotOutdated()).Find(&shareLink)
+	return result.Error == nil && result.RowsAffected == 1
+}
+
 func (m *DBManager) CreateRecord(record *model.Record) bool {
 	result := m.DB.Create(record)
 	return result.Error == nil && result.RowsAffected == 1
+}
+
+func NotOutdated() func(DB *gorm.DB) *gorm.DB {
+	return func(DB *gorm.DB) *gorm.DB {
+		return DB.Where("outdated_at > ?", time.Now())
+	}
 }
