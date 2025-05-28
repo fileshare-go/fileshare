@@ -10,3 +10,6 @@ Avoid u get a hash to download without permission
 
 # Add outdate time in sharelink
 
+# Add create user for uploaded file, use this to judge if u have any right to generate links
+
+# Admin password be encrypted
