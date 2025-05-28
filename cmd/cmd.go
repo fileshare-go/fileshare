@@ -9,16 +9,8 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Use: "fileshare",
-	Long: `Fileshare is designed for lightweight file server.
-Example Usages:
-- fileshare server
-- fileshare upload llvm-2.2.tar.gz
-- fileshare download fzHghSyr
-- fileshare download 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
-- fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
-- fileshare cache clean
-	`,
+	Use: "fileshare <subcommands>",
+	Short: "Fileshare is designed for lightweight file server.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Usage()
 	},
