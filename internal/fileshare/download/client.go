@@ -2,6 +2,7 @@ package download
 
 import (
 	"context"
+	"errors"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/recv"
@@ -42,6 +43,9 @@ func (c *DownloadClient) getTask(ctx context.Context, key string) (*pb.DownloadT
 	summary, err := c.getSummary(ctx, key)
 	if err != nil {
 		return nil, err
+	}
+	if summary.Status != pb.Status_OK {
+		return nil, errors.New(summary.Message)
 	}
 
 	fileInfo := &model.FileInfo{

@@ -3,6 +3,7 @@ package download
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/send"
@@ -47,8 +48,13 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 	var shareLink model.ShareLink
 	shareLink.LinkCode = link.LinkCode
 
-	if !s.Manager.SelectShareLink(&shareLink) {
-		return nil, errors.New("no file associated is found")
+	summary := &pb.DownloadSummary{}
+	if s.Manager.SelectShareLink(&shareLink) {
+		if shareLink.OutdatedAt.Before(time.Now()) {
+			summary.Status = pb.Status_ERROR
+			summary.Message = "Share link outdated!"
+			return summary, nil
+		}
 	}
 
 	var fileInfo model.FileInfo
@@ -56,6 +62,9 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 
 	if s.Manager.SelectFileInfo(&fileInfo) {
 		summary := fileInfo.BuildDownloadSummary()
+		summary.Status = pb.Status_OK
+		summary.Message = "Share link found!"
+
 		debugprint.DebugDownloadSummary(summary)
 		return summary, nil
 	}

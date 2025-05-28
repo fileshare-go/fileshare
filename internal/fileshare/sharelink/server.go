@@ -2,7 +2,7 @@ package sharelink
 
 import (
 	"context"
-	"errors"
+	"time"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/model"
@@ -10,6 +10,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/peer"
 	"gorm.io/gorm"
 )
 
@@ -28,42 +29,90 @@ func NewShareLinkServer(settings *config.Settings, DB *gorm.DB) *ShareLinkServer
 	}
 }
 
-func (s *ShareLinkServer) GenerateLink(_ context.Context, meta *pb.FileMeta) (*pb.ShareLink, error) {
-	logrus.Debugf("Generating sharelink for %s", debugprint.Render(meta.Sha256[:8]))
+func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb.ShareLinkRequest) (*pb.ShareLinkResponse, error) {
+	logrus.Debugf("Generating sharelink for %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]))
 
-	link := &model.ShareLink{
-		Sha256: meta.Sha256,
-	}
-	if s.Manager.SelectShareLink(link) {
-		logrus.Debugf("Existing sharelink for %s is %s", debugprint.Render(meta.Sha256[:8]), debugprint.Render(link.LinkCode))
+	handler := NewLinkHandler(sharelinkRequest, s.PeerAddress(ctx), s.Manager)
 
-		return &pb.ShareLink{
-			LinkCode: link.LinkCode,
+	if !handler.Manager.SelectFileInfo(handler.FileInfo) {
+		return &pb.ShareLinkResponse{
+			Status: pb.Status_ERROR,
+			Message: "File not found",
+			LinkCode: "",
 		}, nil
 	}
 
-	// if db doesn't have records then construct this ShareLink
+	if handler.Manager.SelectValidShareLink(handler.ShareLink) {
+		logrus.Debugf("Existing sharelink for %s is %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]), debugprint.Render(handler.ShareLink.LinkCode))
+		return &pb.ShareLinkResponse{
+			Status: pb.Status_OK,
+			Message: "Found existing sharelink code!",
+			LinkCode: handler.ShareLink.LinkCode,
+		}, nil
+	}
+
 	linkCode := s.RangGen.generateCode(s.Settings.ShareCodeLength)
-	logrus.Debugf("Generated code is %s", debugprint.Render(linkCode))
 
-	fileInfo := &model.FileInfo{
-		Sha256: meta.Sha256,
-	}
+	handler.PersistShareLink(linkCode)
+	handler.PersistRecords()
 
-	if !s.Manager.SelectFileInfo(fileInfo) {
-		return nil, errors.New("file meta not exist")
-	}
+	logrus.Debugf("Generated sharelink for %s is %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]), debugprint.Render(linkCode))
 
-	link.LinkCode = linkCode
-	link.Sha256 = fileInfo.Sha256
-
-	if !s.Manager.CreateShareLink(link) {
-		return nil, errors.New("link code gen error")
-	}
-
-	logrus.Debugf("Generated sharelink for %s is %s", debugprint.Render(meta.Sha256[:8]), debugprint.Render(link.LinkCode))
-
-	return &pb.ShareLink{
+	return &pb.ShareLinkResponse{
+		Status: pb.Status_OK,
+		Message: "Generated code for sharelink",
 		LinkCode: linkCode,
 	}, nil
+}
+
+func (s *ShareLinkServer) PeerAddress(ctx context.Context) string {
+	peer, ok := peer.FromContext(ctx)
+	if ok {
+		return peer.Addr.String()
+	}
+	return "unknown"
+}
+
+type LinkHandler struct {
+	PeerAddr string
+	FileInfo *model.FileInfo
+	ShareLink *model.ShareLink
+	Manager *dbmanager.DBManager
+	Request *pb.ShareLinkRequest
+}
+
+func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, peerAddr string, manager *dbmanager.DBManager) *LinkHandler {
+	return &LinkHandler{
+		PeerAddr: peerAddr,
+		FileInfo: &model.FileInfo{
+			Sha256: shareLinkRequest.Meta.Sha256,
+		},
+		ShareLink: &model.ShareLink{
+			Sha256: shareLinkRequest.Meta.Sha256,
+		},
+		Manager: manager,
+		Request: shareLinkRequest,
+	}
+}
+
+func (h *LinkHandler) PersistShareLink(linkCode string) {
+	h.ShareLink.LinkCode = linkCode
+	h.ShareLink.CreatedAt = time.Now()
+	h.ShareLink.OutdatedAt = time.Now().AddDate(0, 0, int(h.Request.ValidDays))
+	h.ShareLink.CreatedBy = h.PeerAddr
+	
+	h.Manager.UpdateShareLink(h.ShareLink)
+}
+
+func (h *LinkHandler) PersistRecords() {
+	h.Manager.CreateRecord(h.MakeRecord())
+}
+
+func (h *LinkHandler) MakeRecord() *model.Record {
+	return &model.Record{
+		Sha256:         h.FileInfo.Sha256,
+		InteractAction: "linkgen",
+		ClientIp:       h.PeerAddr,
+		Time:           time.Now(),
+	}
 }

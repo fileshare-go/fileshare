@@ -1,12 +1,16 @@
 package send
 
 import (
+	"time"
+
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
+	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/peer"
 )
 
 type ServerSendStream struct {
@@ -44,8 +48,27 @@ func (s *ServerSendStream) SendChunk(chunk *pb.FileChunk) error {
 }
 
 func (s *ServerSendStream) CloseStream() error {
+	s.Manager.CreateRecord(s.MakeRecord())
+
 	logrus.Debug("Closing server sending stream")
 	return nil
+}
+
+func (s *ServerSendStream) MakeRecord() *model.Record {
+	return &model.Record{
+		Sha256:         s.FileInfo.Sha256,
+		InteractAction: "download",
+		ClientIp:       s.PeerAddress(),
+		Time:           time.Now(),
+	}
+}
+
+func (s *ServerSendStream) PeerAddress() string {
+	peer, ok := peer.FromContext(s.Stream.Context())
+	if ok {
+		return peer.Addr.String()
+	}
+	return "unknown"
 }
 
 func (s *ServerSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {

@@ -59,11 +59,13 @@ message DownloadRequest {
 }
 
 message DownloadSummary {
-    FileMeta meta = 1;
-    int64 fileSize = 2;
-    int32 chunkNumber = 3;
-    int64 chunkSize = 4;
-    repeated int32 chunkList = 5;
+    Status status = 1;
+    string message = 2;
+    FileMeta meta = 3;
+    int64 fileSize = 4;
+    int32 chunkNumber = 5;
+    int64 chunkSize = 6;
+    repeated int32 chunkList = 7;
 }
 
 message DownloadTask {
@@ -74,7 +76,18 @@ message DownloadTask {
 
 // Link Service defined here
 service ShareLinkService {
-    rpc GenerateLink(FileMeta) returns (ShareLink);
+    rpc GenerateLink(ShareLinkRequest) returns (ShareLinkResponse);
+}
+
+message ShareLinkRequest {
+    FileMeta meta = 1;
+    int32 validDays = 2;
+}
+
+message ShareLinkResponse {
+    Status status = 1;
+    string message = 2;
+    string linkCode = 3;
 }
 
 message ShareLink {
