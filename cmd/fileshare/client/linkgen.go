@@ -13,7 +13,7 @@ import (
 var ShareLinkGenCmd = &cobra.Command{
 	Use:   "linkgen <filename> <checksum256> <expire days>",
 	Short: "Generates sharelink code for friends to easily download",
-	Args: cobra.MinimumNArgs(3),
+	Args:  cobra.MinimumNArgs(3),
 	Run: func(cmd *cobra.Command, args []string) {
 		settings, err := config.ReadSettings("settings.yml")
 		if err != nil {

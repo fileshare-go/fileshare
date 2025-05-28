@@ -9,7 +9,7 @@ import (
 )
 
 var RootCmd = &cobra.Command{
-	Use: "fileshare <subcommands>",
+	Use:   "fileshare <subcommands>",
 	Short: "Fileshare is designed for lightweight file server.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return cmd.Usage()

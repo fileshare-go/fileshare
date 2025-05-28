@@ -17,7 +17,7 @@ type Settings struct {
 	CacheDirectory    string `yaml:"cache_directory"`
 	DownloadDirectory string `yaml:"download_directory"`
 	CertsPath         string `yaml:"certs_path"`
-	ValidDays int `yaml:"valid_days"`
+	ValidDays         int    `yaml:"valid_days"`
 }
 
 func ReadSettings(filename string) (*Settings, error) {

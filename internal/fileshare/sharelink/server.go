@@ -36,8 +36,8 @@ func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb
 
 	if !handler.Manager.SelectFileInfo(handler.FileInfo) {
 		return &pb.ShareLinkResponse{
-			Status: pb.Status_ERROR,
-			Message: "File not found",
+			Status:   pb.Status_ERROR,
+			Message:  "File not found",
 			LinkCode: "",
 		}, nil
 	}
@@ -45,8 +45,8 @@ func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb
 	if handler.Manager.SelectValidShareLink(handler.ShareLink) {
 		logrus.Debugf("Existing sharelink for %s is %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]), debugprint.Render(handler.ShareLink.LinkCode))
 		return &pb.ShareLinkResponse{
-			Status: pb.Status_OK,
-			Message: "Found existing sharelink code!",
+			Status:   pb.Status_OK,
+			Message:  "Found existing sharelink code!",
 			LinkCode: handler.ShareLink.LinkCode,
 		}, nil
 	}
@@ -59,8 +59,8 @@ func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb
 	logrus.Debugf("Generated sharelink for %s is %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]), debugprint.Render(linkCode))
 
 	return &pb.ShareLinkResponse{
-		Status: pb.Status_OK,
-		Message: "Generated code for sharelink",
+		Status:   pb.Status_OK,
+		Message:  "Generated code for sharelink",
 		LinkCode: linkCode,
 	}, nil
 }
@@ -74,11 +74,11 @@ func (s *ShareLinkServer) PeerAddress(ctx context.Context) string {
 }
 
 type LinkHandler struct {
-	PeerAddr string
-	FileInfo *model.FileInfo
+	PeerAddr  string
+	FileInfo  *model.FileInfo
 	ShareLink *model.ShareLink
-	Manager *dbmanager.DBManager
-	Request *pb.ShareLinkRequest
+	Manager   *dbmanager.DBManager
+	Request   *pb.ShareLinkRequest
 }
 
 func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, peerAddr string, manager *dbmanager.DBManager) *LinkHandler {
@@ -100,7 +100,7 @@ func (h *LinkHandler) PersistShareLink(linkCode string) {
 	h.ShareLink.CreatedAt = time.Now()
 	h.ShareLink.OutdatedAt = time.Now().AddDate(0, 0, int(h.Request.ValidDays))
 	h.ShareLink.CreatedBy = h.PeerAddr
-	
+
 	h.Manager.UpdateShareLink(h.ShareLink)
 }
 
