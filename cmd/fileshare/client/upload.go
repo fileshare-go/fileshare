@@ -9,7 +9,7 @@ import (
 )
 
 var UploadCmd = &cobra.Command{
-	Use:   "upload",
+	Use:   "upload <filename>",
 	Short: "Uploads the file, requires the filename as argument",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
