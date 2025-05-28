@@ -44,6 +44,7 @@ func (s *ServerSendStream) SendStreamChunks() error {
 }
 
 func (s *ServerSendStream) SendChunk(chunk *pb.FileChunk) error {
+	s.SetupAndRecordInfo(chunk)
 	return s.Stream.Send(chunk)
 }
 
