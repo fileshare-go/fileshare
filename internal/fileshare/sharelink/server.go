@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
+	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"

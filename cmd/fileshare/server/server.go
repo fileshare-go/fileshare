@@ -42,7 +42,7 @@ var ServerCmd = &cobra.Command{
 			logrus.Panic(err)
 		}
 
-		DB := db.SetupDB(settings.Database)
+		DB := db.SetupServerDB(settings.Database)
 
 		pb.RegisterUploadServiceServer(grpcServer, upload.NewUploadServer(settings, DB))
 		pb.RegisterDownloadServiceServer(grpcServer, download.NewDownloadServer(settings, DB))

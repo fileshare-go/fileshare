@@ -5,7 +5,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
+	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 )
 

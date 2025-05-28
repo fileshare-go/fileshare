@@ -32,7 +32,7 @@ var DownloadCmd = &cobra.Command{
 			logrus.Panic(err)
 		}
 
-		DB := db.SetupDB(settings.Database)
+		DB := db.SetupClientDB(settings.Database)
 
 		client := download.NewDownloadClient(cmd.Context(), settings, conn, DB)
 

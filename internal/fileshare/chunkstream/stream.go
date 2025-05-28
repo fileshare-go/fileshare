@@ -7,8 +7,8 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/model"
+	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"

@@ -7,7 +7,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupDB(sqliteFile string) *gorm.DB {
+func SetupClientDB(sqliteFile string) *gorm.DB {
+	db, err := gorm.Open(sqlite.Open(sqliteFile), &gorm.Config{})
+	if err != nil {
+		logrus.Fatalf("sqlite %s: %v", sqliteFile, err)
+	}
+	if err := db.AutoMigrate(&model.FileInfo{}); err != nil {
+		logrus.Panic(err)
+	}
+	return db
+}
+
+func SetupServerDB(sqliteFile string) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(sqliteFile), &gorm.Config{})
 	if err != nil {
 		logrus.Fatalf("sqlite %s: %v", sqliteFile, err)
