@@ -3,6 +3,9 @@ package server
 import (
 	"fmt"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
@@ -11,6 +14,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
 	"github.com/chanmaoganda/fileshare/internal/pkg/db"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/chanmaoganda/fileshare/internal/web"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -29,10 +33,9 @@ var ServerCmd = &cobra.Command{
 
 		settings.PrintSettings()
 
-		listen, err := net.Listen("tcp", settings.Address)
+		logrus.Debug("Server listening on ", settings.GrpcAddress)
 
-		logrus.Debug("Server listening on ", settings.Address)
-
+		listen, err := net.Listen("tcp", settings.GrpcAddress)
 		if err != nil {
 			logrus.Fatalln("cannot bind address")
 		}
@@ -48,9 +51,24 @@ var ServerCmd = &cobra.Command{
 		pb.RegisterDownloadServiceServer(grpcServer, download.NewDownloadServer(settings, DB))
 		pb.RegisterShareLinkServiceServer(grpcServer, sharelink.NewShareLinkServer(settings, DB))
 
-		if err := grpcServer.Serve(listen); err != nil {
-			logrus.Error(err)
-		}
+		go func() {
+			if err := grpcServer.Serve(listen); err != nil {
+				logrus.Error(err)
+			}
+		}()
+
+		web := web.NewWebService(DB)
+		go func() {
+			if err := web.Run(settings.WebAddress); err != nil {
+				logrus.Error(err)
+			}
+		}()
+
+		shutdown := make(chan os.Signal, 1)
+		signal.Notify(shutdown, os.Interrupt, syscall.SIGINT)
+		<-shutdown
+		logrus.Info("Shutting down servers...")
+		grpcServer.GracefulStop()
 	},
 }
 

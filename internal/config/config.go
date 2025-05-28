@@ -10,7 +10,8 @@ import (
 )
 
 type Settings struct {
-	Address           string `yaml:"address"`
+	GrpcAddress       string `yaml:"grpc_address"`
+	WebAddress        string `yaml:"web_address"`
 	Database          string `yaml:"database"`
 	ShareCodeLength   int    `yaml:"share_code_length"`
 	CacheDirectory    string `yaml:"cache_directory"`
@@ -46,8 +47,8 @@ func (s *Settings) SetupEssentials() error {
 }
 
 func (s *Settings) FillMissingWithDefault() {
-	if s.Address == "" {
-		s.Address = ":8080"
+	if s.GrpcAddress == "" {
+		s.GrpcAddress = ":8080"
 	}
 	if s.Database == "" {
 		s.Database = "default.db"
@@ -69,7 +70,7 @@ func (s *Settings) FillMissingWithDefault() {
 }
 
 func (s *Settings) PrintSettings() {
-	logrus.Debugf("[Settings] Address: %s", s.Address)
+	logrus.Debugf("[Settings] Address: %s", s.GrpcAddress)
 	logrus.Debugf("[Settings] Database: %s", s.Database)
 	logrus.Debugf("[Settings] ShareCodeLength: %d", s.ShareCodeLength)
 	logrus.Debugf("[Settings] CacheDirectory %s", s.CacheDirectory)

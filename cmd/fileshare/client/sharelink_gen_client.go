@@ -25,7 +25,7 @@ var ShareLinkGenCmd = &cobra.Command{
 			return
 		}
 
-		logrus.Debug("Connecting to ", settings.Address)
+		logrus.Debug("Connecting to ", settings.GrpcAddress)
 
 		conn, err := fileshare.NewClientConn(settings)
 		if err != nil {

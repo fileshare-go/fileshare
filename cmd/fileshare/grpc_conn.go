@@ -13,7 +13,7 @@ func NewCredentialClientConn(settings *config.Settings) (*grpc.ClientConn, error
 		return nil, err
 	}
 
-	return grpc.NewClient(settings.Address, grpc.WithTransportCredentials(credentialLoader.ServerCredentials))
+	return grpc.NewClient(settings.GrpcAddress, grpc.WithTransportCredentials(credentialLoader.ServerCredentials))
 }
 
 func NewCredentialServerConn(settings *config.Settings) (*grpc.Server, error) {
@@ -26,7 +26,7 @@ func NewCredentialServerConn(settings *config.Settings) (*grpc.Server, error) {
 }
 
 func NewClientConn(settings *config.Settings) (*grpc.ClientConn, error) {
-	return grpc.NewClient(settings.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	return grpc.NewClient(settings.GrpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 }
 
 func NewServerConn(settings *config.Settings) (*grpc.Server, error) {

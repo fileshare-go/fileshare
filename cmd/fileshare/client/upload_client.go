@@ -24,7 +24,7 @@ var UploadCmd = &cobra.Command{
 			return
 		}
 
-		logrus.Debug("Uploading file to ", settings.Address)
+		logrus.Debug("Uploading file to ", settings.GrpcAddress)
 
 		conn, err := fileshare.NewClientConn(settings)
 		if err != nil {
