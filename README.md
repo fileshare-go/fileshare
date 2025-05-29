@@ -140,7 +140,14 @@ fileshare download 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311
 ```
 
 #### Client Gen Code
-Notice that the parameters are `filename` `checksum256`
+Notice that the parameters are `filename` `checksum256` `valid days`
+
+Below cmd will make a sharelink which will live for 300 days
+``` sh
+fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072 300
+```
+
+This cmd do not specify valid days, then server will generate `according to settings.yml at server side`
 ``` sh
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 ```
@@ -154,7 +161,13 @@ fileshare cache clean
 ### Web Apis:
 ``` sh
 curl 0.0.0.0:8080/fileinfo
+```
+
+``` sh
 curl 0.0.0.0:8080/sharelink
+```
+
+``` sh
 curl 0.0.0.0:8080/record
 ```
 responses are structure below:
@@ -163,6 +176,36 @@ responses are structure below:
   "data": [
     ...
   ]
+}
+```
+
+#### Example Output
+``` json
+{
+    "data": [
+        {
+            "Filename": "fileshare",
+            "Sha256": "e21645144861413cfd06a268fb3ff6d6a65da0f002034c1667d4607f664faee3",
+            "ChunkSize": 1048576,
+            "ChunkNumber": 19,
+            "FileSize": 19709952,
+            "UploadedChunks": "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]",
+            "Link": {
+                "Sha256": "",
+                "LinkCode": "",
+                "CreatedBy": "",
+                "CreatedAt": "0001-01-01T00:00:00Z",
+                "OutdatedAt": "0001-01-01T00:00:00Z"
+            },
+            "Record": {
+                "Sha256": "",
+                "InteractAction": "",
+                "ClientIp": "",
+                "Os": "",
+                "Time": "0001-01-01T00:00:00Z"
+            }
+        }
+    ]
 }
 ```
 
