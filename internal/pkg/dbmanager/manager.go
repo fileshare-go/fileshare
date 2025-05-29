@@ -60,7 +60,7 @@ func (m *DBManager) UpdateShareLink(shareLink *model.ShareLink) bool {
 	if invalidShareLink(shareLink) {
 		return false
 	}
-	result := m.DB.Save(shareLink).First(shareLink)
+	result := m.DB.Save(shareLink)
 	return result.Error == nil && result.RowsAffected == 1
 }
 

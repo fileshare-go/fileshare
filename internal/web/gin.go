@@ -31,7 +31,11 @@ func (s *WebService) RegisterRoutes() {
 
 func (s *WebService) GetFileInfos(c *gin.Context) {
 	var fileInfos []model.FileInfo
-	s.Manager.DB.Find(&fileInfos)
+	s.Manager.DB.
+		Model(&model.FileInfo{}).
+		Preload("Record").
+		Preload("Link").
+		Find(&fileInfos)
 
 	c.JSON(http.StatusOK, gin.H{"data": fileInfos})
 }

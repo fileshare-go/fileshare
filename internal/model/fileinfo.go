@@ -16,13 +16,13 @@ import (
 
 type FileInfo struct {
 	Filename       string `gorm:"primaryKey;size:64"`
-	Sha256         string `gorm:"primaryKey;size:128"`
+	Sha256         string `gorm:"primaryKey;size:64"`
 	ChunkSize      int64
 	ChunkNumber    int32
 	FileSize       int64
 	UploadedChunks string
-	Link           ShareLink `gorm:"foreignKey:Sha256;references:Sha256"`
-	Record         Record    `gorm:"foreignKey:Sha256;references:Sha256"`
+	Link           []ShareLink `gorm:"foreignKey:Sha256;references:Sha256"`
+	Record         []Record    `gorm:"foreignKey:Sha256;references:Sha256"`
 }
 
 func (f *FileInfo) GetUploadedChunks() []int32 {
