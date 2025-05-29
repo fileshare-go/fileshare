@@ -69,6 +69,9 @@ func (s *Settings) FillMissingWithDefault() {
 	if s.DownloadDirectory == "" {
 		s.DownloadDirectory = fmt.Sprintf("%s/%s", homeDir, "Downloads")
 	}
+	if s.ValidDays == 0 {
+		s.ValidDays = 7
+	}
 }
 
 func (s *Settings) PrintSettings() {

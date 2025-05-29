@@ -2,6 +2,7 @@ package sharelink
 
 import (
 	"context"
+	"strconv"
 
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
@@ -20,14 +21,8 @@ func NewShareLinkClient(ctx context.Context, conn *grpc.ClientConn) *ShareLinkCl
 	}
 }
 
-func (c *ShareLinkClient) GenerateLink(filename, sha256 string, validDays int) string {
-	req := &pb.ShareLinkRequest{
-		Meta: &pb.FileMeta{
-			Filename: filename,
-			Sha256:   sha256,
-		},
-		ValidDays: int32(validDays),
-	}
+func (c *ShareLinkClient) GenerateLink(args []string) string {
+	req := ParseArgs2Request(args)
 
 	link, err := c.Client.GenerateLink(context.Background(), req)
 	if err != nil {
@@ -36,4 +31,25 @@ func (c *ShareLinkClient) GenerateLink(filename, sha256 string, validDays int) s
 	}
 
 	return link.LinkCode
+}
+
+func ParseArgs2Request(args []string) *pb.ShareLinkRequest {
+	var validDays int
+	var err error
+	if len(args) < 3 {
+		validDays = 0
+	} else {
+		validDays, err = strconv.Atoi(args[2])
+		if err != nil {
+			validDays = 0	
+		}
+	}
+
+	return &pb.ShareLinkRequest{
+		Meta: &pb.FileMeta{
+			Filename: args[0],
+			Sha256: args[1],
+		},
+		ValidDays: int32(validDays),
+	}
 }

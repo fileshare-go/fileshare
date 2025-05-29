@@ -33,7 +33,7 @@ func NewShareLinkServer(settings *config.Settings, DB *gorm.DB) *ShareLinkServer
 func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb.ShareLinkRequest) (*pb.ShareLinkResponse, error) {
 	logrus.Debugf("Generating sharelink for %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]))
 
-	handler := NewLinkHandler(sharelinkRequest, s.PeerOs(ctx), s.PeerAddress(ctx), s.Manager)
+	handler := NewLinkHandler(sharelinkRequest, s.Settings, s.PeerOs(ctx), s.PeerAddress(ctx), s.Manager)
 
 	if !handler.Manager.SelectFileInfo(handler.FileInfo) {
 		return &pb.ShareLinkResponse{
@@ -89,14 +89,16 @@ func (s *ShareLinkServer) PeerOs(ctx context.Context) string {
 type LinkHandler struct {
 	OsInfo    string
 	PeerAddr  string
+	Settings *config.Settings
 	FileInfo  *model.FileInfo
 	ShareLink *model.ShareLink
 	Manager   *dbmanager.DBManager
 	Request   *pb.ShareLinkRequest
 }
 
-func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, osInfo, peerAddr string, manager *dbmanager.DBManager) *LinkHandler {
+func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, settings *config.Settings, osInfo, peerAddr string, manager *dbmanager.DBManager) *LinkHandler {
 	return &LinkHandler{
+		Settings: settings,
 		OsInfo:   osInfo,
 		PeerAddr: peerAddr,
 		FileInfo: &model.FileInfo{
@@ -113,11 +115,18 @@ func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, osInfo, peerAddr stri
 func (h *LinkHandler) PersistShareLink(linkCode string) {
 	h.ShareLink.LinkCode = linkCode
 	h.ShareLink.CreatedAt = time.Now()
-	h.ShareLink.OutdatedAt = time.Now().AddDate(0, 0, int(h.Request.ValidDays))
 	h.ShareLink.CreatedBy = h.PeerAddr
+
+	if h.Request.ValidDays == 0 {
+		logrus.Debug("[ShareLink] request days invalid, Using default valid days")
+		h.ShareLink.OutdatedAt = time.Now().AddDate(0, 0, int(h.Settings.ValidDays))
+	} else {
+		h.ShareLink.OutdatedAt = time.Now().AddDate(0, 0, int(h.Request.ValidDays))
+	}
 
 	h.Manager.UpdateShareLink(h.ShareLink)
 }
+
 
 func (h *LinkHandler) PersistRecords() {
 	h.Manager.CreateRecord(h.MakeRecord())

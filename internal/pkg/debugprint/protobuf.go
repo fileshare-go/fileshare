@@ -35,5 +35,5 @@ func DebugChunk(chunk *pb.FileChunk) {
 }
 
 func DebugMeta(meta *pb.FileMeta) {
-	logrus.Debugf("[Meta] File meta [filename: %s, sha256: %s]", meta.Filename, meta.Sha256[:8])
+	logrus.Debugf("[Meta] File meta [filename: %s, sha256: %s]", Render(meta.Filename), Render(meta.Sha256[:8]))
 }

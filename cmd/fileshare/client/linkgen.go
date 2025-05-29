@@ -1,8 +1,6 @@
 package client
 
 import (
-	"strconv"
-
 	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/sharelink"
@@ -11,21 +9,14 @@ import (
 )
 
 var ShareLinkGenCmd = &cobra.Command{
-	Use:   "linkgen <filename> <checksum256> <expire days>",
+	Use:   "linkgen <filename> <checksum256> <expire days(optional)>",
 	Short: "Generates sharelink code for friends to easily download",
-	Args:  cobra.MinimumNArgs(3),
+	Args:  cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		settings, err := config.ReadSettings("settings.yml")
 		if err != nil {
 			logrus.Error(err)
 			return
-		}
-
-		transferFile := args[0]
-		sha256 := args[1]
-		validDays, err := strconv.Atoi(args[2])
-		if err != nil {
-			validDays = settings.ValidDays
 		}
 
 		logrus.Debug("Connecting to ", settings.GrpcAddress)
@@ -37,7 +28,7 @@ var ShareLinkGenCmd = &cobra.Command{
 
 		client := sharelink.NewShareLinkClient(cmd.Context(), conn)
 
-		code := client.GenerateLink(transferFile, sha256, validDays)
+		code := client.GenerateLink(args)
 		logrus.Infof("Generated Code is: [%s]", code)
 
 		if err := conn.Close(); err != nil {
