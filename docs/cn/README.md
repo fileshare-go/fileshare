@@ -39,7 +39,6 @@ blocked_ips:
 
 ### 配置文件的例子
 #### 服务端
-要注意
 ``` yaml
 # config for server/settings.yml
 grpc_address: 0.0.0.0:60011
