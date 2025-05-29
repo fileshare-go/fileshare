@@ -190,20 +190,38 @@ responses are structure below:
             "ChunkNumber": 19,
             "FileSize": 19709952,
             "UploadedChunks": "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18]",
-            "Link": {
-                "Sha256": "",
-                "LinkCode": "",
-                "CreatedBy": "",
-                "CreatedAt": "0001-01-01T00:00:00Z",
-                "OutdatedAt": "0001-01-01T00:00:00Z"
-            },
-            "Record": {
-                "Sha256": "",
-                "InteractAction": "",
-                "ClientIp": "",
-                "Os": "",
-                "Time": "0001-01-01T00:00:00Z"
-            }
+            "Link": [
+                {
+                    "Sha256": "e21645144861413cfd06a268fb3ff6d6a65da0f002034c1667d4607f664faee3",
+                    "LinkCode": "DoBsLlwu",
+                    "CreatedBy": "172.16.33.118:9837",
+                    "CreatedAt": "2025-05-29T13:25:58.7261564+08:00",
+                    "OutdatedAt": "2026-03-25T13:25:58.7261564+08:00"
+                }
+            ],
+            "Record": [
+                {
+                    "Sha256": "e21645144861413cfd06a268fb3ff6d6a65da0f002034c1667d4607f664faee3",
+                    "InteractAction": "upload",
+                    "ClientIp": "172.16.33.118:9836",
+                    "Os": "linux,amd64,ethan-archlinux",
+                    "Time": "2025-05-29T13:25:55.6178337+08:00"
+                },
+                {
+                    "Sha256": "e21645144861413cfd06a268fb3ff6d6a65da0f002034c1667d4607f664faee3",
+                    "InteractAction": "linkgen",
+                    "ClientIp": "172.16.33.118:9837",
+                    "Os": "linux,amd64,ethan-archlinux",
+                    "Time": "2025-05-29T13:25:58.7405099+08:00"
+                },
+                {
+                    "Sha256": "e21645144861413cfd06a268fb3ff6d6a65da0f002034c1667d4607f664faee3",
+                    "InteractAction": "download",
+                    "ClientIp": "172.16.33.118:9838",
+                    "Os": "linux,amd64,ethan-archlinux",
+                    "Time": "2025-05-29T13:26:06.8239799+08:00"
+                }
+            ]
         }
     ]
 }
