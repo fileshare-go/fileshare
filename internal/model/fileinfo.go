@@ -29,7 +29,7 @@ func (f *FileInfo) GetUploadedChunks() []int32 {
 	var chunks []int32
 	if err := json.Unmarshal([]byte(f.UploadedChunks), &chunks); err != nil {
 		logrus.Error(err)
-		return f.GetAllChunks()
+		return []int32{}
 	}
 
 	return chunks

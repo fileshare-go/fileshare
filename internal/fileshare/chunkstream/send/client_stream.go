@@ -10,9 +10,9 @@ import (
 )
 
 type ClientSendStream struct {
-	Stream pb.UploadService_UploadClient
-	Task   *pb.UploadTask
-	File   *os.File
+	Stream       pb.UploadService_UploadClient
+	Task         *pb.UploadTask
+	SerialLoader *chunkio.SerialChunkLoader
 }
 
 func NewClientSendStream(task *pb.UploadTask, filePath string, stream pb.UploadService_UploadClient) chunkstream.StreamSendCore {
@@ -22,9 +22,9 @@ func NewClientSendStream(task *pb.UploadTask, filePath string, stream pb.UploadS
 	}
 
 	return &ClientSendStream{
-		Stream: stream,
-		Task:   task,
-		File:   file,
+		Stream:       stream,
+		Task:         task,
+		SerialLoader: chunkio.NewSerialChunkLoader(file, task.Meta.Sha256, task.ChunkSize),
 	}
 }
 
@@ -57,7 +57,7 @@ func (c *ClientSendStream) CloseStream() error {
 }
 
 func (s *ClientSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {
-	return chunkio.MakeChunk(s.File, s.Task.Meta.Sha256, s.Task.ChunkSize, chunkIdx)
+	return s.SerialLoader.LoadChunk(chunkIdx)
 }
 
 func (s *ClientSendStream) LoadEmptyChunk() *pb.FileChunk {
