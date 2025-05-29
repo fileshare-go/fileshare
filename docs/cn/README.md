@@ -1,16 +1,17 @@
-# Fileshare is a lightweight, grpc based centralized file server
-[中文文档](docs/cn/README.md)
+# Fileshare是一款轻量的基于grpc的中心式文件服务器
 
-Fileshare is designed for lightweight file server. Grpc is used for fast transfer.
+[英文文档](../../README.md)
 
-Fileshare auto check the validity of the file transferred. **Fileshare** will check the `sha256sum` value automatically after downloading and uploading
+Fileshare设计之初就是为了轻量，grpc是为了让传输更块
 
-Fileshare records upload, linkgen, download actions at server side, allows admin to have an overview of server records.
+Fileshare 还会自动检查文件的有效性，不论在客户端和服务端，是下载还是上传，**fileshare**都会自动检查`sha256`
 
-Fileshare also provides web api for monitoring sqlite data, see examples below
+Fileshare还会在服务侧记录所有的上传，下载和链接生成的动作，让管理员可以总览服务器记录
 
-# How to use?
-Each fileshare needs a `settings.yml` file in the `same folder with fileshare`, which should contains below parts
+Fileshare同时提供了web接口用于监管sqlite存储的数据，详情参照下文示例
+
+# 该怎么使用?
+每个fileshare都需要一个处于`和fileshare同目录`的`settings.yml`，这个文件应该包含如下部分：
 
 ``` yaml
 grpc_address: 0.0.0.0:60011
@@ -25,19 +26,20 @@ blocked_ips:
   - 127.0.0.1
 ```
 
-## Configuration files explained
+## 对配置文件的解释
 
-- for `grpc address` and `web address`, make sure that client and server has same ip address that can be accessed
-- for `database`, just make sure the parent directory of xxx.db exists
-    - for example, `client/client.db` just need to make sure `client` exists
-- for `share_code_length`, make sure this is `not set` to the default length of sha256 (which is 64 by default)
-- for `cache_directory`, where cached file chunks is stored. if not set, then use `$HOME/.fileshare`
-- for `download_directory`, where download file is stored. if not set, then use `$HOME/Downloads`
-- for `valid_days`: set the default valid days for a share link, if not set, then default is `7`, lives for a week
-- for `blocked_ips`, all requests from this ip addr will be blocked
+- 对于 `grpc address` and `web address`，要保证客户端和服务端监听的ip地址相同并且可访问
+- 对于 `database`, 只需要保证xxx.db的父级目录存在即可
+    - 举个栗子, `client/client.db`只需要保证`client`存在即可
+- 对于 `share_code_length`, 保证这个值`不要`被设置成sha256的默认长度（默认是64）
+- 对于 `cache_directory`, 存储缓存的文件块的目录。如果没有设置这个值，默认会使用`$HOME/.fileshare`
+- 对于 `download_directory`, 存储下载的文件的目录，如果没有设置这个值，默认会使用 `$HOME/Downloads`
+- 对于 `valid_days`: 设置分享码的默认有效天数，如果没有设置这个值，默认会使用`7`，也就是一周后过期
+- 对于 `blocked_ips`, 所有来自这个ip的请求都会被禁止
 
-### Examples for configuration files
-#### Server
+### 配置文件的例子
+#### 服务端
+要注意
 ``` yaml
 # config for server/settings.yml
 grpc_address: 0.0.0.0:60011
@@ -47,14 +49,14 @@ share_code_length: 8
 cache_directory: .cache
 download_directory: .download
 
-# below configurations will be used at server side only
+# 下面的配置项是只有服务端才会用到
 certs_path: certs
 valid_days: 30
 blocked_ips:
   - 127.0.0.1
 ```
 
-#### Client
+#### 客户端
 ``` yaml
 # config for client/settings.yml
 grpc_address: 0.0.0.0:60011
@@ -65,21 +67,21 @@ cache_directory: .cache
 download_directory: .download
 ```
 
-## LinkCode generating:
-### Exciting ability introduced! If u wanna share a file with your friends, you can generate linkcode by doing this:
-
+## 分享码如何生成:
+### 这是Fileshare令人激动的一个特性，如果你希望将文件分享给你的朋友，你可以通过这么做来生成一个分享码
 
 ``` sh
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 ```
-Above command will generate a linkcode like
+
+上面的命令会生成一行输出，见下
 
 ``` sh
 INFO[0000] Generated Code is: [fzHghSyr]
 ```
 
-## Example Structures
-below is a example structure of client and server structure
+## 文件结构示例
+这是客户端和服务端的文件结构示例
 ```
 .
 ├── client
@@ -96,68 +98,67 @@ below is a example structure of client and server structure
 3 directories, 8 files
 ```
 
-## Example Usages
+## 使用示例
 
-### Pictures
+### 图片示例
+#### 上传
+![](../pictures/upload.png)
 
-#### Upload
-![](docs/pictures/upload.png)
+#### 下载
+![](../pictures/download.png)
 
-#### Download
-![](docs/pictures/download.png)
+#### 分享码生成
+![](../pictures/linkgen.png)
 
-#### LinkGen
-![](docs/pictures/linkgen.png)
+#### 最终的目录结构是这样的:
+![](../pictures/final-structure.png)
 
-#### Final Structure be like:
-![](docs/pictures/final-structure.png)
+#### 清理缓存
+![](../pictures/cache-clean.png)
 
-#### Cache Clean
-![](docs/pictures/cache-clean.png)
+### 命令如何使用:
 
-### Cmd usages:
-
-#### Server
+#### 服务端
 ``` sh
 fileshare server
 ```
 
-#### Client Upload
+#### 客户端上传
 ``` sh
 fileshare upload llvm-2.2.tar.gz
 ```
 
-#### Client Download
-- Use the linkcode shared by your friends, and download with this code is ok!
+#### 客户端下载
+- 使用你朋友分享给你的分享码，使用这个分享码就可以下载了！
 ``` sh
 fileshare download fzHghSyr
 ```
 
-- Optional Usages: Notice that `following hash` is the `checksum` of the file using **sha256sum**
+- 可选的使用方式：下面出现的`哈希值`是文件使用**sha256**生成的`checksum`
 ``` sh
 fileshare download 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 ```
 
-#### Client Gen Code
-Notice that the parameters are `filename` `checksum256` `valid days`
+#### 客户端生成分享码
+注意这些参数是`文件名` `文件的checksum256` `有效期`
 
-Below cmd will make a sharelink which will live for 300 days
+下面的命令会生成一个有效期为300天的分享码
 ``` sh
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072 300
 ```
 
-This cmd do not specify valid days, then server will generate `according to settings.yml at server side`
+这个命令没有指定有效期，那么服务端会`根据服务端settings.yml的配置项`自动生成有效天数
 ``` sh
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 ```
 
-#### Client / Server clean cache
-Clean cache command can be used both at server and client
+#### 客户端/服务端清理缓存
+清理缓存这个命令可以在服务端和客户端使用
 ``` sh
 fileshare cache clean
 ```
 
-### Web Apis:
+### Web接口:
 ``` sh
 curl 0.0.0.0:8080/fileinfo
 ```
@@ -169,7 +170,7 @@ curl 0.0.0.0:8080/sharelink
 ``` sh
 curl 0.0.0.0:8080/record
 ```
-responses have structure below:
+返回值和下面的结构一致:
 ``` json
 {
   "data": [
@@ -178,7 +179,7 @@ responses have structure below:
 }
 ```
 
-#### Example Output
+#### 示例输出
 ``` json
 {
     "data": [
@@ -226,12 +227,12 @@ responses have structure below:
 }
 ```
 
-## Using Docker?
-First download `fileshare.docker.zip` from releases and import this zip file to your docker
+## 使用docker?
+首先从github release下载 `fileshare.docker.zip`，然后将这个文件导入docker
 
-And download binary from `fileshare.tar.gz`, extract to fileshare
+然后下载 `fileshare.tar.gz`, 解压为fileshare
 
-Then run following commands:
+接着运行下面的命令:
 ``` sh
 docker run -d --name fileshare -p 60011:60011 -p 8080:8080 fileshare:0.1.4.2
 ```
