@@ -34,13 +34,15 @@ func (c *ClientRecvStream) RecvStreamChunks() error {
 		}
 	}
 
+	// merge missing chunks that has been uploaded
+	// update current chunks whether err is nil or not
+	c.FileInfo.UpdateChunks(c.ChunkList)
+
 	// if err is not EOF, then this err should be handled
 	if err != io.EOF {
 		return err
 	}
 
-	// merge missing chunks that has been uploaded
-	c.FileInfo.UpdateChunks(c.ChunkList)
 	return nil
 }
 
