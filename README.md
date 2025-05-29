@@ -150,6 +150,22 @@ Clean cache command can be used both at server and client
 ``` sh
 fileshare cache clean
 ```
+
+### Web Apis:
+``` sh
+curl 0.0.0.0:8080/fileinfo
+curl 0.0.0.0:8080/sharelink
+curl 0.0.0.0:8080/record
+```
+responses are structure below:
+``` json
+{
+  "data": [
+    ...
+  ]
+}
+```
+
 ## Using Docker?
 First download `fileshare.docker.zip` from releases and import this zip file to your docker
 
