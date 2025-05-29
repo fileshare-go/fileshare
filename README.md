@@ -226,6 +226,20 @@ responses have structure below:
 }
 ```
 
+## Why use protobuf?
+``` sh
+json len 699154, proto len 524360, percentage 0.250008
+json len 1398206, proto len 1048648, percentage 0.250005
+json len 2097254, proto len 1572936, percentage 0.250002
+json len 2796306, proto len 2097225, percentage 0.250002
+json len 3495358, proto len 2621513, percentage 0.250002
+json len 4194406, proto len 3145801, percentage 0.250001
+json len 4893458, proto len 3670089, percentage 0.250001
+```
+
+we can observe that, json is 25% larger than protobuf
+use protobuf saves traffic and speeds your transfer process
+
 ## Using Docker?
 First download `fileshare.docker.zip` from releases and import this zip file to your docker
 
