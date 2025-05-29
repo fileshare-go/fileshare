@@ -10,14 +10,15 @@ import (
 )
 
 type Settings struct {
-	GrpcAddress       string `yaml:"grpc_address"`
-	WebAddress        string `yaml:"web_address"`
-	Database          string `yaml:"database"`
-	ShareCodeLength   int    `yaml:"share_code_length"`
-	CacheDirectory    string `yaml:"cache_directory"`
-	DownloadDirectory string `yaml:"download_directory"`
-	CertsPath         string `yaml:"certs_path"`
-	ValidDays         int    `yaml:"valid_days"`
+	GrpcAddress       string   `yaml:"grpc_address"`
+	WebAddress        string   `yaml:"web_address"`
+	Database          string   `yaml:"database"`
+	ShareCodeLength   int      `yaml:"share_code_length"`
+	CacheDirectory    string   `yaml:"cache_directory"`
+	DownloadDirectory string   `yaml:"download_directory"`
+	CertsPath         string   `yaml:"certs_path"`
+	ValidDays         int      `yaml:"valid_days"`
+	BlockedIps        []string `yaml:"blocked_ips"`
 }
 
 func ReadSettings(filename string) (*Settings, error) {
@@ -71,11 +72,15 @@ func (s *Settings) FillMissingWithDefault() {
 }
 
 func (s *Settings) PrintSettings() {
-	logrus.Debugf("[Settings] Address: %s", s.GrpcAddress)
+	logrus.Debugf("[Settings] Grpc Address: %s", s.GrpcAddress)
+	logrus.Debugf("[Settings] Web Address: %s", s.WebAddress)
 	logrus.Debugf("[Settings] Database: %s", s.Database)
 	logrus.Debugf("[Settings] ShareCodeLength: %d", s.ShareCodeLength)
 	logrus.Debugf("[Settings] CacheDirectory %s", s.CacheDirectory)
+	logrus.Debugf("[Settings] DownloadDirectory %s", s.CacheDirectory)
 	logrus.Debugf("[Settings] CertPath %s", s.CertsPath)
+	logrus.Debugf("[Settings] Valid Days %d", s.ValidDays)
+	logrus.Debugf("[Settings] Blocked Ips %v", s.BlockedIps)
 }
 
 func (s *Settings) SetupDirectory() error {

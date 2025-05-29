@@ -10,6 +10,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 	"gorm.io/gorm"
 )
@@ -32,7 +33,7 @@ func NewShareLinkServer(settings *config.Settings, DB *gorm.DB) *ShareLinkServer
 func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb.ShareLinkRequest) (*pb.ShareLinkResponse, error) {
 	logrus.Debugf("Generating sharelink for %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]))
 
-	handler := NewLinkHandler(sharelinkRequest, s.PeerAddress(ctx), s.Manager)
+	handler := NewLinkHandler(sharelinkRequest, s.PeerOs(ctx), s.PeerAddress(ctx), s.Manager)
 
 	if !handler.Manager.SelectFileInfo(handler.FileInfo) {
 		return &pb.ShareLinkResponse{
@@ -73,7 +74,20 @@ func (s *ShareLinkServer) PeerAddress(ctx context.Context) string {
 	return "unknown"
 }
 
+func (s *ShareLinkServer) PeerOs(ctx context.Context) string {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return "unknown"
+	}
+
+	if osInfo, ok := md["os"]; ok && len(osInfo) != 0 {
+		return osInfo[0]
+	}
+	return "unknown"
+}
+
 type LinkHandler struct {
+	OsInfo    string
 	PeerAddr  string
 	FileInfo  *model.FileInfo
 	ShareLink *model.ShareLink
@@ -81,8 +95,9 @@ type LinkHandler struct {
 	Request   *pb.ShareLinkRequest
 }
 
-func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, peerAddr string, manager *dbmanager.DBManager) *LinkHandler {
+func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, osInfo, peerAddr string, manager *dbmanager.DBManager) *LinkHandler {
 	return &LinkHandler{
+		OsInfo:   osInfo,
 		PeerAddr: peerAddr,
 		FileInfo: &model.FileInfo{
 			Sha256: shareLinkRequest.Meta.Sha256,
@@ -110,6 +125,7 @@ func (h *LinkHandler) PersistRecords() {
 
 func (h *LinkHandler) MakeRecord() *model.Record {
 	return &model.Record{
+		Os:             h.OsInfo,
 		Sha256:         h.FileInfo.Sha256,
 		InteractAction: "linkgen",
 		ClientIp:       h.PeerAddr,

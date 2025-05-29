@@ -2,6 +2,7 @@ package fileshare
 
 import (
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/interceptors"
 	"github.com/chanmaoganda/fileshare/internal/pkg/certs"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,9 +27,15 @@ func NewCredentialServerConn(settings *config.Settings) (*grpc.Server, error) {
 }
 
 func NewClientConn(settings *config.Settings) (*grpc.ClientConn, error) {
-	return grpc.NewClient(settings.GrpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	return grpc.NewClient(settings.GrpcAddress,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(interceptors.UnaryOSInfoInterceptor),
+		grpc.WithStreamInterceptor(interceptors.StreamOSInfoInterceptor),
+	)
 }
 
 func NewServerConn(settings *config.Settings) (*grpc.Server, error) {
-	return grpc.NewServer(), nil
+	return grpc.NewServer(
+		grpc.UnaryInterceptor(interceptors.BlackFilterInterceptor(settings)),
+	), nil
 }

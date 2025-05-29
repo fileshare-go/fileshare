@@ -10,6 +10,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 )
 
@@ -60,6 +61,7 @@ func (s *ServerSendStream) MakeRecord() *model.Record {
 		Sha256:         s.FileInfo.Sha256,
 		InteractAction: "download",
 		ClientIp:       s.PeerAddress(),
+		Os:             s.PeerOs(),
 		Time:           time.Now(),
 	}
 }
@@ -68,6 +70,18 @@ func (s *ServerSendStream) PeerAddress() string {
 	peer, ok := peer.FromContext(s.Stream.Context())
 	if ok {
 		return peer.Addr.String()
+	}
+	return "unknown"
+}
+
+func (s *ServerSendStream) PeerOs() string {
+	md, ok := metadata.FromIncomingContext(s.Stream.Context())
+	if !ok {
+		return "unknown"
+	}
+
+	if osInfo, ok := md["os"]; ok && len(osInfo) != 0 {
+		return osInfo[0]
 	}
 	return "unknown"
 }
