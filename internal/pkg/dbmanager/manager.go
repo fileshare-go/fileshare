@@ -60,7 +60,7 @@ func (m *DBManager) UpdateShareLink(shareLink *model.ShareLink) bool {
 	if invalidShareLink(shareLink) {
 		return false
 	}
-	result := m.DB.Save(shareLink)
+	result := m.DB.Where("sha256 = ?", shareLink.Sha256).Save(shareLink)
 	return result.Error == nil && result.RowsAffected == 1
 }
 

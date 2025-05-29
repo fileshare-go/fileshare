@@ -127,7 +127,6 @@ func (h *LinkHandler) PersistShareLink(linkCode string) {
 	h.Manager.UpdateShareLink(h.ShareLink)
 }
 
-
 func (h *LinkHandler) PersistRecords() {
 	h.Manager.CreateRecord(h.MakeRecord())
 }
