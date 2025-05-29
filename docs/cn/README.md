@@ -8,7 +8,7 @@ Fileshare 还会自动检查文件的有效性，不论在客户端和服务端�
 
 Fileshare还会在服务侧记录所有的上传，下载和链接生成的动作，让管理员可以总览服务器记录
 
-Fileshare同时提供了web接口用于监管sqlite存储的数据，详情参照下文示例
+Fileshare同时提供了web接口用于监管sqlite存储的数据，详情参照[下文示例](#示例输出)
 
 # 该怎么使用?
 每个fileshare都需要一个处于`和fileshare同目录`的`settings.yml`，这个文件应该包含如下部分：

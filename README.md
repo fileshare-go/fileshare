@@ -7,7 +7,7 @@ Fileshare auto check the validity of the file transferred. **Fileshare** will ch
 
 Fileshare records upload, linkgen, download actions at server side, allows admin to have an overview of server records.
 
-Fileshare also provides web api for monitoring sqlite data, see examples below
+Fileshare also provides web api for monitoring sqlite data, see [examples](#web-apis) below
 
 # How to use?
 Each fileshare needs a `settings.yml` file in the `same folder with fileshare`, which should contains below parts
@@ -157,7 +157,7 @@ Clean cache command can be used both at server and client
 fileshare cache clean
 ```
 
-### Web Apis:
+### Web Apis
 ``` sh
 curl 0.0.0.0:8080/fileinfo
 ```
