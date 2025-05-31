@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -50,7 +51,10 @@ func (s *Settings) SetupEssentials() error {
 
 func (s *Settings) FillMissingWithDefault() {
 	if s.GrpcAddress == "" {
-		s.GrpcAddress = ":8080"
+		s.GrpcAddress = ":60011"
+	}
+	if s.WebAddress == "" {
+		s.WebAddress = ":8080"
 	}
 	if s.Database == "" {
 		s.Database = "default.db"
@@ -75,15 +79,15 @@ func (s *Settings) FillMissingWithDefault() {
 }
 
 func (s *Settings) PrintSettings() {
-	logrus.Debugf("[Settings] Grpc Address: %s", s.GrpcAddress)
-	logrus.Debugf("[Settings] Web Address: %s", s.WebAddress)
-	logrus.Debugf("[Settings] Database: %s", s.Database)
-	logrus.Debugf("[Settings] ShareCodeLength: %d", s.ShareCodeLength)
-	logrus.Debugf("[Settings] CacheDirectory %s", s.CacheDirectory)
-	logrus.Debugf("[Settings] DownloadDirectory %s", s.CacheDirectory)
-	logrus.Debugf("[Settings] CertPath %s", s.CertsPath)
-	logrus.Debugf("[Settings] Valid Days %d", s.ValidDays)
-	logrus.Debugf("[Settings] Blocked Ips %v", s.BlockedIps)
+	logrus.Debugf("[Settings] Grpc Address: %s", debugprint.Render(s.GrpcAddress))
+	logrus.Debugf("[Settings] Web Address: %s", debugprint.Render(s.WebAddress))
+	logrus.Debugf("[Settings] Database: %s", debugprint.Render(s.Database))
+	logrus.Debugf("[Settings] ShareCodeLength: %s", debugprint.Render(s.ShareCodeLength))
+	logrus.Debugf("[Settings] CacheDirectory %s", debugprint.Render(s.CacheDirectory))
+	logrus.Debugf("[Settings] DownloadDirectory %s", debugprint.Render(s.CacheDirectory))
+	logrus.Debugf("[Settings] CertPath %s", debugprint.Render(s.CertsPath))
+	logrus.Debugf("[Settings] Valid Days %s", debugprint.Render(s.ValidDays))
+	logrus.Debugf("[Settings] Blocked Ips %s", debugprint.Render(s.BlockedIps))
 }
 
 func (s *Settings) SetupDirectory() error {

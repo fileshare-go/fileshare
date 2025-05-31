@@ -41,14 +41,14 @@ func ParseArgs2Request(args []string) *pb.ShareLinkRequest {
 	} else {
 		validDays, err = strconv.Atoi(args[2])
 		if err != nil {
-			validDays = 0	
+			validDays = 0
 		}
 	}
 
 	return &pb.ShareLinkRequest{
 		Meta: &pb.FileMeta{
 			Filename: args[0],
-			Sha256: args[1],
+			Sha256:   args[1],
 		},
 		ValidDays: int32(validDays),
 	}

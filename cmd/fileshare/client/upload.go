@@ -9,8 +9,8 @@ import (
 )
 
 var UploadCmd = &cobra.Command{
-	Use:   "upload <filename>",
-	Short: "Uploads the file, requires the filename as argument",
+	Use:   "upload <filepath>",
+	Short: "Uploads the file, requires the filepath as argument",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		transferFile := args[0]

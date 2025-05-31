@@ -89,7 +89,7 @@ func (s *ShareLinkServer) PeerOs(ctx context.Context) string {
 type LinkHandler struct {
 	OsInfo    string
 	PeerAddr  string
-	Settings *config.Settings
+	Settings  *config.Settings
 	FileInfo  *model.FileInfo
 	ShareLink *model.ShareLink
 	Manager   *dbmanager.DBManager

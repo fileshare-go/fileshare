@@ -1,4 +1,4 @@
-package tests
+package testing
 
 import (
 	"encoding/json"
@@ -10,25 +10,27 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func TestLoaderSize(t *testing.T) {
-	file, err := os.Open("fileshare")
+func BenchmarkTransfer(b *testing.B) {
+	file, err := os.Open("llvm-2.2.tar.gz")
 	if err != nil {
-		t.Error(err)
+		b.Error(err)
 	}
 
 	for size := 1; size < 8; size += 1 {
 		chunkSize := 1024 * 512 * int64(size)
 		data := make([]byte, chunkSize)
-		file.Read(data)
+
+		_, _ = file.Seek(0, 0)
+		_, _ = file.Read(data)
 		chunk := &pb.FileChunk{
-			Sha256: "7b852e938bc09de10cd96eca3755258c7d25fb89dbdd76305717607e1835e2aa",
+			Sha256:     "7b852e938bc09de10cd96eca3755258c7d25fb89dbdd76305717607e1835e2aa",
 			ChunkIndex: int32(size),
-			Data: data,
+			Data:       data,
 		}
 		jsonData, _ := json.Marshal(chunk)
 		protoData, _ := proto.Marshal(chunk)
 
-		percentage := float64(len(jsonData) - len(protoData)) / float64(len(jsonData))
+		percentage := float64(len(jsonData)-len(protoData)) / float64(len(jsonData))
 		fmt.Printf("json len %d, proto len %d, percentage %f\n", len(jsonData), len(protoData), percentage)
 	}
 }
