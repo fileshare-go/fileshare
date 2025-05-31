@@ -15,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// core functions for recv functionality
 type StreamRecvCore interface {
 	// recv all chunks
 	RecvStreamChunks() error
@@ -26,6 +27,7 @@ type StreamRecvCore interface {
 	CloseStream(bool) error
 }
 
+// core functions for send functionality
 type StreamSendCore interface {
 	// send all chunks
 	SendStreamChunks() error
@@ -82,6 +84,7 @@ func (c *Core) SaveChunkToDisk(chunk *pb.FileChunk) bool {
 	return true
 }
 
+// call FileInfo to validate chunks within chunklist
 func (c *Core) Validate() bool {
 	if c.FileInfo.ValidateChunks(c.Settings.CacheDirectory, c.Settings.DownloadDirectory) {
 		logrus.Debugf("[Validate] %s validated! sha256 is %s", debugprint.Render(c.FileInfo.Filename), debugprint.Render(c.FileInfo.Sha256))

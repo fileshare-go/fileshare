@@ -30,48 +30,12 @@ func NewDownloadClient(ctx context.Context, settings *config.Settings, conn *grp
 	}
 }
 
-func (c *DownloadClient) getSummary(ctx context.Context, key string) (*pb.DownloadSummary, error) {
-	// if the key is not the fixed size of sha256, then recognize this as link code
-	if len(key) != 64 {
-		return c.Client.PreDownloadWithCode(ctx, &pb.ShareLink{LinkCode: key})
-	} else {
-		return c.Client.PreDownload(ctx, &pb.DownloadRequest{Meta: &pb.FileMeta{Sha256: key}})
-	}
-}
-
-func (c *DownloadClient) getTask(ctx context.Context, key string) (*pb.DownloadTask, error) {
-	summary, err := c.getSummary(ctx, key)
-	if err != nil {
-		return nil, err
-	}
-	if summary.Status != pb.Status_OK {
-		return nil, errors.New(summary.Message)
-	}
-
-	fileInfo := &model.FileInfo{
-		Sha256: summary.Meta.Sha256,
-	}
-
-	if c.Manager.SelectFileInfo(fileInfo) {
-		return fileInfo.BuildDownloadTask(), nil
-	}
-
-	fileInfo = model.NewFileInfoFromDownload(summary)
-
-	c.Manager.CreateFileInfo(fileInfo)
-
-	task := &pb.DownloadTask{
-		Meta:        summary.Meta,
-		ChunkNumber: summary.ChunkNumber,
-		ChunkList:   summary.ChunkList,
-	}
-	return task, nil
-}
-
-func (c *DownloadClient) downloadStream(ctx context.Context, key string) (pb.DownloadService_DownloadClient, error) {
+func (c *DownloadClient) getDownloadStream(ctx context.Context, key string) (pb.DownloadService_DownloadClient, error) {
 	logrus.Debugf("Download request [key: %s]", key)
 
-	task, err := c.getTask(ctx, key)
+	builder := TaskBuilder{Client: c.Client, Manager: c.Manager}
+
+	task, err := builder.BuildTask(ctx, key)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +44,7 @@ func (c *DownloadClient) downloadStream(ctx context.Context, key string) (pb.Dow
 }
 
 func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
-	stream, err := c.downloadStream(ctx, key)
+	stream, err := c.getDownloadStream(ctx, key)
 	if err != nil {
 		return err
 	}
@@ -92,4 +56,51 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 
 	validate := recvStream.ValidateRecvChunks()
 	return recvStream.CloseStream(validate)
+}
+
+type TaskBuilder struct {
+	Client  pb.DownloadServiceClient
+	Manager *dbmanager.DBManager
+}
+
+func (b *TaskBuilder) getSummary(ctx context.Context, key string) (*pb.DownloadSummary, error) {
+	// if the key is not the fixed size of sha256, then recognize this as link code
+	if len(key) != 64 {
+		return b.Client.PreDownloadWithCode(ctx, &pb.ShareLink{LinkCode: key})
+	} else {
+		return b.Client.PreDownload(ctx, &pb.DownloadRequest{Meta: &pb.FileMeta{Sha256: key}})
+	}
+}
+
+func (b *TaskBuilder) buildFromSummary(summary *pb.DownloadSummary) (*pb.DownloadTask, error) {
+	fileInfo := &model.FileInfo{
+		Sha256: summary.Meta.Sha256,
+	}
+
+	if b.Manager.SelectFileInfo(fileInfo) {
+		return fileInfo.BuildDownloadTask(), nil
+	}
+
+	fileInfo = model.NewFileInfoFromDownload(summary)
+
+	b.Manager.CreateFileInfo(fileInfo)
+
+	task := &pb.DownloadTask{
+		Meta:        summary.Meta,
+		ChunkNumber: summary.ChunkNumber,
+		ChunkList:   summary.ChunkList,
+	}
+	return task, nil
+}
+
+func (b *TaskBuilder) BuildTask(ctx context.Context, key string) (*pb.DownloadTask, error) {
+	summary, err := b.getSummary(ctx, key)
+	if err != nil {
+		return nil, err
+	}
+	if summary.Status != pb.Status_OK {
+		return nil, errors.New(summary.Message)
+	}
+
+	return b.buildFromSummary(summary)
 }

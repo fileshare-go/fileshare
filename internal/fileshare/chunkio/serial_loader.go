@@ -7,6 +7,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// serial chunk loader is designed for sending a sorted chunklist, which may be not continuous
+//
+// if chunklist is continuous, this loader performs like normal Read
+// if not continuous, this loader will first seek to next start point and read
 type SerialChunkLoader struct {
 	*os.File
 	Sha256    string
