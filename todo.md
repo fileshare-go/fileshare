@@ -11,3 +11,5 @@ Avoid u get a hash to download without permission
 # Add create user for uploaded file, use this to judge if u have any right to generate links
 
 # Admin password be encrypted
+
+# Add mermaid graph to show the basic idea of fileshare

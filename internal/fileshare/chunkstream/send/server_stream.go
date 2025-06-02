@@ -32,7 +32,7 @@ func NewServerSendStream(settings *config.Settings, manager *dbmanager.DBManager
 }
 
 func (s *ServerSendStream) SendStreamChunks() error {
-	if len(s.Task.ChunkList) == 0 {
+	if len(s.Task.ChunkList) == 0 || s.ValidateTask() {
 		return s.SendChunk(s.LoadEmptyChunk())
 	}
 
@@ -54,6 +54,19 @@ func (s *ServerSendStream) CloseStream() error {
 
 	logrus.Debug("Closing server sending stream")
 	return nil
+}
+
+func (s *ServerSendStream) ValidateTask() bool {
+	if s.Manager.SelectFileInfo(&s.FileInfo) {
+		for _, chunkIdx := range s.Task.ChunkList {
+			if chunkIdx >= 0 && chunkIdx < s.FileInfo.ChunkNumber {
+				return false
+			}
+		}
+		return false
+	}
+
+	return true
 }
 
 func (s *ServerSendStream) MakeRecord() *model.Record {
