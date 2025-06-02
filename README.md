@@ -9,6 +9,16 @@ Fileshare records upload, linkgen, download actions at server side, allows admin
 
 Fileshare also provides web api for monitoring sqlite data, see [examples](#web-apis) below
 
+# Features
+## Self host fileserver, easy to deploy
+fileshare has docker images in release, it is quite easy to deploy by yourself with docker
+
+## Compared to traditional netdisk services, fileshare is rather stateless
+
+Server side auto records which chunk u have already received, and store to database, next time u upload, server will require to upload missing parts
+
+Compared to http range, fileshare can restore progress at any time, you can reconnect and upload at any possible time, without any extra traffic cost
+
 # How to use?
 Each fileshare needs a `settings.yml` file in the `same folder with fileshare`, which should contains below parts
 
