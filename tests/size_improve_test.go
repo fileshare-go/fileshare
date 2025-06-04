@@ -30,7 +30,6 @@ func BenchmarkTransfer(b *testing.B) {
 	// Write CSV header
 	writer.Write([]string{"ChunkSizeKB", "ProtoLen", "JsonLen", "ProtoOverChunkRatio", "JsonOverProtoRatio"})
 
-
 	for size := 1; size < 16; size += 1 {
 		chunkSize := 1024 * 512 * int64(size)
 		data := make([]byte, chunkSize)
@@ -45,7 +44,7 @@ func BenchmarkTransfer(b *testing.B) {
 		jsonData, _ := json.Marshal(chunk)
 		protoData, _ := proto.Marshal(chunk)
 
-		protoOverChunk := float64(len(protoData) - int(chunkSize)) / float64(chunkSize)
+		protoOverChunk := float64(len(protoData)-int(chunkSize)) / float64(chunkSize)
 		fmt.Printf("chunk size %d, proto len %d, proto compared to chunk size overwhelming percentage %f\n", len(jsonData), len(protoData), protoOverChunk)
 
 		jsonOverProto := float64(len(jsonData)-len(protoData)) / float64(len(protoData))
