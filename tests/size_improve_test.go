@@ -1,6 +1,7 @@
 package testing
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -11,12 +12,26 @@ import (
 )
 
 func BenchmarkTransfer(b *testing.B) {
-	file, err := os.Open("llvm-2.2.tar.gz")
+	file, err := os.Open("../.download/kafka_2.13-4.0.0.tgz")
 	if err != nil {
 		b.Error(err)
 	}
 
-	for size := 1; size < 8; size += 1 {
+	// Create a CSV file to record results
+	csvFile, err := os.Create("benchmark_result.csv")
+	if err != nil {
+		panic(err)
+	}
+	defer csvFile.Close()
+
+	writer := csv.NewWriter(csvFile)
+	defer writer.Flush()
+
+	// Write CSV header
+	writer.Write([]string{"ChunkSizeKB", "ProtoLen", "JsonLen", "ProtoOverChunkRatio", "JsonOverProtoRatio"})
+
+
+	for size := 1; size < 16; size += 1 {
 		chunkSize := 1024 * 512 * int64(size)
 		data := make([]byte, chunkSize)
 
@@ -30,7 +45,19 @@ func BenchmarkTransfer(b *testing.B) {
 		jsonData, _ := json.Marshal(chunk)
 		protoData, _ := proto.Marshal(chunk)
 
-		percentage := float64(len(jsonData)-len(protoData)) / float64(len(jsonData))
-		fmt.Printf("json len %d, proto len %d, percentage %f\n", len(jsonData), len(protoData), percentage)
+		protoOverChunk := float64(len(protoData) - int(chunkSize)) / float64(chunkSize)
+		fmt.Printf("chunk size %d, proto len %d, proto compared to chunk size overwhelming percentage %f\n", len(jsonData), len(protoData), protoOverChunk)
+
+		jsonOverProto := float64(len(jsonData)-len(protoData)) / float64(len(protoData))
+		fmt.Printf("json len %d, proto len %d, json compared to proto overwhelming percentage %f\n", len(jsonData), len(protoData), jsonOverProto)
+
+		// Write to CSV
+		writer.Write([]string{
+			fmt.Sprintf("%d", chunkSize/1024),
+			fmt.Sprintf("%d", len(protoData)),
+			fmt.Sprintf("%d", len(jsonData)),
+			fmt.Sprintf("%.6f", protoOverChunk),
+			fmt.Sprintf("%.6f", jsonOverProto),
+		})
 	}
 }
