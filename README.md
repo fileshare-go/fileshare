@@ -15,17 +15,17 @@ fileshare has docker images in release, it is quite easy to deploy by yourself w
 
 ## Compared to traditional netdisk services, fileshare is rather stateless
 
-Server side auto records which chunk u have already received, and store to database, next time u upload, server will require to upload missing parts
+Server side auto records `which chunk u have already received`, and store to database, next time u upload, server will require to upload `missing parts`
 
 Compared to http range, fileshare can restore progress at any time, you can reconnect and upload at any possible time, without any extra traffic cost
 
 
-## Why i choose to use protobuf?
+## Why i choose to use protobuf and grpc?
 ![](docs/pictures/benchmark_result.png)
 
-**Protobuf is easy to handle stream, also not making great cost on traffic, about `0.0035% more traffic cost compared to raw chunk stream`**
+**Grpc is easy to handle stream. Proto do not make great cost on traffic, about `0.0035% more traffic cost compared to raw chunk stream`**
 
-**we can observe that, json is 33% larger than protobuf. Use protobuf saves traffic and speeds your transfer process**
+**we can observe that, json is 33% larger than proto. Use proto saves traffic and speeds your transfer process**
 
 # How to use?
 Each fileshare needs a `settings.yml` file in the `same folder with fileshare`, which should contains below parts
