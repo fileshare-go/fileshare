@@ -22,9 +22,14 @@ func SaveChunk(cache_dir string, chunk *pb.FileChunk) error {
 	}()
 
 	// Write bytes to the file
-	_, err = file.Write(chunk.Data)
+	n, err := file.Write(chunk.Data)
 	if err != nil {
 		return err
+	}
+
+	chunkLen := len(chunk.Data)
+	if n != chunkLen {
+		logrus.Warnf("write size and data length not matching, data len: %d, write size: %d", chunkLen, n)
 	}
 
 	return nil
