@@ -13,73 +13,81 @@ import (
 // if not continuous, this loader will first seek to next start point and read
 type SerialChunkLoader struct {
 	*os.File
-	Sha256    string
-	ChunkSize int64
-	LastIdx   int32
-	SeekAt    int64
-	Data      []byte
+	sha256    string
+	chunkSize int64
+	lastIdx   int32
+	seekAt    int64
 }
 
 func NewSerialChunkLoader(file *os.File, sha256 string, chunkSize int64) *SerialChunkLoader {
 	return &SerialChunkLoader{
 		File:      file,
-		Sha256:    sha256,
-		ChunkSize: chunkSize,
-		LastIdx:   -1,
-		SeekAt:    0,
-		Data:      make([]byte, chunkSize),
+		sha256:    sha256,
+		chunkSize: chunkSize,
+		lastIdx:   -1,
+		seekAt:    0,
 	}
 }
 
+// load a chunk from disk
 func (l *SerialChunkLoader) LoadChunk(index int32) *pb.FileChunk {
-	if index-l.LastIdx == 1 {
-		return l.loadNonSeekChunk()
+	if index-l.lastIdx == 1 {
+		return l.loadNonSeekingChunk()
 	}
-	return l.loadSeekChunk(index - l.LastIdx)
+	return l.loadSeekingChunk(index - l.lastIdx)
 }
 
-func (l *SerialChunkLoader) loadNonSeekChunk() *pb.FileChunk {
-	n, err := l.Read(l.Data)
+// load a non seeking chunk will return next chunk according to chunksize
+//
+// mention that SeekAt will be updated
+func (l *SerialChunkLoader) loadNonSeekingChunk() *pb.FileChunk {
+	buffer := make([]byte, l.chunkSize)
+	n, err := l.Read(buffer)
 	if err != nil {
 		logrus.Error(err)
-		l.LastIdx += 1
-		l.SeekAt += l.ChunkSize
-		return l.EmptyChunk(l.LastIdx)
+		l.lastIdx += 1
+		l.seekAt += l.chunkSize
+		return l.EmptyChunk(l.lastIdx)
 	}
 
-	l.LastIdx += 1
+	l.lastIdx += 1
 	return &pb.FileChunk{
-		Sha256:     l.Sha256,
-		ChunkIndex: l.LastIdx,
-		Data:       l.Data[:n],
+		Sha256:     l.sha256,
+		ChunkIndex: l.lastIdx,
+		Data:       buffer[:n],
 	}
 }
 
-func (l *SerialChunkLoader) loadSeekChunk(gap int32) *pb.FileChunk {
-	_, err := l.Seek(int64(gap)*l.ChunkSize, int(l.SeekAt))
+// load a seeking chunk will first performs seek on reader, then read the next chunk according to chunksize
+//
+// mention that SeekAt will be updated according to gap passed in
+func (l *SerialChunkLoader) loadSeekingChunk(gap int32) *pb.FileChunk {
+	buffer := make([]byte, l.chunkSize)
+	_, err := l.Seek(int64(gap)*l.chunkSize, int(l.seekAt))
 	if err != nil {
-		l.LastIdx += gap
-		return l.EmptyChunk(l.LastIdx)
+		l.lastIdx += gap
+		return l.EmptyChunk(l.lastIdx)
 	}
 
-	n, err := l.Read(l.Data)
+	n, err := l.Read(buffer)
 	if err != nil {
-		l.LastIdx += gap
-		return l.EmptyChunk(l.LastIdx)
+		l.lastIdx += gap
+		return l.EmptyChunk(l.lastIdx)
 	}
 
-	l.LastIdx += gap
-	l.SeekAt += int64(gap) * l.ChunkSize
+	l.lastIdx += gap
+	l.seekAt += int64(gap) * l.chunkSize
 	return &pb.FileChunk{
-		Sha256:     l.Sha256,
-		ChunkIndex: l.LastIdx,
-		Data:       l.Data[:n],
+		Sha256:     l.sha256,
+		ChunkIndex: l.lastIdx,
+		Data:       buffer[:n],
 	}
 }
 
+// return a empty chunk to mark meta data for a file
 func (l *SerialChunkLoader) EmptyChunk(index int32) *pb.FileChunk {
 	return &pb.FileChunk{
-		Sha256:     l.Sha256,
+		Sha256:     l.sha256,
 		ChunkIndex: index,
 		Data:       []byte{},
 	}

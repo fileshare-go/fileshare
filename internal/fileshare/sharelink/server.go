@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
@@ -135,7 +136,7 @@ func (h *LinkHandler) MakeRecord() *model.Record {
 	return &model.Record{
 		Os:             h.OsInfo,
 		Sha256:         h.FileInfo.Sha256,
-		InteractAction: "linkgen",
+		InteractAction: fileshare.LinkGenAction,
 		ClientIp:       h.PeerAddr,
 		Time:           time.Now(),
 	}

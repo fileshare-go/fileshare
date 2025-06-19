@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// save chunk data to disk
 func SaveChunk(cache_dir string, chunk *pb.FileChunk) error {
 	// Create or truncate the file
 	chunkFileName := fmt.Sprintf("%s/%s/%d", cache_dir, chunk.Sha256, chunk.ChunkIndex)
@@ -35,7 +36,8 @@ func SaveChunk(cache_dir string, chunk *pb.FileChunk) error {
 	return nil
 }
 
-func UploadChunk(cache_dir, sha256 string, chunkIndex int32) []byte {
+// read chunk data from cache directory
+func ReadChunk(cache_dir, sha256 string, chunkIndex int32) []byte {
 	chunkFileName := fmt.Sprintf("%s/%s/%d", cache_dir, sha256, chunkIndex)
 	bytes, err := os.ReadFile(chunkFileName)
 	if err != nil {

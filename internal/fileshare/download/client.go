@@ -30,10 +30,11 @@ func NewDownloadClient(ctx context.Context, settings *config.Settings, conn *grp
 	}
 }
 
+// get the download stream from grpc, aimed to handle download tasks
 func (c *DownloadClient) getDownloadStream(ctx context.Context, key string) (pb.DownloadService_DownloadClient, error) {
 	logrus.Debugf("Download request [key: %s]", key)
 
-	builder := TaskBuilder{Client: c.Client, Manager: c.Manager}
+	builder := taskBuilder{Client: c.Client, Manager: c.Manager}
 
 	task, err := builder.BuildTask(ctx, key)
 	if err != nil {
@@ -43,6 +44,7 @@ func (c *DownloadClient) getDownloadStream(ctx context.Context, key string) (pb.
 	return c.Client.Download(ctx, task)
 }
 
+// download file from the key, both sha256 and sharelink are accepted
 func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 	stream, err := c.getDownloadStream(ctx, key)
 	if err != nil {
@@ -58,12 +60,13 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 	return recvStream.CloseStream(validate)
 }
 
-type TaskBuilder struct {
+type taskBuilder struct {
 	Client  pb.DownloadServiceClient
 	Manager *dbmanager.DBManager
 }
 
-func (b *TaskBuilder) getSummary(ctx context.Context, key string) (*pb.DownloadSummary, error) {
+// get summary from grpc
+func (b *taskBuilder) getSummary(ctx context.Context, key string) (*pb.DownloadSummary, error) {
 	// if the key is not the fixed size of sha256, then recognize this as link code
 	if len(key) != 64 {
 		return b.Client.PreDownloadWithCode(ctx, &pb.ShareLink{LinkCode: key})
@@ -72,7 +75,8 @@ func (b *TaskBuilder) getSummary(ctx context.Context, key string) (*pb.DownloadS
 	}
 }
 
-func (b *TaskBuilder) buildFromSummary(summary *pb.DownloadSummary) (*pb.DownloadTask, error) {
+// build download task from summary
+func (b *taskBuilder) buildTaskFromSummary(summary *pb.DownloadSummary) (*pb.DownloadTask, error) {
 	fileInfo := &model.FileInfo{
 		Sha256: summary.Meta.Sha256,
 	}
@@ -93,7 +97,7 @@ func (b *TaskBuilder) buildFromSummary(summary *pb.DownloadSummary) (*pb.Downloa
 	return task, nil
 }
 
-func (b *TaskBuilder) BuildTask(ctx context.Context, key string) (*pb.DownloadTask, error) {
+func (b *taskBuilder) BuildTask(ctx context.Context, key string) (*pb.DownloadTask, error) {
 	summary, err := b.getSummary(ctx, key)
 	if err != nil {
 		return nil, err
@@ -102,5 +106,5 @@ func (b *TaskBuilder) BuildTask(ctx context.Context, key string) (*pb.DownloadTa
 		return nil, errors.New(summary.Message)
 	}
 
-	return b.buildFromSummary(summary)
+	return b.buildTaskFromSummary(summary)
 }

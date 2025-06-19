@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/model"
@@ -72,7 +73,7 @@ func (s *ServerSendStream) ValidateTask() bool {
 func (s *ServerSendStream) MakeRecord() *model.Record {
 	return &model.Record{
 		Sha256:         s.FileInfo.Sha256,
-		InteractAction: "download",
+		InteractAction: fileshare.DownloadAction,
 		ClientIp:       s.PeerAddress(),
 		Os:             s.PeerOs(),
 		Time:           time.Now(),
@@ -100,12 +101,12 @@ func (s *ServerSendStream) PeerOs() string {
 }
 
 func (s *ServerSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {
-	byteSlice := chunkio.UploadChunk(s.Settings.CacheDirectory, s.Task.Meta.Sha256, chunkIdx)
+	chunkData := chunkio.ReadChunk(s.Settings.CacheDirectory, s.Task.Meta.Sha256, chunkIdx)
 
 	return &pb.FileChunk{
 		Sha256:     s.Task.Meta.Sha256,
 		ChunkIndex: chunkIdx,
-		Data:       byteSlice,
+		Data:       chunkData,
 	}
 }
 
