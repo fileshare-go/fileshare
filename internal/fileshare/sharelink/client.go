@@ -21,6 +21,7 @@ func NewShareLinkClient(ctx context.Context, conn *grpc.ClientConn) *ShareLinkCl
 	}
 }
 
+// generate link string from args
 func (c *ShareLinkClient) GenerateLink(args []string) string {
 	req := ParseArgs2Request(args)
 
@@ -33,6 +34,7 @@ func (c *ShareLinkClient) GenerateLink(args []string) string {
 	return link.LinkCode
 }
 
+// parse string slice to share link request
 func ParseArgs2Request(args []string) *pb.ShareLinkRequest {
 	var validDays int
 	var err error

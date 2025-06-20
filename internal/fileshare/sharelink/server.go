@@ -9,6 +9,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
+	"github.com/chanmaoganda/fileshare/internal/pkg/rand"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
@@ -20,13 +21,11 @@ type ShareLinkServer struct {
 	pb.UnimplementedShareLinkServiceServer
 	Settings *config.Settings
 	Manager  *dbmanager.DBManager
-	RangGen  *RandStringGen
 }
 
 func NewShareLinkServer(settings *config.Settings, DB *gorm.DB) *ShareLinkServer {
 	return &ShareLinkServer{
 		Settings: settings,
-		RangGen:  NewRandStringGen(),
 		Manager:  dbmanager.NewDBManager(DB),
 	}
 }
@@ -53,7 +52,7 @@ func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb
 		}, nil
 	}
 
-	linkCode := s.RangGen.generateCode(s.Settings.ShareCodeLength)
+	linkCode := rand.GenerateCode(s.Settings.ShareCodeLength)
 
 	handler.PersistShareLink(linkCode)
 	handler.PersistRecords()
@@ -87,6 +86,7 @@ func (s *ShareLinkServer) PeerOs(ctx context.Context) string {
 	return "unknown"
 }
 
+// handles share link
 type LinkHandler struct {
 	OsInfo    string
 	PeerAddr  string
@@ -113,6 +113,7 @@ func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, settings *config.Sett
 	}
 }
 
+// persist changes in database
 func (h *LinkHandler) PersistShareLink(linkCode string) {
 	h.ShareLink.LinkCode = linkCode
 	h.ShareLink.CreatedAt = time.Now()

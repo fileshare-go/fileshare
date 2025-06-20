@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// handle fileinfo, sharelink and records in database
 type DBManager struct {
 	DB *gorm.DB
 }
