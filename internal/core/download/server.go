@@ -9,7 +9,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/send"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
-	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -29,7 +29,7 @@ func NewDownloadServer(settings *config.Settings, DB *gorm.DB) *DownloadServer {
 }
 
 func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequest) (*pb.DownloadSummary, error) {
-	debugprint.DebugMeta(request.Meta)
+	util.DebugMeta(request.Meta)
 
 	var fileInfo model.FileInfo
 	fileInfo.Sha256 = request.Meta.Sha256
@@ -37,7 +37,7 @@ func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequ
 
 	if s.Manager.SelectFileInfo(&fileInfo) {
 		summary := fileInfo.BuildDownloadSummary()
-		debugprint.DebugDownloadSummary(summary)
+		util.DebugDownloadSummary(summary)
 		return summary, nil
 	}
 
@@ -65,7 +65,7 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 		summary.Status = pb.Status_OK
 		summary.Message = "Share link found!"
 
-		debugprint.DebugDownloadSummary(summary)
+		util.DebugDownloadSummary(summary)
 		return summary, nil
 	}
 
@@ -73,7 +73,7 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 }
 
 func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) error {
-	debugprint.DebugDownloadTask(task)
+	util.DebugDownloadTask(task)
 	sendStream := send.NewServerSendStream(s.Settings, s.Manager, task, stream)
 
 	if err := sendStream.SendStreamChunks(); err != nil {

@@ -9,8 +9,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/chunkio"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
-	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
-	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 )
@@ -54,7 +53,7 @@ func (c *Core) SetupAndRecordInfo(chunk *pb.FileChunk) {
 
 		// create sha256 folder in cache folder
 		folder := strings.Join([]string{c.Settings.CacheDirectory, chunk.Sha256}, "/")
-		if !fileutil.FileExists(folder) {
+		if !util.FileExists(folder) {
 			if err := os.Mkdir(folder, 0755); err != nil {
 				logrus.Error(err)
 			}
@@ -63,7 +62,7 @@ func (c *Core) SetupAndRecordInfo(chunk *pb.FileChunk) {
 }
 
 func (c *Core) SaveChunkToDisk(chunk *pb.FileChunk) bool {
-	debugprint.DebugChunk(chunk)
+	util.DebugChunk(chunk)
 	c.SetupAndRecordInfo(chunk)
 
 	// we need to handle if chunk has no data actually
@@ -87,10 +86,10 @@ func (c *Core) SaveChunkToDisk(chunk *pb.FileChunk) bool {
 // call FileInfo to validate chunks within chunklist
 func (c *Core) Validate() bool {
 	if c.FileInfo.ValidateChunks(c.Settings.CacheDirectory, c.Settings.DownloadDirectory) {
-		logrus.Debugf("[Validate] %s validated! sha256 is %s", debugprint.Render(c.FileInfo.Filename), debugprint.Render(c.FileInfo.Sha256))
+		logrus.Debugf("[Validate] %s validated! sha256 is %s", util.Render(c.FileInfo.Filename), util.Render(c.FileInfo.Sha256))
 		return true
 	}
 
-	logrus.Warnf("[validate] %s not validated! sha256 is %s", debugprint.Render(c.FileInfo.Filename), debugprint.Render(c.FileInfo.Sha256))
+	logrus.Warnf("[validate] %s not validated! sha256 is %s", util.Render(c.FileInfo.Filename), util.Render(c.FileInfo.Sha256))
 	return false
 }

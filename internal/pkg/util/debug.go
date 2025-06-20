@@ -1,4 +1,4 @@
-package debugprint
+package util
 
 import (
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"

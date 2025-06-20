@@ -1,4 +1,4 @@
-package algorithms
+package util
 
 import (
 	"reflect"

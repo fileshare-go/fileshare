@@ -6,10 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/chanmaoganda/fileshare/internal/pkg/algorithms"
-	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
-	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
-	"github.com/chanmaoganda/fileshare/internal/pkg/sha256"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 )
@@ -39,7 +36,7 @@ func (f *FileInfo) GetMissingChunks() []int32 {
 	loaded := f.GetUploadedChunks()
 	all := f.GetAllChunks()
 
-	return algorithms.MissingElementsInSortedList(all, loaded)
+	return util.MissingElementsInSortedList(all, loaded)
 }
 
 func (f *FileInfo) GetAllChunks() []int32 {
@@ -52,7 +49,7 @@ func (f *FileInfo) GetAllChunks() []int32 {
 
 func (f *FileInfo) UpdateChunks(newChunks []int32) {
 	loaded := f.GetUploadedChunks()
-	merged := algorithms.MergeList(loaded, newChunks)
+	merged := util.MergeList(loaded, newChunks)
 
 	bytes, err := json.Marshal(merged)
 	if err != nil {
@@ -104,10 +101,10 @@ func (f *FileInfo) BuildDownloadSummary() *pb.DownloadSummary {
 
 func (f *FileInfo) ValidateChunks(cache_directory, download_directory string) bool {
 	filePath := fmt.Sprintf("%s/%s", download_directory, f.Filename)
-	logrus.Debug("[Validate] File: ", debugprint.Render(filePath))
+	logrus.Debug("[Validate] File: ", util.Render(filePath))
 
-	if fileutil.FileExists(filePath) {
-		checkSum, err := sha256.CalculateFileSHA256(filePath)
+	if util.FileExists(filePath) {
+		checkSum, err := util.CalculateFileSHA256(filePath)
 		if err != nil {
 			logrus.Warn("[Validate]", err)
 		}
@@ -123,7 +120,7 @@ func (f *FileInfo) ValidateChunks(cache_directory, download_directory string) bo
 		logrus.Error("[Validate] ", err)
 	}
 
-	checkSum, err := sha256.CalculateFileSHA256(filePath)
+	checkSum, err := util.CalculateFileSHA256(filePath)
 	if err != nil {
 		logrus.Error("[Validate] ", err)
 		return false

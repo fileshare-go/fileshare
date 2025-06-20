@@ -7,7 +7,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/recv"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
-	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -28,7 +28,7 @@ func NewUploadServer(settings *config.Settings, DB *gorm.DB) *UploadServer {
 
 // pre upload receives a task from client, calculate missing chunks and send the task back
 func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
-	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", debugprint.Render(request.Meta.Filename), request.FileSize, debugprint.Render(request.Meta.Sha256[:8]))
+	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", util.Render(request.Meta.Filename), request.FileSize, util.Render(request.Meta.Sha256[:8]))
 
 	fileInfo := &model.FileInfo{
 		Sha256: request.Meta.Sha256,

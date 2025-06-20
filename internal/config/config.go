@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
-	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -79,27 +78,27 @@ func (s *Settings) FillMissingWithDefault() {
 }
 
 func (s *Settings) PrintSettings() {
-	logrus.Debugf("[Settings] Grpc Address: %s", debugprint.Render(s.GrpcAddress))
-	logrus.Debugf("[Settings] Web Address: %s", debugprint.Render(s.WebAddress))
-	logrus.Debugf("[Settings] Database: %s", debugprint.Render(s.Database))
-	logrus.Debugf("[Settings] ShareCodeLength: %s", debugprint.Render(s.ShareCodeLength))
-	logrus.Debugf("[Settings] CacheDirectory %s", debugprint.Render(s.CacheDirectory))
-	logrus.Debugf("[Settings] DownloadDirectory %s", debugprint.Render(s.CacheDirectory))
-	logrus.Debugf("[Settings] CertPath %s", debugprint.Render(s.CertsPath))
-	logrus.Debugf("[Settings] Valid Days %s", debugprint.Render(s.ValidDays))
-	logrus.Debugf("[Settings] Blocked Ips %s", debugprint.Render(s.BlockedIps))
+	logrus.Debugf("[Settings] Grpc Address: %s", util.Render(s.GrpcAddress))
+	logrus.Debugf("[Settings] Web Address: %s", util.Render(s.WebAddress))
+	logrus.Debugf("[Settings] Database: %s", util.Render(s.Database))
+	logrus.Debugf("[Settings] ShareCodeLength: %s", util.Render(s.ShareCodeLength))
+	logrus.Debugf("[Settings] CacheDirectory %s", util.Render(s.CacheDirectory))
+	logrus.Debugf("[Settings] DownloadDirectory %s", util.Render(s.CacheDirectory))
+	logrus.Debugf("[Settings] CertPath %s", util.Render(s.CertsPath))
+	logrus.Debugf("[Settings] Valid Days %s", util.Render(s.ValidDays))
+	logrus.Debugf("[Settings] Blocked Ips %s", util.Render(s.BlockedIps))
 }
 
 func (s *Settings) SetupDirectory() error {
 	logrus.Debugf("Setting up Directories, %s, %s", s.CacheDirectory, s.DownloadDirectory)
-	if fileutil.FileExists(s.CacheDirectory) {
+	if util.FileExists(s.CacheDirectory) {
 		return nil
 	}
 	if err := os.Mkdir(s.CacheDirectory, 0755); err != nil {
 		return err
 	}
 
-	if fileutil.FileExists(s.DownloadDirectory) {
+	if util.FileExists(s.DownloadDirectory) {
 		return nil
 	}
 	if err := os.Mkdir(s.DownloadDirectory, 0755); err != nil {

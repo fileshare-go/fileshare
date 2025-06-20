@@ -1,4 +1,4 @@
-package algorithms
+package util
 
 func MergeList(list1, list2 []int32) []int32 {
 	result := []int32{}

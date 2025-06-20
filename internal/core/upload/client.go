@@ -5,9 +5,7 @@ import (
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/send"
-	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
-	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
-	"github.com/chanmaoganda/fileshare/internal/pkg/sha256"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -38,7 +36,7 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	if err != nil {
 		return err
 	}
-	debugprint.DebugUploadTask(task)
+	util.DebugUploadTask(task)
 
 	sendStream := send.NewClientSendStream(task, filePath, c.Stream)
 
@@ -61,14 +59,14 @@ func (b *TaskBuilder) BuildRequest(filePath string) (*pb.UploadRequest, error) {
 		return nil, err
 	}
 
-	sha256, err := sha256.CalculateFileSHA256(filePath)
+	sha256, err := util.CalculateFileSHA256(filePath)
 	if err != nil {
 		return nil, err
 	}
 
 	request := &pb.UploadRequest{
 		Meta: &pb.FileMeta{
-			Filename: fileutil.GetFileName(filePath),
+			Filename: util.GetFileName(filePath),
 			Sha256:   sha256,
 		},
 		FileSize: stat.Size(),

@@ -12,7 +12,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core/download"
 	"github.com/chanmaoganda/fileshare/internal/core/sharelink"
 	"github.com/chanmaoganda/fileshare/internal/core/upload"
-	"github.com/chanmaoganda/fileshare/pkg/db"
+	"github.com/chanmaoganda/fileshare/internal/pkg/db"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/chanmaoganda/fileshare/internal/web"
 	"github.com/sirupsen/logrus"

@@ -8,8 +8,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
-	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
-	"github.com/chanmaoganda/fileshare/internal/pkg/rand"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
@@ -31,7 +30,7 @@ func NewShareLinkServer(settings *config.Settings, DB *gorm.DB) *ShareLinkServer
 }
 
 func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb.ShareLinkRequest) (*pb.ShareLinkResponse, error) {
-	logrus.Debugf("Generating sharelink for %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]))
+	logrus.Debugf("Generating sharelink for %s", util.Render(sharelinkRequest.Meta.Sha256[:8]))
 
 	handler := NewLinkHandler(sharelinkRequest, s.Settings, s.PeerOs(ctx), s.PeerAddress(ctx), s.Manager)
 
@@ -44,7 +43,7 @@ func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb
 	}
 
 	if handler.Manager.SelectValidShareLink(handler.ShareLink) {
-		logrus.Debugf("Existing sharelink for %s is %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]), debugprint.Render(handler.ShareLink.LinkCode))
+		logrus.Debugf("Existing sharelink for %s is %s", util.Render(sharelinkRequest.Meta.Sha256[:8]), util.Render(handler.ShareLink.LinkCode))
 		return &pb.ShareLinkResponse{
 			Status:   pb.Status_OK,
 			Message:  "Found existing sharelink code!",
@@ -52,12 +51,12 @@ func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb
 		}, nil
 	}
 
-	linkCode := rand.GenerateCode(s.Settings.ShareCodeLength)
+	linkCode := util.GenerateCode(s.Settings.ShareCodeLength)
 
 	handler.PersistShareLink(linkCode)
 	handler.PersistRecords()
 
-	logrus.Debugf("Generated sharelink for %s is %s", debugprint.Render(sharelinkRequest.Meta.Sha256[:8]), debugprint.Render(linkCode))
+	logrus.Debugf("Generated sharelink for %s is %s", util.Render(sharelinkRequest.Meta.Sha256[:8]), util.Render(linkCode))
 
 	return &pb.ShareLinkResponse{
 		Status:   pb.Status_OK,
