@@ -2,8 +2,8 @@ package fileshare
 
 import (
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/interceptors"
 	"github.com/chanmaoganda/fileshare/internal/pkg/certs"
+	"github.com/chanmaoganda/fileshare/internal/pkg/interceptors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

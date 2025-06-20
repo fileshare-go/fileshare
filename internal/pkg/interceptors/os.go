@@ -3,7 +3,7 @@ package interceptors
 import (
 	"context"
 
-	"github.com/chanmaoganda/fileshare/internal/osinfo"
+	"github.com/chanmaoganda/fileshare/internal/pkg/osinfo"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
