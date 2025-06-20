@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileshare"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
+	"github.com/chanmaoganda/fileshare/internal/core"
+	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
@@ -81,7 +81,7 @@ func (s *ServerRecvStream) PeerOs() string {
 func (s *ServerRecvStream) MakeRecord() *model.Record {
 	return &model.Record{
 		Sha256:         s.FileInfo.Sha256,
-		InteractAction: fileshare.DownloadAction,
+		InteractAction: core.DownloadAction,
 		ClientIp:       s.PeerAddress(),
 		Os:             s.PeerOs(),
 		Time:           time.Now(),

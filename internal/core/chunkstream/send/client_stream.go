@@ -3,8 +3,8 @@ package send
 import (
 	"os"
 
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkio"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream"
+	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
+	"github.com/chanmaoganda/fileshare/internal/pkg/chunkio"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 )

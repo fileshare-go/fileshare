@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/send"
+	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/send"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"

@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/recv"
+	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/recv"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"

@@ -1,4 +1,4 @@
-package fileshare
+package core
 
 const (
 	DownloadAction = "download"

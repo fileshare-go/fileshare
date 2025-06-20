@@ -2,9 +2,9 @@ package client
 
 import (
 	"github.com/chanmaoganda/fileshare/cmd/fileshare"
+	"github.com/chanmaoganda/fileshare/internal/core/download"
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/download"
-	"github.com/chanmaoganda/fileshare/internal/pkg/db"
+	"github.com/chanmaoganda/fileshare/pkg/db"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

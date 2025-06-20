@@ -3,7 +3,7 @@ package client
 import (
 	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/fileshare/upload"
+	"github.com/chanmaoganda/fileshare/internal/core/upload"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

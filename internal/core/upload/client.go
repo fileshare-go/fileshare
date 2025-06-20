@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/chanmaoganda/fileshare/internal/fileshare/chunkstream/send"
+	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/send"
 	"github.com/chanmaoganda/fileshare/internal/pkg/debugprint"
 	"github.com/chanmaoganda/fileshare/internal/pkg/fileutil"
 	"github.com/chanmaoganda/fileshare/internal/pkg/sha256"
