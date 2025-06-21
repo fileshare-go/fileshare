@@ -4,6 +4,7 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/pkg/db"
 	"github.com/chanmaoganda/fileshare/internal/pkg/service"
+	"gorm.io/gorm"
 )
 
 var mgr ServiceMgr
@@ -33,4 +34,8 @@ type ServiceMgr struct {
 
 func Mgr() *ServiceMgr {
 	return &mgr
+}
+
+func Orm() *gorm.DB {
+	return srv.Orm
 }
