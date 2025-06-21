@@ -27,7 +27,7 @@ fileshare在release界面有打包好的镜像，使用docker可以很轻松的�
 **并且我们观察到，json相比proto的序列化要多用33%的大小。使用proto可以节省流量，加快传输过程**
 
 # 该怎么使用?
-每个fileshare都需要一个处于`和fileshare同目录`的`settings.yml`，这个文件应该包含如下部分：
+每个fileshare都需要一个处于`和fileshare同目录`的`config.yml`，这个文件应该包含如下部分：
 
 ``` yaml
 grpc_address: 0.0.0.0:60011
@@ -56,7 +56,7 @@ blocked_ips:
 ### 配置文件的例子
 #### 服务端
 ``` yaml
-# config for server/settings.yml
+# config for server/config.yml
 grpc_address: 0.0.0.0:60011
 web_address: 0.0.0.0:8080
 database: server.db
@@ -73,7 +73,7 @@ blocked_ips:
 
 #### 客户端
 ``` yaml
-# config for client/settings.yml
+# config for client/config.yml
 grpc_address: 0.0.0.0:60011
 web_address: 0.0.0.0:8080
 database: client.db
@@ -104,11 +104,11 @@ INFO[0000] Generated Code is: [fzHghSyr]
 │   ├── fileshare
 │   ├── kafka_2.13-4.0.0.tgz
 │   ├── llvm-2.2.tar.gz
-│   └── settings.yml
+│   └── config.yml
 └── server
     ├── fileshare
     ├── server.db
-    └── settings.yml
+    └── config.yml
 
 3 directories, 8 files
 ```
@@ -162,7 +162,7 @@ fileshare download 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072 300
 ```
 
-这个命令没有指定有效期，那么服务端会`根据服务端settings.yml的配置项`自动生成有效天数
+这个命令没有指定有效期，那么服务端会`根据服务端config.yml的配置项`自动生成有效天数
 ``` sh
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 ```

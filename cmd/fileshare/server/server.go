@@ -10,46 +10,40 @@ import (
 	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core/download"
+	"github.com/chanmaoganda/fileshare/internal/core/setup"
 	"github.com/chanmaoganda/fileshare/internal/core/sharelink"
 	"github.com/chanmaoganda/fileshare/internal/core/upload"
-	"github.com/chanmaoganda/fileshare/internal/pkg/db"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
-	"github.com/chanmaoganda/fileshare/internal/web"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 var ServerCmd = &cobra.Command{
-	Use:   "server",
-	Short: "Starts fileshare server",
+	Use:     "server",
+	Short:   "Starts fileshare server",
+	PreRunE: setup.Setup,
 	Run: func(cmd *cobra.Command, args []string) {
 		PrintBanner()
 
-		settings, err := config.ReadSettings("settings.yml")
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
+		cfg := config.Cfg()
 
-		settings.PrintSettings()
+		cfg.PrintConfig()
 
-		logrus.Debug("Server listening on ", settings.GrpcAddress)
+		logrus.Debug("Server listening on ", cfg.GrpcAddress)
 
-		listen, err := net.Listen("tcp", settings.GrpcAddress)
+		listen, err := net.Listen("tcp", cfg.GrpcAddress)
 		if err != nil {
 			logrus.Fatalln("cannot bind address")
 		}
 
-		grpcServer, err := fileshare.NewServerConn(settings)
+		grpcServer, err := fileshare.NewServerConn(cfg)
 		if err != nil {
 			logrus.Panic(err)
 		}
 
-		DB := db.SetupServerDB(settings.Database)
-
-		pb.RegisterUploadServiceServer(grpcServer, upload.NewUploadServer(settings, DB))
-		pb.RegisterDownloadServiceServer(grpcServer, download.NewDownloadServer(settings, DB))
-		pb.RegisterShareLinkServiceServer(grpcServer, sharelink.NewShareLinkServer(settings, DB))
+		pb.RegisterUploadServiceServer(grpcServer, upload.NewUploadServer())
+		pb.RegisterDownloadServiceServer(grpcServer, download.NewDownloadServer())
+		pb.RegisterShareLinkServiceServer(grpcServer, sharelink.NewShareLinkServer())
 
 		go func() {
 			if err := grpcServer.Serve(listen); err != nil {
@@ -57,12 +51,12 @@ var ServerCmd = &cobra.Command{
 			}
 		}()
 
-		web := web.NewWebService(DB)
-		go func() {
-			if err := web.Run(settings.WebAddress); err != nil {
-				logrus.Error(err)
-			}
-		}()
+		// web := web.NewWebService(DB)
+		// go func() {
+		// 	if err := web.Run(settings.WebAddress); err != nil {
+		// 		logrus.Error(err)
+		// 	}
+		// }()
 
 		shutdown := make(chan os.Signal, 1)
 		signal.Notify(shutdown, os.Interrupt, syscall.SIGINT)

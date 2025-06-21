@@ -28,7 +28,7 @@ Compared to http range, fileshare can restore progress at any time, you can reco
 **we can observe that, json is 33% larger than proto. Use proto saves traffic and speeds your transfer process**
 
 # How to use?
-Each fileshare needs a `settings.yml` file in the `same folder with fileshare`, which should contains below parts
+Each fileshare needs a `config.yml` file in the `same folder with fileshare`, which should contains below parts
 
 ``` yaml
 grpc_address: 0.0.0.0:60011
@@ -57,7 +57,7 @@ blocked_ips:
 ### Examples for configuration files
 #### Server
 ``` yaml
-# config for server/settings.yml
+# config for server/config.yml
 grpc_address: 0.0.0.0:60011
 web_address: 0.0.0.0:8080
 database: server.db
@@ -74,7 +74,7 @@ blocked_ips:
 
 #### Client
 ``` yaml
-# config for client/settings.yml
+# config for client/config.yml
 grpc_address: 0.0.0.0:60011
 web_address: 0.0.0.0:8080
 database: client.db
@@ -105,11 +105,11 @@ below is a example structure of client and server structure
 │   ├── fileshare
 │   ├── kafka_2.13-4.0.0.tgz
 │   ├── llvm-2.2.tar.gz
-│   └── settings.yml
+│   └── config.yml
 └── server
     ├── fileshare
     ├── server.db
-    └── settings.yml
+    └── config.yml
 
 3 directories, 8 files
 ```
@@ -164,7 +164,7 @@ Below cmd will make a sharelink which will live for 300 days
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072 300
 ```
 
-This cmd do not specify valid days, then server will generate `according to settings.yml at server side`
+This cmd do not specify valid days, then server will generate `according to config.yml at server side`
 ``` sh
 fileshare linkgen llvm-2.2.tar.gz 788d871aec139e0c61d49533d0252b21c4cd030e91405491ee8cb9b2d0311072
 ```

@@ -8,9 +8,9 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/chunkio"
-	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,8 +37,6 @@ type StreamSendCore interface {
 }
 
 type Core struct {
-	Settings  *config.Settings
-	Manager   *dbmanager.DBManager
 	FileInfo  model.FileInfo
 	Once      sync.Once
 	ChunkList []int32
@@ -49,10 +47,10 @@ func (c *Core) SetupAndRecordInfo(chunk *pb.FileChunk) {
 	c.Once.Do(func() {
 		// select from database
 		c.FileInfo.Sha256 = chunk.Sha256
-		c.Manager.SelectFileInfo(&c.FileInfo)
+		service.Mgr().SelectFileInfo(&c.FileInfo)
 
 		// create sha256 folder in cache folder
-		folder := strings.Join([]string{c.Settings.CacheDirectory, chunk.Sha256}, "/")
+		folder := strings.Join([]string{config.Cfg().CacheDirectory, chunk.Sha256}, "/")
 		if !util.FileExists(folder) {
 			if err := os.Mkdir(folder, 0755); err != nil {
 				logrus.Error(err)
@@ -75,7 +73,7 @@ func (c *Core) SaveChunkToDisk(chunk *pb.FileChunk) bool {
 
 	c.ChunkList = append(c.ChunkList, chunk.ChunkIndex)
 
-	if err := chunkio.SaveChunk(c.Settings.CacheDirectory, chunk); err != nil {
+	if err := chunkio.SaveChunk(config.Cfg().CacheDirectory, chunk); err != nil {
 		logrus.Error(err)
 		return false
 	}
@@ -85,7 +83,7 @@ func (c *Core) SaveChunkToDisk(chunk *pb.FileChunk) bool {
 
 // call FileInfo to validate chunks within chunklist
 func (c *Core) Validate() bool {
-	if c.FileInfo.ValidateChunks(c.Settings.CacheDirectory, c.Settings.DownloadDirectory) {
+	if c.FileInfo.ValidateChunks(config.Cfg().CacheDirectory, config.Cfg().DownloadDirectory) {
 		logrus.Debugf("[Validate] %s validated! sha256 is %s", util.Render(c.FileInfo.Filename), util.Render(c.FileInfo.Sha256))
 		return true
 	}

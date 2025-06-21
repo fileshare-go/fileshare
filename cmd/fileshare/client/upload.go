@@ -3,27 +3,25 @@ package client
 import (
 	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/core/setup"
 	"github.com/chanmaoganda/fileshare/internal/core/upload"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 var UploadCmd = &cobra.Command{
-	Use:   "upload <filepath>",
-	Short: "Uploads the file, requires the filepath as argument",
-	Args:  cobra.MinimumNArgs(1),
+	Use:     "upload <filepath>",
+	Short:   "Uploads the file, requires the filepath as argument",
+	Args:    cobra.MinimumNArgs(1),
+	PreRunE: setup.Setup,
 	Run: func(cmd *cobra.Command, args []string) {
 		transferFile := args[0]
 
-		settings, err := config.ReadSettings("settings.yml")
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
+		cfg := config.Cfg()
 
-		logrus.Debug("Uploading file to ", settings.GrpcAddress)
+		logrus.Debug("Uploading file to ", cfg.GrpcAddress)
 
-		conn, err := fileshare.NewClientConn(settings)
+		conn, err := fileshare.NewClientConn(cfg)
 		if err != nil {
 			logrus.Panic(err)
 		}

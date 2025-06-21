@@ -85,7 +85,7 @@ func (f *FileInfo) BuildDownloadTask() *pb.DownloadTask {
 	}
 }
 
-func (f *FileInfo) BuildDownloadSummary() *pb.DownloadSummary {
+func (f *FileInfo) BuildOkDownloadSummary() *pb.DownloadSummary {
 	return &pb.DownloadSummary{
 		Meta: &pb.FileMeta{
 			Filename: f.Filename,
@@ -96,6 +96,8 @@ func (f *FileInfo) BuildDownloadSummary() *pb.DownloadSummary {
 		ChunkNumber: f.ChunkNumber,
 		ChunkSize:   f.ChunkSize,
 		ChunkList:   f.GetUploadedChunks(),
+		Status:      pb.Status_OK,
+		Message:     "Share link found!",
 	}
 }
 

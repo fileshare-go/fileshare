@@ -8,8 +8,8 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/chunkio"
-	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
@@ -21,12 +21,9 @@ type ServerSendStream struct {
 	Task   *pb.DownloadTask
 }
 
-func NewServerSendStream(settings *config.Settings, manager *dbmanager.DBManager, task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) chunkstream.StreamSendCore {
+func NewServerSendStream(task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) chunkstream.StreamSendCore {
 	return &ServerSendStream{
-		Core: chunkstream.Core{
-			Settings: settings,
-			Manager:  manager,
-		},
+		Core:   chunkstream.Core{},
 		Stream: stream,
 		Task:   task,
 	}
@@ -51,20 +48,22 @@ func (s *ServerSendStream) SendChunk(chunk *pb.FileChunk) error {
 }
 
 func (s *ServerSendStream) CloseStream() error {
-	s.Manager.CreateRecord(s.MakeRecord())
+	service.Mgr().InsertRecord(s.MakeRecord())
 
 	logrus.Debug("Closing server sending stream")
 	return nil
 }
 
 func (s *ServerSendStream) ValidateTask() bool {
-	if s.Manager.SelectFileInfo(&s.FileInfo) {
-		for _, chunkIdx := range s.Task.ChunkList {
-			if chunkIdx >= 0 && chunkIdx < s.FileInfo.ChunkNumber {
-				return false
-			}
-		}
+	if err := service.Mgr().SelectFileInfo(&s.FileInfo); err != nil {
+		logrus.Error(err)
 		return false
+	}
+
+	for _, chunkIdx := range s.Task.ChunkList {
+		if chunkIdx >= 0 && chunkIdx < s.FileInfo.ChunkNumber {
+			return false
+		}
 	}
 
 	return true
@@ -101,7 +100,7 @@ func (s *ServerSendStream) PeerOs() string {
 }
 
 func (s *ServerSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {
-	chunkData := chunkio.ReadChunk(s.Settings.CacheDirectory, s.Task.Meta.Sha256, chunkIdx)
+	chunkData := chunkio.ReadChunk(config.Cfg().CacheDirectory, s.Task.Meta.Sha256, chunkIdx)
 
 	return &pb.FileChunk{
 		Sha256:     s.Task.Meta.Sha256,

@@ -9,16 +9,23 @@ type FileInfo struct {
 	service.Service
 }
 
-func (f *FileInfo) Get() ([]model.FileInfo, error) {
+func (f *FileInfo) GetFileInfo() ([]model.FileInfo, error) {
 	var fileinfoList []model.FileInfo
 	db := f.Orm.Find(&fileinfoList)
 	return fileinfoList, db.Error
 }
 
-func (f *FileInfo) Insert(fileinfo model.FileInfo) error {
+func (f *FileInfo) SelectFileInfo(fileinfo *model.FileInfo) error {
+	db := f.Orm.Where(fileinfo).Find(fileinfo)
+	return oneRowAffected(db)
+}
+
+func (f *FileInfo) InsertFileInfo(fileinfo *model.FileInfo) error {
 	db := f.Orm.Create(&fileinfo)
-	if db.RowsAffected != 1 {
-		return notAffectedError
-	}
-	return db.Error
+	return oneRowAffected(db)
+}
+
+func (f *FileInfo) UpdateFileInfo(fileinfo *model.FileInfo) error {
+	db := f.Orm.Save(fileinfo)
+	return oneRowAffected(db)
 }

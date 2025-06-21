@@ -4,29 +4,23 @@ import (
 	"context"
 	"errors"
 
-	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/recv"
 	"github.com/chanmaoganda/fileshare/internal/model"
-	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"gorm.io/gorm"
 )
 
 type DownloadClient struct {
-	Settings *config.Settings
-	Client   pb.DownloadServiceClient
-	Manager  *dbmanager.DBManager
+	Client pb.DownloadServiceClient
 }
 
-func NewDownloadClient(ctx context.Context, settings *config.Settings, conn *grpc.ClientConn, DB *gorm.DB) *DownloadClient {
+func NewDownloadClient(ctx context.Context, conn *grpc.ClientConn) *DownloadClient {
 	client := pb.NewDownloadServiceClient(conn)
 
 	return &DownloadClient{
-		Settings: settings,
-		Client:   client,
-		Manager:  dbmanager.NewDBManager(DB),
+		Client: client,
 	}
 }
 
@@ -34,7 +28,7 @@ func NewDownloadClient(ctx context.Context, settings *config.Settings, conn *grp
 func (c *DownloadClient) getDownloadStream(ctx context.Context, key string) (pb.DownloadService_DownloadClient, error) {
 	logrus.Debugf("Download request [key: %s]", key)
 
-	builder := taskBuilder{Client: c.Client, Manager: c.Manager}
+	builder := taskBuilder{Client: c.Client}
 
 	task, err := builder.BuildTask(ctx, key)
 	if err != nil {
@@ -51,7 +45,7 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 		return err
 	}
 
-	recvStream := recv.NewClientRecvStream(c.Settings, c.Manager, stream)
+	recvStream := recv.NewClientRecvStream(stream)
 	if err := recvStream.RecvStreamChunks(); err != nil {
 		return recvStream.CloseStream(false)
 	}
@@ -61,8 +55,7 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 }
 
 type taskBuilder struct {
-	Client  pb.DownloadServiceClient
-	Manager *dbmanager.DBManager
+	Client pb.DownloadServiceClient
 }
 
 // get summary from grpc
@@ -77,17 +70,20 @@ func (b *taskBuilder) getSummary(ctx context.Context, key string) (*pb.DownloadS
 
 // build download task from summary
 func (b *taskBuilder) buildTaskFromSummary(summary *pb.DownloadSummary) (*pb.DownloadTask, error) {
+	var err error
 	fileInfo := &model.FileInfo{
 		Sha256: summary.Meta.Sha256,
 	}
 
-	if b.Manager.SelectFileInfo(fileInfo) {
+	if err = service.Mgr().SelectFileInfo(fileInfo); err == nil {
 		return fileInfo.BuildDownloadTask(), nil
 	}
 
 	fileInfo = model.NewFileInfoFromDownload(summary)
 
-	b.Manager.CreateFileInfo(fileInfo)
+	if err = service.Mgr().InsertFileInfo(fileInfo); err != nil {
+		return nil, err
+	}
 
 	task := &pb.DownloadTask{
 		Meta:        summary.Meta,

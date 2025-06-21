@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SetupClientDB(sqliteFile string) *gorm.DB {
+func OpenClientDB(sqliteFile string) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(sqliteFile), &gorm.Config{})
 	if err != nil {
 		logrus.Fatalf("sqlite %s: %v", sqliteFile, err)
@@ -18,7 +18,7 @@ func SetupClientDB(sqliteFile string) *gorm.DB {
 	return db
 }
 
-func SetupServerDB(sqliteFile string) *gorm.DB {
+func OpenServerDB(sqliteFile string) *gorm.DB {
 	db, err := gorm.Open(sqlite.Open(sqliteFile), &gorm.Config{})
 	if err != nil {
 		logrus.Fatalf("sqlite %s: %v", sqliteFile, err)

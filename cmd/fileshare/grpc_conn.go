@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func NewCredentialClientConn(settings *config.Settings) (*grpc.ClientConn, error) {
+func NewCredentialClientConn(settings *config.Config) (*grpc.ClientConn, error) {
 	credentialLoader, err := certs.NewCredentialLoader(settings.CertsPath)
 	if err != nil {
 		return nil, err
@@ -20,7 +20,7 @@ func NewCredentialClientConn(settings *config.Settings) (*grpc.ClientConn, error
 	)
 }
 
-func NewCredentialServerConn(settings *config.Settings) (*grpc.Server, error) {
+func NewCredentialServerConn(settings *config.Config) (*grpc.Server, error) {
 	credentialLoader, err := certs.NewCredentialLoader(settings.CertsPath)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func NewCredentialServerConn(settings *config.Settings) (*grpc.Server, error) {
 	return grpcServer, nil
 }
 
-func NewClientConn(settings *config.Settings) (*grpc.ClientConn, error) {
+func NewClientConn(settings *config.Config) (*grpc.ClientConn, error) {
 	return grpc.NewClient(settings.GrpcAddress,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUnaryInterceptor(interceptors.UnaryOSInfoInterceptor),
@@ -37,7 +37,7 @@ func NewClientConn(settings *config.Settings) (*grpc.ClientConn, error) {
 	)
 }
 
-func NewServerConn(settings *config.Settings) (*grpc.Server, error) {
+func NewServerConn(settings *config.Config) (*grpc.Server, error) {
 	return grpc.NewServer(
 		grpc.UnaryInterceptor(interceptors.BlackFilterInterceptor(settings)),
 	), nil

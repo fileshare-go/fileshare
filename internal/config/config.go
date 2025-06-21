@@ -9,7 +9,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Settings struct {
+var config Config
+
+func Cfg() *Config {
+	return &config
+}
+
+type Config struct {
 	GrpcAddress       string   `yaml:"grpc_address"`
 	WebAddress        string   `yaml:"web_address"`
 	Database          string   `yaml:"database"`
@@ -21,34 +27,23 @@ type Settings struct {
 	BlockedIps        []string `yaml:"blocked_ips"`
 }
 
-func ReadSettings(filename string) (*Settings, error) {
-	var settings Settings
-
-	bytes, err := os.ReadFile(filename)
+func ReadConfig() error {
+	bytes, err := os.ReadFile("config.yml")
 	if err != nil {
 		logrus.Warn("cannot open configuration file, use default config")
-		if err := settings.SetupEssentials(); err != nil {
-			return nil, err
-		}
-		return &settings, nil
+		config.FillMissingWithDefault()
+		return err
 	}
 
-	if err := yaml.Unmarshal(bytes, &settings); err != nil {
-		return nil, err
+	if err := yaml.Unmarshal(bytes, &config); err != nil {
+		return err
 	}
 
-	if err := settings.SetupEssentials(); err != nil {
-		return nil, err
-	}
-	return &settings, nil
+	config.FillMissingWithDefault()
+	return nil
 }
 
-func (s *Settings) SetupEssentials() error {
-	s.FillMissingWithDefault()
-	return s.SetupDirectory()
-}
-
-func (s *Settings) FillMissingWithDefault() {
+func (s *Config) FillMissingWithDefault() {
 	if s.GrpcAddress == "" {
 		s.GrpcAddress = ":60011"
 	}
@@ -77,7 +72,7 @@ func (s *Settings) FillMissingWithDefault() {
 	}
 }
 
-func (s *Settings) PrintSettings() {
+func (s *Config) PrintConfig() {
 	logrus.Debugf("[Settings] Grpc Address: %s", util.Render(s.GrpcAddress))
 	logrus.Debugf("[Settings] Web Address: %s", util.Render(s.WebAddress))
 	logrus.Debugf("[Settings] Database: %s", util.Render(s.Database))
@@ -87,23 +82,4 @@ func (s *Settings) PrintSettings() {
 	logrus.Debugf("[Settings] CertPath %s", util.Render(s.CertsPath))
 	logrus.Debugf("[Settings] Valid Days %s", util.Render(s.ValidDays))
 	logrus.Debugf("[Settings] Blocked Ips %s", util.Render(s.BlockedIps))
-}
-
-func (s *Settings) SetupDirectory() error {
-	logrus.Debugf("Setting up Directories, %s, %s", s.CacheDirectory, s.DownloadDirectory)
-	if util.FileExists(s.CacheDirectory) {
-		return nil
-	}
-	if err := os.Mkdir(s.CacheDirectory, 0755); err != nil {
-		return err
-	}
-
-	if util.FileExists(s.DownloadDirectory) {
-		return nil
-	}
-	if err := os.Mkdir(s.DownloadDirectory, 0755); err != nil {
-		return err
-	}
-
-	return nil
 }

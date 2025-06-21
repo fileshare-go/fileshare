@@ -5,27 +5,20 @@ import (
 	"errors"
 	"time"
 
-	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/send"
 	"github.com/chanmaoganda/fileshare/internal/model"
-	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 type DownloadServer struct {
 	pb.UnimplementedDownloadServiceServer
-	Settings *config.Settings
-	Manager  *dbmanager.DBManager
 }
 
-func NewDownloadServer(settings *config.Settings, DB *gorm.DB) *DownloadServer {
-	return &DownloadServer{
-		Settings: settings,
-		Manager:  dbmanager.NewDBManager(DB),
-	}
+func NewDownloadServer() *DownloadServer {
+	return &DownloadServer{}
 }
 
 func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequest) (*pb.DownloadSummary, error) {
@@ -35,8 +28,8 @@ func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequ
 	fileInfo.Sha256 = request.Meta.Sha256
 	fileInfo.Filename = request.Meta.Filename
 
-	if s.Manager.SelectFileInfo(&fileInfo) {
-		summary := fileInfo.BuildDownloadSummary()
+	if err := service.Mgr().SelectFileInfo(&fileInfo); err == nil {
+		summary := fileInfo.BuildOkDownloadSummary()
 		util.DebugDownloadSummary(summary)
 		return summary, nil
 	}
@@ -46,10 +39,11 @@ func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequ
 
 func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLink) (*pb.DownloadSummary, error) {
 	var shareLink model.ShareLink
+	var err error
 	shareLink.LinkCode = link.LinkCode
 
 	summary := &pb.DownloadSummary{}
-	if s.Manager.SelectShareLink(&shareLink) {
+	if err = service.Mgr().SelectShareLink(&shareLink); err == nil {
 		if shareLink.OutdatedAt.Before(time.Now()) {
 			summary.Status = pb.Status_ERROR
 			summary.Message = "Share link outdated!"
@@ -60,10 +54,8 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 	var fileInfo model.FileInfo
 	fileInfo.Sha256 = shareLink.Sha256
 
-	if s.Manager.SelectFileInfo(&fileInfo) {
-		summary := fileInfo.BuildDownloadSummary()
-		summary.Status = pb.Status_OK
-		summary.Message = "Share link found!"
+	if err = service.Mgr().SelectFileInfo(&fileInfo); err != nil {
+		summary := fileInfo.BuildOkDownloadSummary()
 
 		util.DebugDownloadSummary(summary)
 		return summary, nil
@@ -74,7 +66,7 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 
 func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) error {
 	util.DebugDownloadTask(task)
-	sendStream := send.NewServerSendStream(s.Settings, s.Manager, task, stream)
+	sendStream := send.NewServerSendStream(task, stream)
 
 	if err := sendStream.SendStreamChunks(); err != nil {
 		return err

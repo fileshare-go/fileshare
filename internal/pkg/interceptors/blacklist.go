@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func BlackFilterInterceptor(settings *config.Settings) grpc.UnaryServerInterceptor {
+func BlackFilterInterceptor(settings *config.Config) grpc.UnaryServerInterceptor {
 	blockedIps := make(map[string]bool)
 	for _, ip := range settings.BlockedIps {
 		blockedIps[ip] = true

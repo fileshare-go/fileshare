@@ -52,7 +52,7 @@ WORKDIR /app
 # Copy the built binary from the 'builder' stage to the final image
 COPY --from=builder /app/fileshare .
 
-COPY settings.yml .
+COPY config.yml .
 # Expose the port your Go application listens on
 EXPOSE 60011
 

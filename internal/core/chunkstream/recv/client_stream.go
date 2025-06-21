@@ -3,10 +3,9 @@ package recv
 import (
 	"io"
 
-	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
-	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/chanmaoganda/fileshare/internal/service"
 )
 
 type ClientRecvStream struct {
@@ -14,12 +13,9 @@ type ClientRecvStream struct {
 	Stream pb.DownloadService_DownloadClient
 }
 
-func NewClientRecvStream(settings *config.Settings, manager *dbmanager.DBManager, stream pb.DownloadService_DownloadClient) chunkstream.StreamRecvCore {
+func NewClientRecvStream(stream pb.DownloadService_DownloadClient) chunkstream.StreamRecvCore {
 	return &ClientRecvStream{
-		Core: chunkstream.Core{
-			Settings: settings,
-			Manager:  manager,
-		},
+		Core:   chunkstream.Core{},
 		Stream: stream,
 	}
 }
@@ -55,7 +51,10 @@ func (c *ClientRecvStream) ValidateRecvChunks() bool {
 }
 
 func (c *ClientRecvStream) CloseStream(bool) error {
-	c.Manager.UpdateFileInfo(&c.FileInfo)
+	var err error
+	if err = service.Mgr().UpdateFileInfo(&c.FileInfo); err != nil {
+		return err
+	}
 
 	return c.Stream.CloseSend()
 }

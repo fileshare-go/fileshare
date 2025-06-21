@@ -3,25 +3,23 @@ package client
 import (
 	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/core/setup"
 	"github.com/chanmaoganda/fileshare/internal/core/sharelink"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 var ShareLinkGenCmd = &cobra.Command{
-	Use:   "linkgen <filename> <checksum256> <expire days(optional)>",
-	Short: "Generates sharelink code for friends to easily download",
-	Args:  cobra.MinimumNArgs(2),
+	Use:     "linkgen <filename> <checksum256> <expire days(optional)>",
+	Short:   "Generates sharelink code for friends to easily download",
+	Args:    cobra.MinimumNArgs(2),
+	PreRunE: setup.Setup,
 	Run: func(cmd *cobra.Command, args []string) {
-		settings, err := config.ReadSettings("settings.yml")
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
+		cfg := config.Cfg()
 
-		logrus.Debug("Connecting to ", settings.GrpcAddress)
+		logrus.Debug("Connecting to ", cfg.GrpcAddress)
 
-		conn, err := fileshare.NewClientConn(settings)
+		conn, err := fileshare.NewClientConn(cfg)
 		if err != nil {
 			logrus.Panic(err)
 		}

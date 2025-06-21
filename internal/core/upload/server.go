@@ -3,38 +3,35 @@ package upload
 import (
 	"context"
 
-	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream/recv"
 	"github.com/chanmaoganda/fileshare/internal/model"
-	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 )
 
 type UploadServer struct {
 	pb.UnimplementedUploadServiceServer
-	Settings *config.Settings
-	Manager  *dbmanager.DBManager
 }
 
-func NewUploadServer(settings *config.Settings, DB *gorm.DB) *UploadServer {
-	return &UploadServer{
-		Settings: settings,
-		Manager:  dbmanager.NewDBManager(DB),
-	}
+func NewUploadServer() *UploadServer {
+	return &UploadServer{}
 }
 
 // pre upload receives a task from client, calculate missing chunks and send the task back
 func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
 	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", util.Render(request.Meta.Filename), request.FileSize, util.Render(request.Meta.Sha256[:8]))
+	var err error
 
 	fileInfo := &model.FileInfo{
 		Sha256: request.Meta.Sha256,
 	}
 
-	if s.Manager.SelectFileInfo(fileInfo) {
+	if err = service.Mgr().SelectFileInfo(fileInfo); err != nil {
+		logrus.Warn(err)
+	} else {
+		// if fileinfo exists, then use stored info
 		logrus.Debug("Existing file info ", fileInfo.Filename)
 		return fileInfo.BuildUploadTask(), nil
 	}
@@ -42,7 +39,9 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 	fileInfo = model.NewFileInfoFromUpload(request)
 
 	logrus.Debug("Creating file info ", fileInfo.Filename)
-	s.Manager.CreateFileInfo(fileInfo)
+	if err = service.Mgr().InsertFileInfo(fileInfo); err != nil {
+		return nil, err
+	}
 
 	return fileInfo.BuildUploadTask(), nil
 }
@@ -50,7 +49,7 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 	logrus.Debug("[Upload] Starting Upload Process!")
 
-	recvStream := recv.NewServerRecvStream(s.Settings, s.Manager, stream)
+	recvStream := recv.NewServerRecvStream(stream)
 	if err := recvStream.RecvStreamChunks(); err != nil {
 		return recvStream.CloseStream(false)
 	}

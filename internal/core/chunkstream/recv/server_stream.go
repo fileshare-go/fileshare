@@ -4,12 +4,11 @@ import (
 	"io"
 	"time"
 
-	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core"
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/model"
-	"github.com/chanmaoganda/fileshare/internal/pkg/dbmanager"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
+	"github.com/chanmaoganda/fileshare/internal/service"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 )
@@ -19,12 +18,9 @@ type ServerRecvStream struct {
 	Stream pb.UploadService_UploadServer
 }
 
-func NewServerRecvStream(settings *config.Settings, manager *dbmanager.DBManager, stream pb.UploadService_UploadServer) chunkstream.StreamRecvCore {
+func NewServerRecvStream(stream pb.UploadService_UploadServer) chunkstream.StreamRecvCore {
 	return &ServerRecvStream{
-		Core: chunkstream.Core{
-			Settings: settings,
-			Manager:  manager,
-		},
+		Core:   chunkstream.Core{},
 		Stream: stream,
 	}
 }
@@ -89,8 +85,13 @@ func (s *ServerRecvStream) MakeRecord() *model.Record {
 }
 
 func (s *ServerRecvStream) CloseStream(validate bool) error {
-	s.Manager.UpdateFileInfo(&s.FileInfo)
-	s.Manager.CreateRecord(s.MakeRecord())
+	var err error
+	if err = service.Mgr().UpdateFileInfo(&s.FileInfo); err != nil {
+		return err
+	}
+	if err = service.Mgr().InsertRecord(s.MakeRecord()); err != nil {
+		return err
+	}
 
 	status := s.genUploadStatus(validate)
 
