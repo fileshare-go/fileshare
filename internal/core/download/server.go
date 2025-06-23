@@ -24,44 +24,42 @@ func NewDownloadServer() *DownloadServer {
 func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequest) (*pb.DownloadSummary, error) {
 	util.DebugMeta(request.Meta)
 
-	var fileInfo model.FileInfo
-	fileInfo.Sha256 = request.Meta.Sha256
-	fileInfo.Filename = request.Meta.Filename
-
-	if err := service.Mgr().SelectFileInfo(&fileInfo); err == nil {
-		summary := fileInfo.BuildOkDownloadSummary()
-		util.DebugDownloadSummary(summary)
-		return summary, nil
+	fileInfo := &model.FileInfo{
+		Sha256: request.Meta.Sha256,
 	}
 
-	return nil, errors.New("no matching file found")
+	if service.Orm().Find(fileInfo).RowsAffected != 1 {
+		return nil, errors.New("no matching file found")
+	}
+
+	summary := buildOkDownloadSummary(fileInfo)
+	// util.DebugDownloadSummary(summary)
+	return summary, nil
 }
 
 func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLink) (*pb.DownloadSummary, error) {
-	var shareLink model.ShareLink
-	var err error
-	shareLink.LinkCode = link.LinkCode
+	shareLink := &model.ShareLink{
+		LinkCode: link.LinkCode,
+	}
 
-	summary := &pb.DownloadSummary{}
-	if err = service.Mgr().SelectShareLink(&shareLink); err == nil {
+	if service.Orm().Find(shareLink).RowsAffected == 1 {
 		if shareLink.OutdatedAt.Before(time.Now()) {
-			summary.Status = pb.Status_ERROR
-			summary.Message = "Share link outdated!"
-			return summary, nil
+			return &pb.DownloadSummary{
+				Status: pb.Status_ERROR,
+				Message: "Share link outdated!",
+			}, nil
 		}
 	}
 
-	var fileInfo model.FileInfo
-	fileInfo.Sha256 = shareLink.Sha256
-
-	if err = service.Mgr().SelectFileInfo(&fileInfo); err != nil {
-		summary := fileInfo.BuildOkDownloadSummary()
-
-		util.DebugDownloadSummary(summary)
-		return summary, nil
+	fileInfo := &model.FileInfo{
+		Sha256: shareLink.Sha256,
 	}
 
-	return nil, errors.New("no matching file found")
+	if service.Orm().Find(fileInfo).RowsAffected == 0 {
+		return nil, errors.New("no matching file found")
+	}
+
+	return buildOkDownloadSummary(fileInfo), nil
 }
 
 func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadService_DownloadServer) error {
@@ -75,3 +73,20 @@ func (s *DownloadServer) Download(task *pb.DownloadTask, stream pb.DownloadServi
 	logrus.Debugf("File Sent! %s", task.Meta.Filename)
 	return sendStream.CloseStream()
 }
+
+func buildOkDownloadSummary(f *model.FileInfo) *pb.DownloadSummary {
+	return &pb.DownloadSummary{
+		Meta: &pb.FileMeta{
+			Filename: f.Filename,
+			Sha256:   f.Sha256,
+			FileSize: f.FileSize,
+		},
+		FileSize:    f.FileSize,
+		ChunkNumber: f.ChunkNumber,
+		ChunkSize:   f.ChunkSize,
+		ChunkList:   f.GetUploadedChunks(),
+		Status:      pb.Status_OK,
+		Message:     "Share link found!",
+	}
+}
+

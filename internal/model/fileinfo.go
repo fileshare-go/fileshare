@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
-	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 )
 
@@ -58,47 +57,6 @@ func (f *FileInfo) UpdateChunks(newChunks []int32) {
 	}
 
 	f.UploadedChunks = string(bytes)
-}
-
-func (f *FileInfo) BuildUploadTask() *pb.UploadTask {
-	return &pb.UploadTask{
-		Meta: &pb.FileMeta{
-			Filename: f.Filename,
-			Sha256:   f.Sha256,
-			FileSize: f.FileSize,
-		},
-		ChunkNumber: f.ChunkNumber,
-		ChunkSize:   f.ChunkSize,
-		ChunkList:   f.GetMissingChunks(),
-	}
-}
-
-func (f *FileInfo) BuildDownloadTask() *pb.DownloadTask {
-	return &pb.DownloadTask{
-		Meta: &pb.FileMeta{
-			Filename: f.Filename,
-			Sha256:   f.Sha256,
-			FileSize: f.FileSize,
-		},
-		ChunkNumber: f.ChunkNumber,
-		ChunkList:   f.GetMissingChunks(),
-	}
-}
-
-func (f *FileInfo) BuildOkDownloadSummary() *pb.DownloadSummary {
-	return &pb.DownloadSummary{
-		Meta: &pb.FileMeta{
-			Filename: f.Filename,
-			Sha256:   f.Sha256,
-			FileSize: f.FileSize,
-		},
-		FileSize:    f.FileSize,
-		ChunkNumber: f.ChunkNumber,
-		ChunkSize:   f.ChunkSize,
-		ChunkList:   f.GetUploadedChunks(),
-		Status:      pb.Status_OK,
-		Message:     "Share link found!",
-	}
 }
 
 func (f *FileInfo) ValidateChunks(cache_directory, download_directory string) bool {
@@ -152,65 +110,4 @@ func (f *FileInfo) RemakeFile(cache_directory, filePath string) error {
 		}
 	}
 	return out.Close()
-}
-
-func NewFileInfoFromUpload(req *pb.UploadRequest) *FileInfo {
-	fileInfo := FileInfo{}
-
-	chunkSummary := dealChunkSize(req.FileSize)
-
-	fileInfo.Filename = req.Meta.Filename
-	fileInfo.Sha256 = req.Meta.Sha256
-	fileInfo.FileSize = req.FileSize
-	fileInfo.ChunkNumber = chunkSummary.Number
-	fileInfo.ChunkSize = chunkSummary.Size
-	fileInfo.UploadedChunks = "[]"
-
-	return &fileInfo
-}
-
-func NewFileInfoFromDownload(summary *pb.DownloadSummary) *FileInfo {
-	fileInfo := FileInfo{}
-
-	fileInfo.Filename = summary.Meta.Filename
-	fileInfo.Sha256 = summary.Meta.Sha256
-	fileInfo.FileSize = summary.FileSize
-	fileInfo.ChunkNumber = summary.ChunkNumber
-	fileInfo.ChunkSize = summary.ChunkSize
-	fileInfo.UploadedChunks = "[]"
-
-	return &fileInfo
-}
-
-const (
-	SMALL  = 1024 * 1024 // 1MB
-	MEDIUM = 2 * SMALL   // 2MB
-	LARGE  = 4 * SMALL   // 4MB
-)
-
-type ChunkSummary struct {
-	Size   int64
-	Number int32
-}
-
-func dealChunkSize(fileSize int64) ChunkSummary {
-	var chunkSize int
-	if fileSize < 64*SMALL {
-		chunkSize = SMALL
-	} else if fileSize < 1024*SMALL {
-		chunkSize = MEDIUM
-	} else {
-		chunkSize = LARGE
-	}
-
-	chunkNumber := fileSize / int64(chunkSize)
-
-	if fileSize%int64(chunkSize) != 0 {
-		chunkNumber += 1
-	}
-
-	return ChunkSummary{
-		Size:   int64(chunkSize),
-		Number: int32(chunkNumber),
-	}
 }
