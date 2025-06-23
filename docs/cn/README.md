@@ -2,7 +2,7 @@
 
 [英文文档](../../README.md)
 
-Fileshare设计之初就是为了轻量，grpc是为了让传输更块
+Fileshare设计之初就是为了轻量，grpc是为了让传输更快
 
 Fileshare 还会自动检查文件的有效性，不论在客户端和服务端，是下载还是上传，**fileshare**都会自动检查`sha256`
 
