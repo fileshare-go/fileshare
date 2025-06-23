@@ -23,8 +23,8 @@ func NewWebService(DB *gorm.DB) *WebService {
 
 func (s *WebService) RegisterRoutes() {
 	s.GET("/fileinfo", s.GetFileInfos)
-	s.GET("/sharelink", s.GetShareLinks)
-	s.GET("/record", s.GetRecords)
+	// s.GET("/sharelink", s.GetShareLinks)
+	// s.GET("/record", s.GetRecords)
 }
 
 func (s *WebService) GetFileInfos(c *gin.Context) {
@@ -38,22 +38,22 @@ func (s *WebService) GetFileInfos(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": fileInfos})
 }
 
-func (s *WebService) GetShareLinks(c *gin.Context) {
-	shareLinks, err := service.Mgr().GetShareLink()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
-		return
-	}
+// func (s *WebService) GetShareLinks(c *gin.Context) {
+// 	shareLinks, err := service.Mgr().GetShareLink()
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": shareLinks})
-}
+// 	c.JSON(http.StatusOK, gin.H{"data": shareLinks})
+// }
 
-func (s *WebService) GetRecords(c *gin.Context) {
-	records, err := service.Mgr().GetRecord()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
-		return
-	}
+// func (s *WebService) GetRecords(c *gin.Context) {
+// 	records, err := service.Mgr().GetRecord()
+// 	if err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": records})
-}
+// 	c.JSON(http.StatusOK, gin.H{"data": records})
+// }

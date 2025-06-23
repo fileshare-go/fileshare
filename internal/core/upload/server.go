@@ -39,7 +39,7 @@ func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest)
 	fileInfo = assembleFileInfo(request)
 
 	logrus.Debug("Creating file info ", fileInfo.Filename)
-	if err = service.Mgr().InsertFileInfo(fileInfo); err != nil {
+	if err = service.Orm().Save(fileInfo).Error; err != nil {
 		return nil, err
 	}
 

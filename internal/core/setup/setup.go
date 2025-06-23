@@ -5,6 +5,7 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
+	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +16,7 @@ func Setup(cmd *cobra.Command, args []string) error {
 		logrus.Error(err)
 		return err
 	}
-
+	service.InitService()
 	// if directory cannot be set correctly, following actions will panic
 	return setupDirectory()
 }

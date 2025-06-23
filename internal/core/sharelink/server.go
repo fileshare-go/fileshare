@@ -26,29 +26,17 @@ func NewShareLinkServer() *ShareLinkServer {
 func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb.ShareLinkRequest) (*pb.ShareLinkResponse, error) {
 	logrus.Debugf("Generating sharelink for %s", util.Render(sharelinkRequest.Meta.Sha256[:8]))
 
-	handler := NewLinkHandler(sharelinkRequest, s.PeerOs(ctx), s.PeerAddress(ctx))
+	handler := newLinkHandler(sharelinkRequest, s.PeerOs(ctx), s.PeerAddress(ctx))
 
-	if service.Orm().Find(handler.FileInfo).RowsAffected == 0 {
-		return &pb.ShareLinkResponse{
-			Status:   pb.Status_ERROR,
-			Message:  "File not found",
-			LinkCode: "",
-		}, nil
-	}
-
-	if service.Orm().Find(handler.ShareLink).RowsAffected == 1 {
-		logrus.Debugf("Existing sharelink for %s is %s", util.Render(sharelinkRequest.Meta.Sha256[:8]), util.Render(handler.ShareLink.LinkCode))
-		return &pb.ShareLinkResponse{
-			Status:   pb.Status_OK,
-			Message:  "Found existing sharelink code!",
-			LinkCode: handler.ShareLink.LinkCode,
-		}, nil
+	if resp, ok := handler.preCheck(); ok {
+		return resp, nil
 	}
 
 	linkCode := util.GenerateCode(config.Cfg().ShareCodeLength)
 
 	handler.PersistShareLink(linkCode)
-	handler.PersistRecords()
+
+	handler.PersistRecord()
 
 	logrus.Debugf("Generated sharelink for %s is %s", util.Render(sharelinkRequest.Meta.Sha256[:8]), util.Render(linkCode))
 
@@ -80,7 +68,7 @@ func (s *ShareLinkServer) PeerOs(ctx context.Context) string {
 }
 
 // handles share link
-type LinkHandler struct {
+type linkHandler struct {
 	OsInfo    string
 	PeerAddr  string
 	FileInfo  *model.FileInfo
@@ -88,8 +76,8 @@ type LinkHandler struct {
 	Request   *pb.ShareLinkRequest
 }
 
-func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, osInfo, peerAddr string) *LinkHandler {
-	return &LinkHandler{
+func newLinkHandler(shareLinkRequest *pb.ShareLinkRequest, osInfo, peerAddr string) *linkHandler {
+	return &linkHandler{
 		OsInfo:   osInfo,
 		PeerAddr: peerAddr,
 		FileInfo: &model.FileInfo{
@@ -102,8 +90,30 @@ func NewLinkHandler(shareLinkRequest *pb.ShareLinkRequest, osInfo, peerAddr stri
 	}
 }
 
+// if the second value is true, it indicates no need to do more actions
+func (h *linkHandler) preCheck() (*pb.ShareLinkResponse, bool) {
+	if service.Orm().Find(h.FileInfo).RowsAffected == 0 {
+		return &pb.ShareLinkResponse{
+			Status:   pb.Status_ERROR,
+			Message:  "File not found",
+			LinkCode: "",
+		}, true
+	}
+
+	if service.Orm().Find(h.ShareLink).RowsAffected == 1 {
+		logrus.Debugf("Existing sharelink for %s is %s", util.Render(h.Request.Meta.Sha256[:8]), util.Render(h.ShareLink.LinkCode))
+		return &pb.ShareLinkResponse{
+			Status:   pb.Status_OK,
+			Message:  "Found existing sharelink code!",
+			LinkCode: h.ShareLink.LinkCode,
+		}, true
+	}
+
+	return nil, false
+}
+
 // persist changes in database
-func (h *LinkHandler) PersistShareLink(linkCode string) {
+func (h *linkHandler) PersistShareLink(linkCode string) {
 	h.ShareLink.LinkCode = linkCode
 	h.ShareLink.CreatedAt = time.Now()
 	h.ShareLink.CreatedBy = h.PeerAddr
@@ -118,16 +128,13 @@ func (h *LinkHandler) PersistShareLink(linkCode string) {
 	service.Orm().Save(h.ShareLink)
 }
 
-func (h *LinkHandler) PersistRecords() {
-	service.Mgr().InsertRecord(h.MakeRecord())
-}
-
-func (h *LinkHandler) MakeRecord() *model.Record {
-	return &model.Record{
+func (h *linkHandler) PersistRecord() {
+	record := &model.Record{
 		Os:             h.OsInfo,
 		Sha256:         h.FileInfo.Sha256,
 		InteractAction: core.LinkGenAction,
 		ClientIp:       h.PeerAddr,
 		Time:           time.Now(),
 	}
+	service.Orm().Save(record)
 }
