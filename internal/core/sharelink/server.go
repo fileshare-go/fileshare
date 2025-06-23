@@ -25,11 +25,10 @@ func NewShareLinkServer() *ShareLinkServer {
 
 func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb.ShareLinkRequest) (*pb.ShareLinkResponse, error) {
 	logrus.Debugf("Generating sharelink for %s", util.Render(sharelinkRequest.Meta.Sha256[:8]))
-	var err error
 
 	handler := NewLinkHandler(sharelinkRequest, s.PeerOs(ctx), s.PeerAddress(ctx))
 
-	if err = service.Mgr().SelectFileInfo(handler.FileInfo); err == nil {
+	if service.Orm().Find(handler.FileInfo).RowsAffected == 0 {
 		return &pb.ShareLinkResponse{
 			Status:   pb.Status_ERROR,
 			Message:  "File not found",
@@ -37,7 +36,7 @@ func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb
 		}, nil
 	}
 
-	if err = service.Mgr().SelectShareLink(handler.ShareLink); err == nil {
+	if service.Orm().Find(handler.ShareLink).RowsAffected == 1 {
 		logrus.Debugf("Existing sharelink for %s is %s", util.Render(sharelinkRequest.Meta.Sha256[:8]), util.Render(handler.ShareLink.LinkCode))
 		return &pb.ShareLinkResponse{
 			Status:   pb.Status_OK,
@@ -116,7 +115,7 @@ func (h *LinkHandler) PersistShareLink(linkCode string) {
 		h.ShareLink.OutdatedAt = time.Now().AddDate(0, 0, int(h.Request.ValidDays))
 	}
 
-	service.Mgr().UpdateShareLink(h.ShareLink)
+	service.Orm().Save(h.ShareLink)
 }
 
 func (h *LinkHandler) PersistRecords() {

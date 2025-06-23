@@ -54,7 +54,7 @@ func (s *ServerRecvStream) ValidateRecvChunks() bool {
 	return s.Validate()
 }
 
-func (s *ServerRecvStream) PeerAddress() string {
+func (s *ServerRecvStream) peerAddress() string {
 	peer, ok := peer.FromContext(s.Stream.Context())
 	if ok {
 		return peer.Addr.String()
@@ -62,7 +62,7 @@ func (s *ServerRecvStream) PeerAddress() string {
 	return "unknown"
 }
 
-func (s *ServerRecvStream) PeerOs() string {
+func (s *ServerRecvStream) peerOs() string {
 	md, ok := metadata.FromIncomingContext(s.Stream.Context())
 	if !ok {
 		return "unknown"
@@ -74,22 +74,15 @@ func (s *ServerRecvStream) PeerOs() string {
 	return "unknown"
 }
 
-func (s *ServerRecvStream) MakeRecord() *model.Record {
-	return &model.Record{
-		Sha256:         s.FileInfo.Sha256,
-		InteractAction: core.DownloadAction,
-		ClientIp:       s.PeerAddress(),
-		Os:             s.PeerOs(),
-		Time:           time.Now(),
-	}
-}
-
 func (s *ServerRecvStream) CloseStream(validate bool) error {
 	var err error
-	if err = service.Mgr().UpdateFileInfo(&s.FileInfo); err != nil {
+	if service.Orm().Save(&s.FileInfo).Error != nil {
 		return err
 	}
-	if err = service.Mgr().InsertRecord(s.MakeRecord()); err != nil {
+
+	record := makeRecord(s.FileInfo.Sha256, s.peerAddress(), s.peerOs())
+
+	if service.Orm().Create(record).Error != nil {
 		return err
 	}
 
@@ -114,5 +107,15 @@ func (s *ServerRecvStream) genUploadStatus(validate bool) *pb.UploadStatus {
 		},
 		Status:    statusCode,
 		ChunkList: s.ChunkList,
+	}
+}
+
+func makeRecord(sha256, peerAddress, peerOs string) *model.Record {
+	return &model.Record{
+		Sha256:         sha256,
+		InteractAction: core.DownloadAction,
+		ClientIp:       peerAddress,
+		Os:             peerOs,
+		Time:           time.Now(),
 	}
 }

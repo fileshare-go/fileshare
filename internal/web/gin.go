@@ -15,7 +15,7 @@ type WebService struct {
 
 func NewWebService(DB *gorm.DB) *WebService {
 	service := &WebService{
-		Engine:  gin.Default(),
+		Engine: gin.Default(),
 	}
 	service.RegisterRoutes()
 	return service
@@ -41,7 +41,7 @@ func (s *WebService) GetFileInfos(c *gin.Context) {
 func (s *WebService) GetShareLinks(c *gin.Context) {
 	shareLinks, err := service.Mgr().GetShareLink()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg":err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
 
@@ -51,7 +51,7 @@ func (s *WebService) GetShareLinks(c *gin.Context) {
 func (s *WebService) GetRecords(c *gin.Context) {
 	records, err := service.Mgr().GetRecord()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg":err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": err.Error()})
 		return
 	}
 

@@ -120,4 +120,3 @@ func assembleFileInfo(summary *pb.DownloadSummary) *model.FileInfo {
 
 	return &fileInfo
 }
-

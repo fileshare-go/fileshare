@@ -28,7 +28,7 @@ func (s *DownloadServer) PreDownload(_ context.Context, request *pb.DownloadRequ
 		Sha256: request.Meta.Sha256,
 	}
 
-	if service.Orm().Find(fileInfo).RowsAffected != 1 {
+	if service.Orm().Find(fileInfo).RowsAffected == 0 {
 		return nil, errors.New("no matching file found")
 	}
 
@@ -43,14 +43,16 @@ func (s *DownloadServer) PreDownloadWithCode(_ context.Context, link *pb.ShareLi
 	}
 
 	if service.Orm().Find(shareLink).RowsAffected == 1 {
+		// if link is outdated, just return with error
 		if shareLink.OutdatedAt.Before(time.Now()) {
 			return &pb.DownloadSummary{
-				Status: pb.Status_ERROR,
+				Status:  pb.Status_ERROR,
 				Message: "Share link outdated!",
 			}, nil
 		}
 	}
 
+	// if not outdated, query for existing file info
 	fileInfo := &model.FileInfo{
 		Sha256: shareLink.Sha256,
 	}
@@ -89,4 +91,3 @@ func buildOkDownloadSummary(f *model.FileInfo) *pb.DownloadSummary {
 		Message:     "Share link found!",
 	}
 }
-
