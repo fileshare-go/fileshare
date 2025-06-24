@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	"github.com/sirupsen/logrus"
@@ -44,11 +45,11 @@ func ReadConfig() error {
 
 	bytes, err := os.ReadFile(configPath)
 	if err != nil {
-		logrus.Warn("cannot open configuration file, use default config")
+		logrus.WithError(err).Warn("cannot open configuration file, use default config")
 		config.FillMissingWithDefault()
 		// if configFile not found, save with default configurations
 		saveConfig()
-		return err
+		return nil
 	}
 
 	if err := yaml.Unmarshal(bytes, &config); err != nil {
@@ -67,7 +68,7 @@ func (s *Config) FillMissingWithDefault() {
 		s.WebAddress = ":8080"
 	}
 	if s.Database == "" {
-		s.Database = "default.db"
+		s.Database = filepath.Join(configDir, "default.db")
 	}
 	if s.ShareCodeLength == 0 {
 		s.ShareCodeLength = 8
@@ -107,6 +108,8 @@ func saveConfig() {
 		return
 	}
 	if err = os.WriteFile(configPath, bytes, configFileMode); err != nil {
-		logrus.Error(err)
+		logrus.WithError(err).Error("cannot write back to ", configPath)
+	} else {
+		logrus.Debug("write back to ", configPath)
 	}
 }
