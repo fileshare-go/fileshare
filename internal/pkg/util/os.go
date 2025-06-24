@@ -6,13 +6,20 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 )
 
+var once sync.Once
+var info string
+
 func OsInfo() string {
-	info := strings.Join([]string{
-		runtime.GOOS, runtime.GOARCH, getHostname(),
-	}, ",")
-	return base64.StdEncoding.EncodeToString([]byte(info))
+	once.Do(func() {
+		infoStr := strings.Join([]string{
+			runtime.GOOS, runtime.GOARCH, getHostname(),
+		}, ",")
+		info = base64.StdEncoding.EncodeToString([]byte(infoStr))
+	})
+	return info
 }
 
 func FileExists(filePath string) bool {
