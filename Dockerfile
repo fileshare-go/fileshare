@@ -58,5 +58,7 @@ EXPOSE 60011
 
 EXPOSE 8080
 
+ENV LOG="debug"
+
 # Define the command to run your application
 CMD ["/app/fileshare", "server"]
