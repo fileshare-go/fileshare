@@ -252,5 +252,5 @@ And download binary from `fileshare.tar.gz`, extract to fileshare
 
 Then run following commands:
 ``` sh
-docker run -d --name fileshare -p 60011:60011 -p 8080:8080 fileshare:0.1.6
+docker run -d --name fileshare -p 60011:60011 -p 8080:8080 fileshare:0.1.6.1
 ```

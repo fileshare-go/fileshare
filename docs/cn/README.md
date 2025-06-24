@@ -249,5 +249,5 @@ curl 0.0.0.0:8080/record
 
 接着运行下面的命令:
 ``` sh
-docker run -d --name fileshare -p 60011:60011 -p 8080:8080 fileshare:0.1.6
+docker run -d --name fileshare -p 60011:60011 -p 8080:8080 fileshare:0.1.6.1
 ```
