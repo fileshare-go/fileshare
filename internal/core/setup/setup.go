@@ -12,24 +12,24 @@ import (
 )
 
 func SetupClient(cmd *cobra.Command, args []string) error {
+	logger.SetupLogger()
 	var err error
 	if err = config.ReadConfig(); err != nil {
 		logrus.Error(err)
 		return err
 	}
-	logger.SetupLogger()
 	service.InitClientService()
 	// if directory cannot be set correctly, following actions will panic
 	return setupDirectory()
 }
 
 func SetupServer(cmd *cobra.Command, args []string) error {
+	logger.SetupLogger()
 	var err error
 	if err = config.ReadConfig(); err != nil {
 		logrus.Error(err)
 		return err
 	}
-	logger.SetupLogger()
 	service.InitServerService()
 	// if directory cannot be set correctly, following actions will panic
 	return setupDirectory()

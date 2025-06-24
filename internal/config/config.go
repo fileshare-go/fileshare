@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
@@ -27,11 +28,26 @@ type Config struct {
 	BlockedIps        []string `yaml:"blocked_ips"`
 }
 
+const CONFIG_FOLDER = "fileshare"
+const CONFIG_FILE = "config.yml"
+
+var configPath string
+var configFileMode fs.FileMode = os.FileMode(0644)
+
+// setup config path according to os
+func init() {
+	setupConfigPath()
+}
+
 func ReadConfig() error {
-	bytes, err := os.ReadFile("config.yml")
+	logrus.Debug("config path is ", configPath)
+
+	bytes, err := os.ReadFile(configPath)
 	if err != nil {
 		logrus.Warn("cannot open configuration file, use default config")
 		config.FillMissingWithDefault()
+		// if configFile not found, save with default configurations
+		saveConfig()
 		return err
 	}
 
@@ -82,4 +98,15 @@ func (s *Config) PrintConfig() {
 	logrus.Debugf("[Settings] CertPath %s", util.Render(s.CertsPath))
 	logrus.Debugf("[Settings] Valid Days %s", util.Render(s.ValidDays))
 	logrus.Debugf("[Settings] Blocked Ips %s", util.Render(s.BlockedIps))
+}
+
+func saveConfig() {
+	bytes, err := yaml.Marshal(&config)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	if err = os.WriteFile(configPath, bytes, configFileMode); err != nil {
+		logrus.Error(err)
+	}
 }
