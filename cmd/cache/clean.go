@@ -12,7 +12,7 @@ import (
 var cleanCmd = &cobra.Command{
 	Use:     "clean",
 	Short:   "Cleans db file and cache folder by config.yml, if not set then clean the default ones(default.db, $HOME/.fileshare)",
-	PreRunE: setup.Setup,
+	PreRunE: setup.SetupClient,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		cleanCache()

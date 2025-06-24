@@ -9,10 +9,21 @@ import (
 
 var srv service.Service
 
-func InitService() {
+func InitClientService() {
 	cfg := config.Cfg()
 
 	orm := db.OpenClientDB(cfg.Database)
+
+	srv = service.Service{
+		Orm:   orm,
+		Error: nil,
+	}
+}
+
+func InitServerService() {
+	cfg := config.Cfg()
+
+	orm := db.OpenServerDB(cfg.Database)
 
 	srv = service.Service{
 		Orm:   orm,

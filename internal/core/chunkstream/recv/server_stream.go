@@ -7,10 +7,9 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core"
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/model"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/chanmaoganda/fileshare/internal/service"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 )
 
 type ServerRecvStream struct {
@@ -54,33 +53,13 @@ func (s *ServerRecvStream) ValidateRecvChunks() bool {
 	return s.Validate()
 }
 
-func (s *ServerRecvStream) peerAddress() string {
-	peer, ok := peer.FromContext(s.Stream.Context())
-	if ok {
-		return peer.Addr.String()
-	}
-	return "unknown"
-}
-
-func (s *ServerRecvStream) peerOs() string {
-	md, ok := metadata.FromIncomingContext(s.Stream.Context())
-	if !ok {
-		return "unknown"
-	}
-
-	if osInfo, ok := md["os"]; ok && len(osInfo) != 0 {
-		return osInfo[0]
-	}
-	return "unknown"
-}
-
 func (s *ServerRecvStream) CloseStream(validate bool) error {
 	var err error
 	if service.Orm().Save(&s.FileInfo).Error != nil {
 		return err
 	}
-
-	record := makeRecord(s.FileInfo.Sha256, s.peerAddress(), s.peerOs())
+	ctx := s.Stream.Context()
+	record := makeRecord(s.FileInfo.Sha256, util.PeerAddress(ctx), util.PeerOs(ctx))
 
 	if service.Orm().Create(record).Error != nil {
 		return err

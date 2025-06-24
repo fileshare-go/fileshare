@@ -13,7 +13,7 @@ var UploadCmd = &cobra.Command{
 	Use:     "upload <filepath>",
 	Short:   "Uploads the file, requires the filepath as argument",
 	Args:    cobra.MinimumNArgs(1),
-	PreRunE: setup.Setup,
+	PreRunE: setup.SetupClient,
 	Run: func(cmd *cobra.Command, args []string) {
 		transferFile := args[0]
 
@@ -23,7 +23,7 @@ var UploadCmd = &cobra.Command{
 
 		conn, err := fileshare.NewClientConn(cfg)
 		if err != nil {
-			logrus.Panic(err)
+			logrus.Fatal(err)
 		}
 
 		client := upload.NewUploadClient(cmd.Context(), conn)

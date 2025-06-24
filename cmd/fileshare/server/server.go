@@ -21,7 +21,7 @@ import (
 var ServerCmd = &cobra.Command{
 	Use:     "server",
 	Short:   "Starts fileshare server",
-	PreRunE: setup.Setup,
+	PreRunE: setup.SetupServer,
 	Run: func(cmd *cobra.Command, args []string) {
 		PrintBanner()
 
@@ -38,7 +38,7 @@ var ServerCmd = &cobra.Command{
 
 		grpcServer, err := fileshare.NewServerConn(cfg)
 		if err != nil {
-			logrus.Panic(err)
+			logrus.Fatal(err)
 		}
 
 		pb.RegisterUploadServiceServer(grpcServer, upload.NewUploadServer())

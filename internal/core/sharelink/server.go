@@ -11,8 +11,6 @@ import (
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 )
 
 type ShareLinkServer struct {
@@ -26,7 +24,7 @@ func NewShareLinkServer() *ShareLinkServer {
 func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb.ShareLinkRequest) (*pb.ShareLinkResponse, error) {
 	logrus.Debugf("Generating sharelink for %s", util.Render(sharelinkRequest.Meta.Sha256[:8]))
 
-	handler := newLinkHandler(sharelinkRequest, s.PeerOs(ctx), s.PeerAddress(ctx))
+	handler := newLinkHandler(sharelinkRequest, util.PeerAddress(ctx), util.PeerOs(ctx))
 
 	if resp, ok := handler.preCheck(); ok {
 		return resp, nil
@@ -47,26 +45,6 @@ func (s *ShareLinkServer) GenerateLink(ctx context.Context, sharelinkRequest *pb
 	}, nil
 }
 
-func (s *ShareLinkServer) PeerAddress(ctx context.Context) string {
-	peer, ok := peer.FromContext(ctx)
-	if ok {
-		return peer.Addr.String()
-	}
-	return "unknown"
-}
-
-func (s *ShareLinkServer) PeerOs(ctx context.Context) string {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return "unknown"
-	}
-
-	if osInfo, ok := md["os"]; ok && len(osInfo) != 0 {
-		return osInfo[0]
-	}
-	return "unknown"
-}
-
 // handles share link
 type linkHandler struct {
 	OsInfo    string
@@ -76,7 +54,7 @@ type linkHandler struct {
 	Request   *pb.ShareLinkRequest
 }
 
-func newLinkHandler(shareLinkRequest *pb.ShareLinkRequest, osInfo, peerAddr string) *linkHandler {
+func newLinkHandler(shareLinkRequest *pb.ShareLinkRequest, peerAddr, osInfo string) *linkHandler {
 	return &linkHandler{
 		OsInfo:   osInfo,
 		PeerAddr: peerAddr,

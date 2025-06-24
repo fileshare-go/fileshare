@@ -8,11 +8,10 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/chunkio"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 )
 
 type ServerSendStream struct {
@@ -49,7 +48,8 @@ func (s *ServerSendStream) SendChunk(chunk *pb.FileChunk) error {
 
 func (s *ServerSendStream) CloseStream() error {
 	var err error
-	record := makeRecord(s.FileInfo.Sha256, s.peerAddress(), s.peerOs())
+	ctx := s.Stream.Context()
+	record := makeRecord(s.FileInfo.Sha256, util.PeerAddress(ctx), util.PeerOs(ctx))
 
 	if err = service.Orm().Save(record).Error; err != nil {
 		return err
@@ -71,26 +71,6 @@ func (s *ServerSendStream) validateTask() bool {
 	}
 
 	return true
-}
-
-func (s *ServerSendStream) peerAddress() string {
-	peer, ok := peer.FromContext(s.Stream.Context())
-	if ok {
-		return peer.Addr.String()
-	}
-	return "unknown"
-}
-
-func (s *ServerSendStream) peerOs() string {
-	md, ok := metadata.FromIncomingContext(s.Stream.Context())
-	if !ok {
-		return "unknown"
-	}
-
-	if osInfo, ok := md["os"]; ok && len(osInfo) != 0 {
-		return osInfo[0]
-	}
-	return "unknown"
 }
 
 func (s *ServerSendStream) loadChunk(chunkIdx int32) *pb.FileChunk {

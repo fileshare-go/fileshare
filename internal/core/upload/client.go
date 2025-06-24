@@ -20,7 +20,7 @@ func NewUploadClient(ctx context.Context, conn *grpc.ClientConn) *UploadClient {
 	client := pb.NewUploadServiceClient(conn)
 	stream, err := client.Upload(ctx)
 	if err != nil {
-		logrus.Panic(err)
+		logrus.Fatal(err)
 	}
 
 	return &UploadClient{
