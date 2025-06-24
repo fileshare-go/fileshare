@@ -7,10 +7,9 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core"
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/model"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/chanmaoganda/fileshare/internal/service"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 )
 
 type ServerRecvStream struct {
@@ -54,42 +53,15 @@ func (s *ServerRecvStream) ValidateRecvChunks() bool {
 	return s.Validate()
 }
 
-func (s *ServerRecvStream) PeerAddress() string {
-	peer, ok := peer.FromContext(s.Stream.Context())
-	if ok {
-		return peer.Addr.String()
-	}
-	return "unknown"
-}
-
-func (s *ServerRecvStream) PeerOs() string {
-	md, ok := metadata.FromIncomingContext(s.Stream.Context())
-	if !ok {
-		return "unknown"
-	}
-
-	if osInfo, ok := md["os"]; ok && len(osInfo) != 0 {
-		return osInfo[0]
-	}
-	return "unknown"
-}
-
-func (s *ServerRecvStream) MakeRecord() *model.Record {
-	return &model.Record{
-		Sha256:         s.FileInfo.Sha256,
-		InteractAction: core.DownloadAction,
-		ClientIp:       s.PeerAddress(),
-		Os:             s.PeerOs(),
-		Time:           time.Now(),
-	}
-}
-
 func (s *ServerRecvStream) CloseStream(validate bool) error {
 	var err error
-	if err = service.Mgr().UpdateFileInfo(&s.FileInfo); err != nil {
+	if service.Orm().Save(&s.FileInfo).Error != nil {
 		return err
 	}
-	if err = service.Mgr().InsertRecord(s.MakeRecord()); err != nil {
+	ctx := s.Stream.Context()
+	record := makeRecord(s.FileInfo.Sha256, util.PeerAddress(ctx), util.PeerOs(ctx))
+
+	if service.Orm().Create(record).Error != nil {
 		return err
 	}
 
@@ -114,5 +86,15 @@ func (s *ServerRecvStream) genUploadStatus(validate bool) *pb.UploadStatus {
 		},
 		Status:    statusCode,
 		ChunkList: s.ChunkList,
+	}
+}
+
+func makeRecord(sha256, peerAddress, peerOs string) *model.Record {
+	return &model.Record{
+		Sha256:         sha256,
+		InteractAction: core.DownloadAction,
+		ClientIp:       peerAddress,
+		Os:             peerOs,
+		Time:           time.Now(),
 	}
 }

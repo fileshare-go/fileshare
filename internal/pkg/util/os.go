@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -8,9 +9,10 @@ import (
 )
 
 func OsInfo() string {
-	return strings.Join([]string{
+	info := strings.Join([]string{
 		runtime.GOOS, runtime.GOARCH, getHostname(),
 	}, ",")
+	return base64.StdEncoding.EncodeToString([]byte(info))
 }
 
 func FileExists(filePath string) bool {

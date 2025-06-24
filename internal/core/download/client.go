@@ -24,13 +24,31 @@ func NewDownloadClient(ctx context.Context, conn *grpc.ClientConn) *DownloadClie
 	}
 }
 
+// get summary from grpc
+func (c *DownloadClient) getSummary(ctx context.Context, key string) (*pb.DownloadSummary, error) {
+	// if the key is not the fixed size of sha256, then recognize this as link code
+	if len(key) != 64 {
+		return c.Client.PreDownloadWithCode(ctx, &pb.ShareLink{LinkCode: key})
+	} else {
+		return c.Client.PreDownload(ctx, &pb.DownloadRequest{Meta: &pb.FileMeta{Sha256: key}})
+	}
+}
+
 // get the download stream from grpc, aimed to handle download tasks
 func (c *DownloadClient) getDownloadStream(ctx context.Context, key string) (pb.DownloadService_DownloadClient, error) {
 	logrus.Debugf("Download request [key: %s]", key)
+	var err error
+	summary, err := c.getSummary(ctx, key)
+	if err != nil {
+		return nil, err
+	}
 
-	builder := taskBuilder{Client: c.Client}
+	// if summary is not OK, then return with failure message
+	if summary.Status != pb.Status_OK {
+		return nil, errors.New(summary.Message)
+	}
 
-	task, err := builder.BuildTask(ctx, key)
+	task, err := buildTaskFromSummary(summary)
 	if err != nil {
 		return nil, err
 	}
@@ -54,53 +72,51 @@ func (c *DownloadClient) DownloadFile(ctx context.Context, key string) error {
 	return recvStream.CloseStream(validate)
 }
 
-type taskBuilder struct {
-	Client pb.DownloadServiceClient
-}
-
-// get summary from grpc
-func (b *taskBuilder) getSummary(ctx context.Context, key string) (*pb.DownloadSummary, error) {
-	// if the key is not the fixed size of sha256, then recognize this as link code
-	if len(key) != 64 {
-		return b.Client.PreDownloadWithCode(ctx, &pb.ShareLink{LinkCode: key})
-	} else {
-		return b.Client.PreDownload(ctx, &pb.DownloadRequest{Meta: &pb.FileMeta{Sha256: key}})
-	}
-}
-
 // build download task from summary
-func (b *taskBuilder) buildTaskFromSummary(summary *pb.DownloadSummary) (*pb.DownloadTask, error) {
+func buildTaskFromSummary(summary *pb.DownloadSummary) (*pb.DownloadTask, error) {
 	var err error
 	fileInfo := &model.FileInfo{
 		Sha256: summary.Meta.Sha256,
 	}
 
-	if err = service.Mgr().SelectFileInfo(fileInfo); err == nil {
-		return fileInfo.BuildDownloadTask(), nil
+	if service.Orm().Find(fileInfo).RowsAffected == 1 {
+		return assembleDownloadTask(fileInfo), nil
 	}
 
-	fileInfo = model.NewFileInfoFromDownload(summary)
+	fileInfo = assembleFileInfo(summary)
 
-	if err = service.Mgr().InsertFileInfo(fileInfo); err != nil {
+	if service.Orm().Save(fileInfo).Error != nil {
 		return nil, err
 	}
 
-	task := &pb.DownloadTask{
+	return &pb.DownloadTask{
 		Meta:        summary.Meta,
 		ChunkNumber: summary.ChunkNumber,
 		ChunkList:   summary.ChunkList,
-	}
-	return task, nil
+	}, nil
 }
 
-func (b *taskBuilder) BuildTask(ctx context.Context, key string) (*pb.DownloadTask, error) {
-	summary, err := b.getSummary(ctx, key)
-	if err != nil {
-		return nil, err
+func assembleDownloadTask(f *model.FileInfo) *pb.DownloadTask {
+	return &pb.DownloadTask{
+		Meta: &pb.FileMeta{
+			Filename: f.Filename,
+			Sha256:   f.Sha256,
+			FileSize: f.FileSize,
+		},
+		ChunkNumber: f.ChunkNumber,
+		ChunkList:   f.GetMissingChunks(),
 	}
-	if summary.Status != pb.Status_OK {
-		return nil, errors.New(summary.Message)
-	}
+}
 
-	return b.buildTaskFromSummary(summary)
+func assembleFileInfo(summary *pb.DownloadSummary) *model.FileInfo {
+	fileInfo := model.FileInfo{}
+
+	fileInfo.Filename = summary.Meta.Filename
+	fileInfo.Sha256 = summary.Meta.Sha256
+	fileInfo.FileSize = summary.FileSize
+	fileInfo.ChunkNumber = summary.ChunkNumber
+	fileInfo.ChunkSize = summary.ChunkSize
+	fileInfo.UploadedChunks = "[]"
+
+	return &fileInfo
 }

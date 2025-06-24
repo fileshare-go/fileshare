@@ -18,7 +18,7 @@ type ClientSendStream struct {
 func NewClientSendStream(task *pb.UploadTask, filePath string, stream pb.UploadService_UploadClient) chunkstream.StreamSendCore {
 	file, err := os.Open(filePath)
 	if err != nil {
-		logrus.Panic(err)
+		logrus.Fatal(err)
 	}
 
 	return &ClientSendStream{

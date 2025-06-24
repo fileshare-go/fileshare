@@ -5,17 +5,29 @@ import (
 
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
+	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-func Setup(cmd *cobra.Command, args []string) error {
+func SetupClient(cmd *cobra.Command, args []string) error {
 	var err error
 	if err = config.ReadConfig(); err != nil {
 		logrus.Error(err)
 		return err
 	}
+	service.InitClientService()
+	// if directory cannot be set correctly, following actions will panic
+	return setupDirectory()
+}
 
+func SetupServer(cmd *cobra.Command, args []string) error {
+	var err error
+	if err = config.ReadConfig(); err != nil {
+		logrus.Error(err)
+		return err
+	}
+	service.InitServerService()
 	// if directory cannot be set correctly, following actions will panic
 	return setupDirectory()
 }

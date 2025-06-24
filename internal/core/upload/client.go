@@ -20,7 +20,7 @@ func NewUploadClient(ctx context.Context, conn *grpc.ClientConn) *UploadClient {
 	client := pb.NewUploadServiceClient(conn)
 	stream, err := client.Upload(ctx)
 	if err != nil {
-		logrus.Panic(err)
+		logrus.Fatal(err)
 	}
 
 	return &UploadClient{
@@ -30,12 +30,19 @@ func NewUploadClient(ctx context.Context, conn *grpc.ClientConn) *UploadClient {
 }
 
 func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
-	builder := TaskBuilder{Client: c.Client}
-
-	task, err := builder.GetTask(ctx, filePath)
+	var err error
+	request, err := buildRequest(filePath)
 	if err != nil {
 		return err
 	}
+
+	logrus.Debugf("request [filename: %s, sha256: %s, file size: %d]", request.Meta.Filename, request.Meta.Sha256, request.FileSize)
+
+	task, err := c.Client.PreUpload(ctx, request)
+	if err != nil {
+		return err
+	}
+
 	util.DebugUploadTask(task)
 
 	sendStream := send.NewClientSendStream(task, filePath, c.Stream)
@@ -48,12 +55,8 @@ func (c *UploadClient) UploadFile(ctx context.Context, filePath string) error {
 	return sendStream.CloseStream()
 }
 
-type TaskBuilder struct {
-	Client pb.UploadServiceClient
-}
-
 // build upload request
-func (b *TaskBuilder) BuildRequest(filePath string) (*pb.UploadRequest, error) {
+func buildRequest(filePath string) (*pb.UploadRequest, error) {
 	stat, err := os.Stat(filePath)
 	if err != nil {
 		return nil, err
@@ -72,19 +75,4 @@ func (b *TaskBuilder) BuildRequest(filePath string) (*pb.UploadRequest, error) {
 		FileSize: stat.Size(),
 	}
 	return request, nil
-}
-
-// recv
-func (b *TaskBuilder) GetTask(ctx context.Context, filePath string) (*pb.UploadTask, error) {
-	request, err := b.BuildRequest(filePath)
-	if err != nil {
-		return nil, err
-	}
-	logrus.Debugf("request [filename: %s, sha256: %s, file size: %d]", request.Meta.Filename, request.Meta.Sha256, request.FileSize)
-
-	task, err := b.Client.PreUpload(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-	return task, nil
 }

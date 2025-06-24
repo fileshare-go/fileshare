@@ -8,11 +8,10 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/core/chunkstream"
 	"github.com/chanmaoganda/fileshare/internal/model"
 	"github.com/chanmaoganda/fileshare/internal/pkg/chunkio"
+	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 )
 
 type ServerSendStream struct {
@@ -30,12 +29,12 @@ func NewServerSendStream(task *pb.DownloadTask, stream pb.DownloadService_Downlo
 }
 
 func (s *ServerSendStream) SendStreamChunks() error {
-	if len(s.Task.ChunkList) == 0 || s.ValidateTask() {
-		return s.SendChunk(s.LoadEmptyChunk())
+	if len(s.Task.ChunkList) == 0 || s.validateTask() {
+		return s.SendChunk(s.loadEmptyChunk())
 	}
 
 	for _, idx := range s.Task.ChunkList {
-		if err := s.SendChunk(s.LoadChunk(idx)); err != nil {
+		if err := s.SendChunk(s.loadChunk(idx)); err != nil {
 			return err
 		}
 	}
@@ -48,15 +47,20 @@ func (s *ServerSendStream) SendChunk(chunk *pb.FileChunk) error {
 }
 
 func (s *ServerSendStream) CloseStream() error {
-	service.Mgr().InsertRecord(s.MakeRecord())
+	var err error
+	ctx := s.Stream.Context()
+	record := makeRecord(s.FileInfo.Sha256, util.PeerAddress(ctx), util.PeerOs(ctx))
+
+	if err = service.Orm().Save(record).Error; err != nil {
+		return err
+	}
 
 	logrus.Debug("Closing server sending stream")
 	return nil
 }
 
-func (s *ServerSendStream) ValidateTask() bool {
-	if err := service.Mgr().SelectFileInfo(&s.FileInfo); err != nil {
-		logrus.Error(err)
+func (s *ServerSendStream) validateTask() bool {
+	if service.Orm().Find(&s.FileInfo).RowsAffected == 0 {
 		return false
 	}
 
@@ -69,37 +73,7 @@ func (s *ServerSendStream) ValidateTask() bool {
 	return true
 }
 
-func (s *ServerSendStream) MakeRecord() *model.Record {
-	return &model.Record{
-		Sha256:         s.FileInfo.Sha256,
-		InteractAction: core.DownloadAction,
-		ClientIp:       s.PeerAddress(),
-		Os:             s.PeerOs(),
-		Time:           time.Now(),
-	}
-}
-
-func (s *ServerSendStream) PeerAddress() string {
-	peer, ok := peer.FromContext(s.Stream.Context())
-	if ok {
-		return peer.Addr.String()
-	}
-	return "unknown"
-}
-
-func (s *ServerSendStream) PeerOs() string {
-	md, ok := metadata.FromIncomingContext(s.Stream.Context())
-	if !ok {
-		return "unknown"
-	}
-
-	if osInfo, ok := md["os"]; ok && len(osInfo) != 0 {
-		return osInfo[0]
-	}
-	return "unknown"
-}
-
-func (s *ServerSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {
+func (s *ServerSendStream) loadChunk(chunkIdx int32) *pb.FileChunk {
 	chunkData := chunkio.ReadChunk(config.Cfg().CacheDirectory, s.Task.Meta.Sha256, chunkIdx)
 
 	return &pb.FileChunk{
@@ -109,10 +83,20 @@ func (s *ServerSendStream) LoadChunk(chunkIdx int32) *pb.FileChunk {
 	}
 }
 
-func (s *ServerSendStream) LoadEmptyChunk() *pb.FileChunk {
+func (s *ServerSendStream) loadEmptyChunk() *pb.FileChunk {
 	return &pb.FileChunk{
 		Sha256:     s.Task.Meta.Sha256,
 		ChunkIndex: 0,
 		Data:       []byte{},
+	}
+}
+
+func makeRecord(sha256, peerAddress, peerOs string) *model.Record {
+	return &model.Record{
+		Sha256:         sha256,
+		InteractAction: core.DownloadAction,
+		ClientIp:       peerAddress,
+		Os:             peerOs,
+		Time:           time.Now(),
 	}
 }

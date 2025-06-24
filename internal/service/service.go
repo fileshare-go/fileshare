@@ -7,10 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-var mgr ServiceMgr
 var srv service.Service
 
-func InitServiceMgr() {
+func InitClientService() {
 	cfg := config.Cfg()
 
 	orm := db.OpenClientDB(cfg.Database)
@@ -19,21 +18,17 @@ func InitServiceMgr() {
 		Orm:   orm,
 		Error: nil,
 	}
-	mgr = ServiceMgr{
-		FileInfo:  FileInfo{Service: srv},
-		ShareLink: ShareLink{Service: srv},
-		Record:    Record{Service: srv},
+}
+
+func InitServerService() {
+	cfg := config.Cfg()
+
+	orm := db.OpenServerDB(cfg.Database)
+
+	srv = service.Service{
+		Orm:   orm,
+		Error: nil,
 	}
-}
-
-type ServiceMgr struct {
-	FileInfo
-	ShareLink
-	Record
-}
-
-func Mgr() *ServiceMgr {
-	return &mgr
 }
 
 func Orm() *gorm.DB {

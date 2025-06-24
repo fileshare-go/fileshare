@@ -13,7 +13,7 @@ func OpenClientDB(sqliteFile string) *gorm.DB {
 		logrus.Fatalf("sqlite %s: %v", sqliteFile, err)
 	}
 	if err := db.AutoMigrate(&model.FileInfo{}); err != nil {
-		logrus.Panic(err)
+		logrus.Fatal(err)
 	}
 	return db
 }
@@ -24,7 +24,7 @@ func OpenServerDB(sqliteFile string) *gorm.DB {
 		logrus.Fatalf("sqlite %s: %v", sqliteFile, err)
 	}
 	if err := db.AutoMigrate(&model.FileInfo{}, &model.ShareLink{}, &model.Record{}); err != nil {
-		logrus.Panic(err)
+		logrus.Fatal(err)
 	}
 	return db
 }

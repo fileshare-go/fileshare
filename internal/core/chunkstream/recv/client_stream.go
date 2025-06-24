@@ -52,7 +52,7 @@ func (c *ClientRecvStream) ValidateRecvChunks() bool {
 
 func (c *ClientRecvStream) CloseStream(bool) error {
 	var err error
-	if err = service.Mgr().UpdateFileInfo(&c.FileInfo); err != nil {
+	if err = service.Orm().Save(&c.FileInfo).Error; err != nil {
 		return err
 	}
 

@@ -21,29 +21,29 @@ func NewUploadServer() *UploadServer {
 
 // pre upload receives a task from client, calculate missing chunks and send the task back
 func (s *UploadServer) PreUpload(ctx context.Context, request *pb.UploadRequest) (*pb.UploadTask, error) {
-	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", util.Render(request.Meta.Filename), request.FileSize, util.Render(request.Meta.Sha256[:8]))
 	var err error
+	logrus.Debugf("PreUpload request [filename: %s, file size: %d, sha256: %s]", util.Render(request.Meta.Filename), request.FileSize, util.Render(request.Meta.Sha256[:8]))
 
 	fileInfo := &model.FileInfo{
 		Sha256: request.Meta.Sha256,
 	}
 
-	if err = service.Mgr().SelectFileInfo(fileInfo); err != nil {
-		logrus.Warn(err)
-	} else {
+	db := service.Orm().Find(fileInfo)
+
+	if db.RowsAffected == 1 {
 		// if fileinfo exists, then use stored info
 		logrus.Debug("Existing file info ", fileInfo.Filename)
-		return fileInfo.BuildUploadTask(), nil
+		return assembleUploadTask(fileInfo), nil
 	}
 
-	fileInfo = model.NewFileInfoFromUpload(request)
+	fileInfo = assembleFileInfo(request)
 
 	logrus.Debug("Creating file info ", fileInfo.Filename)
-	if err = service.Mgr().InsertFileInfo(fileInfo); err != nil {
+	if err = service.Orm().Save(fileInfo).Error; err != nil {
 		return nil, err
 	}
 
-	return fileInfo.BuildUploadTask(), nil
+	return assembleUploadTask(fileInfo), nil
 }
 
 func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
@@ -56,4 +56,32 @@ func (s *UploadServer) Upload(stream pb.UploadService_UploadServer) error {
 
 	validate := recvStream.ValidateRecvChunks()
 	return recvStream.CloseStream(validate)
+}
+
+func assembleFileInfo(req *pb.UploadRequest) *model.FileInfo {
+	fileInfo := model.FileInfo{}
+
+	chunkSummary := dealChunkSize(req.FileSize)
+
+	fileInfo.Filename = req.Meta.Filename
+	fileInfo.Sha256 = req.Meta.Sha256
+	fileInfo.FileSize = req.FileSize
+	fileInfo.ChunkNumber = chunkSummary.Number
+	fileInfo.ChunkSize = chunkSummary.Size
+	fileInfo.UploadedChunks = "[]"
+
+	return &fileInfo
+}
+
+func assembleUploadTask(f *model.FileInfo) *pb.UploadTask {
+	return &pb.UploadTask{
+		Meta: &pb.FileMeta{
+			Filename: f.Filename,
+			Sha256:   f.Sha256,
+			FileSize: f.FileSize,
+		},
+		ChunkNumber: f.ChunkNumber,
+		ChunkSize:   f.ChunkSize,
+		ChunkList:   f.GetMissingChunks(),
+	}
 }

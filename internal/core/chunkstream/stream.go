@@ -47,7 +47,7 @@ func (c *Core) SetupAndRecordInfo(chunk *pb.FileChunk) {
 	c.Once.Do(func() {
 		// select from database
 		c.FileInfo.Sha256 = chunk.Sha256
-		service.Mgr().SelectFileInfo(&c.FileInfo)
+		service.Orm().Find(&c.FileInfo)
 
 		// create sha256 folder in cache folder
 		folder := strings.Join([]string{config.Cfg().CacheDirectory, chunk.Sha256}, "/")
