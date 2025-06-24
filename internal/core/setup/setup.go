@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
+	"github.com/chanmaoganda/fileshare/internal/pkg/logger"
 	"github.com/chanmaoganda/fileshare/internal/pkg/util"
 	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
@@ -16,6 +17,7 @@ func SetupClient(cmd *cobra.Command, args []string) error {
 		logrus.Error(err)
 		return err
 	}
+	logger.SetupLogger()
 	service.InitClientService()
 	// if directory cannot be set correctly, following actions will panic
 	return setupDirectory()
@@ -27,6 +29,7 @@ func SetupServer(cmd *cobra.Command, args []string) error {
 		logrus.Error(err)
 		return err
 	}
+	logger.SetupLogger()
 	service.InitServerService()
 	// if directory cannot be set correctly, following actions will panic
 	return setupDirectory()

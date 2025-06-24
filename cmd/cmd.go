@@ -4,7 +4,6 @@ import (
 	"github.com/chanmaoganda/fileshare/cmd/cache"
 	"github.com/chanmaoganda/fileshare/cmd/fileshare/client"
 	"github.com/chanmaoganda/fileshare/cmd/fileshare/server"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -17,11 +16,6 @@ var RootCmd = &cobra.Command{
 }
 
 func init() {
-	logrus.SetLevel(logrus.DebugLevel)
-	logrus.SetFormatter(&logrus.TextFormatter{
-		ForceColors: true,
-	})
-
 	// server commands
 	RootCmd.AddCommand(server.ServerCmd)
 
