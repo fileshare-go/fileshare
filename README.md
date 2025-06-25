@@ -28,7 +28,7 @@ Compared to http range, fileshare can restore progress at any time, you can reco
 **we can observe that, json is 33% larger than proto. Use proto saves traffic and speeds your transfer process**
 
 # How to use?
-Each fileshare needs a `config.yml` file in the `same folder with fileshare`, which should contains below parts
+Each fileshare needs a `config.yml` file, which lies at `$HOME/.config/fileshare/config.yml` (or `%APPDATA%/fileshare/config.yml` in windows) by default, which should contains below parts
 
 ``` yaml
 grpc_address: 0.0.0.0:60011

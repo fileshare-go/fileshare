@@ -67,14 +67,9 @@ func fillMissingWithDefault(s *Config) {
 		fmt.Print("Cannot Get Home Directory: ", err)
 		return
 	}
-	cacheDir, err := os.UserCacheDir()
-	if err != nil {
-		fmt.Print("Cannot Get Cache Directory: ", err)
-		return
-	}
 
 	if s.CacheDirectory == "" {
-		s.CacheDirectory = fmt.Sprintf("%s/%s", cacheDir, "fileshare")
+		s.CacheDirectory = fmt.Sprintf("%s/%s", homeDir, ".fileshare")
 	}
 	if s.DownloadDirectory == "" {
 		s.DownloadDirectory = fmt.Sprintf("%s/%s", homeDir, "Downloads")
