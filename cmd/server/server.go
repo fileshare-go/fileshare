@@ -7,12 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core/download"
 	"github.com/chanmaoganda/fileshare/internal/core/setup"
 	"github.com/chanmaoganda/fileshare/internal/core/sharelink"
 	"github.com/chanmaoganda/fileshare/internal/core/upload"
+	"github.com/chanmaoganda/fileshare/internal/pkg/grpc"
 	pb "github.com/chanmaoganda/fileshare/internal/proto/gen"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -34,7 +34,7 @@ var ServerCmd = &cobra.Command{
 			logrus.Fatalln("cannot bind address")
 		}
 
-		grpcServer, err := fileshare.NewServerConn(cfg)
+		grpcServer, err := grpc.NewServerConn(cfg)
 		if err != nil {
 			logrus.Fatal(err)
 		}

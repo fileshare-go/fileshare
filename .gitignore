@@ -31,10 +31,10 @@ go.work.sum
 
 # End of Generated File with ignore-gen
 
-.vscode/
-.idea/
-build/
-bin/
+/.vscode
+/.idea
+/build
+/bin
 /fileshare
 /fileshare*.tar.gz
 /fileshare*.zip
@@ -45,3 +45,10 @@ bin/
 /default.db
 /.cache
 /.download
+/server
+/client
+
+# wails
+build/bin
+node_modules
+frontend/dist

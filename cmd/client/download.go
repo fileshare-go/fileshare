@@ -1,10 +1,10 @@
 package client
 
 import (
-	"github.com/chanmaoganda/fileshare/cmd/fileshare"
 	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core/download"
 	"github.com/chanmaoganda/fileshare/internal/core/setup"
+	"github.com/chanmaoganda/fileshare/internal/pkg/grpc"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ var DownloadCmd = &cobra.Command{
 
 		logrus.Debug("Connecting to ", cfg.GrpcAddress)
 
-		conn, err := fileshare.NewClientConn(cfg)
+		conn, err := grpc.NewClientConn(cfg)
 		if err != nil {
 			logrus.Fatal(err)
 		}

@@ -1,4 +1,4 @@
-package fileshare
+package grpc
 
 import (
 	"github.com/chanmaoganda/fileshare/internal/config"
