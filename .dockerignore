@@ -1,0 +1,10 @@
+/.cache
+/.download
+/.github
+/.vscode
+/bin
+/docs
+/scripts
+/tests
+*.db
+/fileshare

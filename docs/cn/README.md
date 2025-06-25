@@ -27,7 +27,7 @@ fileshare在release界面有打包好的镜像，使用docker可以很轻松的�
 **并且我们观察到，json相比proto的序列化要多用33%的大小。使用proto可以节省流量，加快传输过程**
 
 # 该怎么使用?
-每个fileshare都需要一个处于`和fileshare同目录`的`config.yml`，这个文件应该包含如下部分：
+每个fileshare都需要一个处于`config.yml`，默认位于 `$HOME/.config/fileshare/config.yml` (or `%APPDATA%/fileshare/config.yml` in windows)，这个文件应该包含如下部分：
 
 ``` yaml
 grpc_address: 0.0.0.0:60011

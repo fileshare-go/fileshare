@@ -32,8 +32,8 @@ func NewCredentialServerConn(settings *config.Config) (*grpc.Server, error) {
 func NewClientConn(settings *config.Config) (*grpc.ClientConn, error) {
 	return grpc.NewClient(settings.GrpcAddress,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(interceptors.UnaryOSInfoInterceptor),
-		grpc.WithStreamInterceptor(interceptors.StreamOSInfoInterceptor),
+		grpc.WithUnaryInterceptor(interceptors.UnaryOSInfoInterceptor()),
+		grpc.WithStreamInterceptor(interceptors.StreamOSInfoInterceptor()),
 	)
 }
 

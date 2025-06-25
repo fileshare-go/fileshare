@@ -21,13 +21,11 @@ import (
 var ServerCmd = &cobra.Command{
 	Use:     "server",
 	Short:   "Starts fileshare server",
-	PreRunE: setup.SetupServer,
+	PreRunE: setup.Setup,
 	Run: func(cmd *cobra.Command, args []string) {
 		PrintBanner()
 
 		cfg := config.Cfg()
-
-		cfg.PrintConfig()
 
 		logrus.Debug("Server listening on ", cfg.GrpcAddress)
 
