@@ -103,7 +103,7 @@ func (h *linkHandler) PersistShareLink(linkCode string) {
 		h.ShareLink.OutdatedAt = time.Now().AddDate(0, 0, int(h.Request.ValidDays))
 	}
 
-	service.Orm().Save(h.ShareLink)
+	service.Orm().Create(h.ShareLink)
 }
 
 func (h *linkHandler) PersistRecord() {
