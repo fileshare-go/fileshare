@@ -10,6 +10,9 @@ Fileshare records upload, linkgen, download actions at server side, allows admin
 Fileshare also provides web api for monitoring sqlite data, see [examples](#web-apis) below
 
 # Features
+## Easy to use ui
+![ui](./docs/pictures/wails-ui.png)
+
 ## Self host fileserver, easy to deploy
 fileshare has docker images in release, it is quite easy to deploy by yourself with docker
 
@@ -252,5 +255,5 @@ And download binary from `fileshare.tar.gz`, extract to fileshare
 
 Then run following commands:
 ``` sh
-docker run -d --name fileshare -p 60011:60011 -p 8080:8080 fileshare:0.1.6.1
+docker run -d --name fileshare -p 60011:60011 -p 8080:8080 fileshare:0.1.7
 ```

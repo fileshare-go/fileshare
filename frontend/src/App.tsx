@@ -27,6 +27,10 @@ function App() {
     UploadFile([selectedFilePath]);
   };
 
+  const handleDownload = async () => {};
+
+  const handleLinkGen = async () => {};
+
   return (
     <div className="App">
       <header className="App-header">
@@ -41,6 +45,14 @@ function App() {
 
         <div className="card">
           <button onClick={handleUpload}>Upload This File</button>
+        </div>
+
+        <div className="card">
+          <button onClick={handleLinkGen}>Linkgen This File</button>
+        </div>
+
+        <div className="card">
+          <button onClick={handleDownload}>Download This File</button>
         </div>
       </header>
     </div>

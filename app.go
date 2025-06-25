@@ -54,3 +54,11 @@ func (a *App) OpenFileSelectionDialog() (string, error) {
 func (a *App) UploadFile(args []string) {
 	fileshare.Upload(context.TODO(), args)
 }
+
+func (a *App) LinkGen(args []string) {
+	fileshare.LinkGen(context.TODO(), args)
+}
+
+func (a *App) Download(args []string) {
+	fileshare.Download(context.TODO(), args)
+}

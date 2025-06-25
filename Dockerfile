@@ -32,7 +32,7 @@ RUN apk add --no-cache \
 # -ldflags="-w -s": strips debug information and symbol tables, further reducing binary size
 # GOOS=linux: ensures the binary is compiled for Linux, regardless of the host OS
 # GOARCH=amd64: ensures the binary is compiled for amd64 architecture
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o fileshare .
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o fileshare-server cmd/bin/server/main.go
 
 # Stage 2: Runner
 # Use a minimal base image like scratch or alpine for the final image
@@ -50,7 +50,7 @@ RUN apk add --no-cache sqlite-libs
 WORKDIR /app
 
 # Copy the built binary from the 'builder' stage to the final image
-COPY --from=builder /app/fileshare .
+COPY --from=builder /app/fileshare-server .
 
 COPY config.yml .
 # Expose the port your Go application listens on
@@ -61,4 +61,4 @@ EXPOSE 8080
 ENV LOG="debug"
 
 # Define the command to run your application
-CMD ["/app/fileshare", "server"]
+CMD ["/app/fileshare-server", "server"]

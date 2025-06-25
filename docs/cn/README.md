@@ -11,6 +11,9 @@ Fileshare还会在服务侧记录所有的上传，下载和链接生成的动�
 Fileshare同时提供了web接口用于监管sqlite存储的数据，详情参照[下文示例](#示例输出)
 
 # fileshare的一些特点
+## 简单易用的ui
+![ui](../pictures/wails-ui.png)
+
 ## 可以个人搭建的文件服务器，容易部署
 fileshare在release界面有打包好的镜像，使用docker可以很轻松的部署
 
