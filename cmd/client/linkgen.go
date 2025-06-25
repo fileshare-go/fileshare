@@ -1,11 +1,8 @@
 package client
 
 import (
-	"github.com/chanmaoganda/fileshare/internal/config"
 	"github.com/chanmaoganda/fileshare/internal/core/setup"
-	"github.com/chanmaoganda/fileshare/internal/core/sharelink"
-	"github.com/chanmaoganda/fileshare/internal/pkg/grpc"
-	"github.com/sirupsen/logrus"
+	"github.com/chanmaoganda/fileshare/internal/fileshare"
 	"github.com/spf13/cobra"
 )
 
@@ -15,22 +12,6 @@ var ShareLinkGenCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(2),
 	PreRunE: setup.Setup,
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := config.Cfg()
-
-		logrus.Debug("Connecting to ", cfg.GrpcAddress)
-
-		conn, err := grpc.NewClientConn(cfg)
-		if err != nil {
-			logrus.Fatal(err)
-		}
-
-		client := sharelink.NewShareLinkClient(cmd.Context(), conn)
-
-		code := client.GenerateLink(args)
-		logrus.Infof("Generated Code is: [%s]", code)
-
-		if err := conn.Close(); err != nil {
-			logrus.Error(err)
-		}
+		fileshare.LinkGen(cmd.Context(), args)
 	},
 }

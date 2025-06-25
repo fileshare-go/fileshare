@@ -1,11 +1,8 @@
 package client
 
 import (
-	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/core/download"
 	"github.com/chanmaoganda/fileshare/internal/core/setup"
-	"github.com/chanmaoganda/fileshare/internal/pkg/grpc"
-	"github.com/sirupsen/logrus"
+	"github.com/chanmaoganda/fileshare/internal/fileshare"
 	"github.com/spf13/cobra"
 )
 
@@ -15,25 +12,6 @@ var DownloadCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(1),
 	PreRunE: setup.Setup,
 	Run: func(cmd *cobra.Command, args []string) {
-		key := args[0]
-
-		cfg := config.Cfg()
-
-		logrus.Debug("Connecting to ", cfg.GrpcAddress)
-
-		conn, err := grpc.NewClientConn(cfg)
-		if err != nil {
-			logrus.Fatal(err)
-		}
-
-		client := download.NewDownloadClient(cmd.Context(), conn)
-
-		if err := client.DownloadFile(cmd.Context(), key); err != nil {
-			logrus.Error(err)
-		}
-
-		if err := conn.Close(); err != nil {
-			logrus.Error(err)
-		}
+		fileshare.Download(cmd.Context(), args)
 	},
 }
