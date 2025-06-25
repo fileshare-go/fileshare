@@ -5,10 +5,9 @@ import (
 	"github.com/chanmaoganda/fileshare/internal/pkg/logger"
 	"github.com/chanmaoganda/fileshare/internal/service"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
-func Setup(cmd *cobra.Command, args []string) error {
+func Setup() error {
 	logger.SetupLogger()
 	var err error
 	if err = config.ReadConfig(); err != nil {

@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import "./App.css";
 
-import {
-  OpenFileSelectionDialog,
-  OpenMultipleFilesSelectionDialog,
-} from "../wailsjs/go/main/App";
+import { OpenFileSelectionDialog, UploadFile } from "../wailsjs/go/main/App";
 
 function App() {
   const [selectedFilePath, setSelectedFilePath] = useState<string>("");
@@ -26,27 +23,14 @@ function App() {
     }
   };
 
-  const handleOpenMultipleFiles = async () => {
-    setError("");
-    try {
-      const paths = await OpenMultipleFilesSelectionDialog();
-      if (paths && paths.length > 0) {
-        setSelectedFilePaths(paths);
-      } else {
-        setSelectedFilePaths(["No files selected."]);
-      }
-    } catch (err: any) {
-      setError(
-        `Error opening multiple files dialog: ${err.message || String(err)}`,
-      );
-      setSelectedFilePaths(["Error!"]);
-    }
+  const handleUpload = async () => {
+    UploadFile([selectedFilePath]);
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Wails File Dialog Demo</h1>
+        <h1>Wails Fileshare Client</h1>
 
         {error && <p style={{ color: "red" }}>{error}</p>}
 
@@ -56,10 +40,7 @@ function App() {
         </div>
 
         <div className="card">
-          <button onClick={handleOpenMultipleFiles}>
-            Open Multiple Files Dialog
-          </button>
-          <p>Selected Files: {selectedFilePaths.join(", ")}</p>
+          <button onClick={handleUpload}>Upload This File</button>
         </div>
       </header>
     </div>

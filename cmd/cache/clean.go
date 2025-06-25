@@ -4,17 +4,14 @@ import (
 	"os"
 
 	"github.com/chanmaoganda/fileshare/internal/config"
-	"github.com/chanmaoganda/fileshare/internal/core/setup"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 var cleanCmd = &cobra.Command{
-	Use:     "clean",
-	Short:   "Cleans db file and cache folder by config.yml, if not set then clean the default ones(default.db, $HOME/.fileshare)",
-	PreRunE: setup.Setup,
+	Use:   "clean",
+	Short: "Cleans db file and cache folder by config.yml, if not set then clean the default ones(default.db, $HOME/.fileshare)",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		cleanCache()
 	},
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/chanmaoganda/fileshare/internal/fileshare"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -48,4 +49,8 @@ func (a *App) OpenFileSelectionDialog() (string, error) {
 	}
 
 	return selection, nil
+}
+
+func (a *App) UploadFile(args []string) {
+	fileshare.Upload(context.TODO(), args)
 }

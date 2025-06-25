@@ -5,3 +5,7 @@
 export function OpenFileSelectionDialog() {
   return window['go']['main']['App']['OpenFileSelectionDialog']();
 }
+
+export function UploadFile(arg1) {
+  return window['go']['main']['App']['UploadFile'](arg1);
+}
