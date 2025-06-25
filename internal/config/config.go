@@ -119,6 +119,12 @@ func saveConfig() {
 }
 
 func setupConfigPath() error {
+	if util.FileExists(CONFIG_FILE) {
+		configDir = "."
+		configPath = CONFIG_FILE
+		return nil
+	}
+
 	userConfigDir, err := os.UserConfigDir()
 	if err != nil {
 		return err
