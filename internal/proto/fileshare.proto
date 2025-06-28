@@ -1,95 +1,93 @@
 syntax = "proto3";
 
+package fileshare;
+
 option go_package = "github.com/chanmaoganda/fileshare/internal/proto/gen";
 
 message FileMeta {
-    string filename = 1;
-    string sha256 = 2;
-    int64 fileSize = 3;
+  string filename = 1;
+  string sha256 = 2;
+  int64 fileSize = 3;
 }
 
 message FileChunk {
-    string sha256 = 1;
-    int32 chunkIndex = 2;
-    bytes data = 3;
+  string sha256 = 1;
+  int32 chunkIndex = 2;
+  bytes data = 3;
 }
 
 enum Status {
-    OK = 0;
-    ERROR = 1;
-    RETRY = 2;
+  OK = 0;
+  ERROR = 1;
+  RETRY = 2;
 }
 
 // Upload Service defined here
 service UploadService {
-    rpc PreUpload(UploadRequest) returns (UploadTask);
-    
-    rpc Upload(stream FileChunk) returns (UploadStatus);
+  rpc PreUpload(UploadRequest) returns (UploadTask);
+
+  rpc Upload(stream FileChunk) returns (UploadStatus);
 }
 
 message UploadRequest {
-    FileMeta meta = 1;
-    int64 fileSize = 2;
+  FileMeta meta = 1;
+  int64 fileSize = 2;
 }
 
 message UploadTask {
-    FileMeta meta = 1;
-    int32 chunkNumber = 2;
-    int64 chunkSize = 3;
-    repeated int32 chunkList = 4;
+  FileMeta meta = 1;
+  int32 chunkNumber = 2;
+  int64 chunkSize = 3;
+  repeated int32 chunkList = 4;
 }
 
 message UploadStatus {
-    FileMeta meta = 1;
-    Status status = 2;
-    repeated int32 chunkList = 3;
+  FileMeta meta = 1;
+  Status status = 2;
+  repeated int32 chunkList = 3;
 }
 
 // Download Service defined here
 service DownloadService {
-    rpc PreDownloadWithCode(ShareLink) returns (DownloadSummary);
+  rpc PreDownloadWithCode(ShareLink) returns (DownloadSummary);
 
-    rpc PreDownload(DownloadRequest) returns (DownloadSummary);
-    
-    rpc Download(DownloadTask) returns (stream FileChunk);
+  rpc PreDownload(DownloadRequest) returns (DownloadSummary);
+
+  rpc Download(DownloadTask) returns (stream FileChunk);
 }
 
-message DownloadRequest {
-    FileMeta meta = 1;    
-}
+message DownloadRequest { FileMeta meta = 1; }
 
 message DownloadSummary {
-    Status status = 1;
-    string message = 2;
-    FileMeta meta = 3;
-    int64 fileSize = 4;
-    int32 chunkNumber = 5;
-    int64 chunkSize = 6;
-    repeated int32 chunkList = 7;
+  Status status = 1;
+  string message = 2;
+  FileMeta meta = 3;
+  int64 fileSize = 4;
+  int32 chunkNumber = 5;
+  int64 chunkSize = 6;
+  repeated int32 chunkList = 7;
 }
 
 message DownloadTask {
-    FileMeta meta = 1;
-    int32 chunkNumber = 2;
-    repeated int32 chunkList = 3;
+  FileMeta meta = 1;
+  int32 chunkNumber = 2;
+  repeated int32 chunkList = 3;
 }
 
 // Link Service defined here
 service ShareLinkService {
-    rpc GenerateLink(ShareLinkRequest) returns (ShareLinkResponse);
+  rpc GenerateLink(ShareLinkRequest) returns (ShareLinkResponse);
 }
 
 message ShareLinkRequest {
-    FileMeta meta = 1;
-    int32 validDays = 2;
+  FileMeta meta = 1;
+  int32 validDays = 2;
 }
 
 message ShareLinkResponse {
-    Status status = 1;
-    string message = 2;
-    string linkCode = 3;
+  Status status = 1;
+  string message = 2;
+  string linkCode = 3;
 }
 
-message ShareLink {
-    string linkCode = 1;
-}
+message ShareLink { string linkCode = 1; }
