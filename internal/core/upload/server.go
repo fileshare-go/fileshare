@@ -63,7 +63,8 @@ func assembleFileInfo(req *pb.UploadRequest) *model.FileInfo {
 
 	chunkSummary := dealChunkSize(req.FileSize)
 
-	fileInfo.Filename = req.Meta.Filename
+	// avoid filename injection
+	fileInfo.Filename = util.GetFileName(req.Meta.Filename)
 	fileInfo.Sha256 = req.Meta.Sha256
 	fileInfo.FileSize = req.FileSize
 	fileInfo.ChunkNumber = chunkSummary.Number
